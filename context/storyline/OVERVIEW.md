@@ -36,6 +36,8 @@ into a film-literate prompt.
   Appendix-D roles into a production-studio architecture, formalized the
   multi-source grounding library, and de-conflated the docs (`README`/`INDEX`/
   `OVERVIEW`).
+- [`0003-published.md`](0003-published.md) — abridged the verbatim appendices,
+  gitignored the raw book text, and published the public repo.
 
 ## Current state (keep fresh)
 
@@ -52,17 +54,17 @@ into a film-literate prompt.
 - **Architecture:** `context/architecture.md` maps phase → department (Appendix D)
   → grounding source → code layer. Implemented today: camera/grip/electric in the
   production phase. Editorial/post is the next layer.
+- **Published:** public repo at
+  <https://github.com/HarryJamesGreenblatt/sequitur_studios> (`main`). Verbatim
+  book text (`extraction/`, `source/`) and secrets (`.env`) are gitignored; only
+  code, docs, and the transformative `reference/` ship. No LICENSE yet.
 - **Doc naming convention:** `README.md` (repo root only) · `INDEX.md` (catalogs)
   · `OVERVIEW.md` (guides, like this file).
 
 ## Open threads (keep fresh)
 
-- **Publish as a repo** — the near-term goal. Blocker is copyright hygiene on the
-  raw book text (below).
-- **Copyright:** `artifacts/**/extraction/` (.docx) and `artifacts/**/source/`
-  (.md) are *verbatim* copyrighted book text and are **not** yet gitignored.
-  Exclude them before any public push; the abridged `reference/` is transformative
-  and safe to ship.
+- **License** — none yet (all rights reserved / public-view only). Pick one (e.g.
+  MIT) before inviting reuse or contributions.
 - **Acquire *Grammar of the Edit*** — run the standard pipeline (extraction →
   source → reference → INDEX) to ground the post-production/editorial layer.
 - **Sequence layer** — the planned multi-shot planner (180°/30°, matching/reverse,
@@ -71,3 +73,4 @@ into a film-literate prompt.
 - **Broader discipline library** — sound, story/screenwriting, production design,
   color, producing are named departments in `context/architecture.md` with no
   source yet.
+- **No test suite yet** — a small `build_prompt` smoke test would guard the grammar.
