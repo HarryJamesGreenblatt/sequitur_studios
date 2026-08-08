@@ -87,7 +87,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--aspect", default="16:9", choices=["16:9", "9:16"])
     p.add_argument("--avoid", nargs="*", default=[], help="Things to exclude.")
     p.add_argument("--multi-scene", action="store_true", help="Allow scene cuts.")
-    p.add_argument("--out", help="Output .mp4 path.")
+    p.add_argument("--image", action="store_true", help="Render a still image (Azure Foundry gpt-image) instead of video.")
+    p.add_argument("--out", help="Output file path (.mp4 for video, .png for image).")
     p.add_argument("--dry-run", action="store_true", help="Print the prompt; do not call the API.")
     return p.parse_args(argv)
 
@@ -122,10 +123,21 @@ def shot_from_args(args: argparse.Namespace) -> Shot:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     shot = shot_from_args(args)
-    prompt = build_prompt(shot)
+
+    from sequitur import build_image_prompt  # noqa: E402
+
+    prompt = build_image_prompt(shot) if args.image else build_prompt(shot)
 
     print("Prompt:\n" + prompt + "\n")
     if args.dry_run:
+        return 0
+
+    if args.image:
+        from sequitur import ImageStudio  # imported late so --dry-run needs no deps
+
+        print("Rendering still image...")
+        _, path = ImageStudio().render(shot, out_path=args.out)
+        print(f"Saved: {path}")
         return 0
 
     from sequitur import Studio  # imported late so --dry-run needs no API key

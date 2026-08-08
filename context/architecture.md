@@ -32,7 +32,7 @@ a production is represented, driven, and stored, decided in
 | Producer | financing, scheduling, logistics | — | project/orchestration | planned |
 | Screenwriter | script, structure | *(story source — to acquire)* | `Script` / `Scene` model | planned |
 | Director | interpret script → shot selection | Grammar of the Shot (Ch. 1) | shot planning | partial (`Shot`) |
-| Production Designer | sets, costume, color concepts | *(design/color source)* | art/color layer | planned |
+| Production Designer | sets, costume, color concepts | *(design/color source)* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
 | Assistant Director | schedule, coverage, shot list | Grammar of the Shot (Ch. 1) | shot list / coverage | planned |
 
 ### Production — *shoot*  ← **implemented today**
@@ -106,6 +106,27 @@ not yet built.
     in the **Sequitur Solutions** tenant's **SharePoint, via Microsoft Graph**
     (least-privilege Entra app; Azure Blob deferred). `ref` is a share URL
     registered back into the plan.
+
+- **Renderer seam** — the *backend* dimension, decided and first-built in
+  [`storyline/0006`](storyline/0006-renderer-seam-and-image-backend.md). The
+  **grammar is model-agnostic**; a **renderer** is the swappable thing that turns a
+  `Shot` (seeds + guidance) into output, and the right backend follows the
+  *deliverable's medium*, not the studio:
+  - [`Studio`](../sequitur/studio.py) → **video** (Gemini Omni Flash).
+  - [`ImageStudio`](../sequitur/image.py) → **still image** (Azure Foundry
+    `gpt-image-1`) — the first non-Google backend; a Production-Designer deliverable
+    and, more usefully, a **reference keyframe** a shot can be conditioned on.
+  Both share one `Shot` and a `render() → (result, path)` contract;
+  [`build_image_prompt`](../sequitur/prompt.py) is [`build_prompt`](../sequitur/prompt.py)
+  minus the video-only faces (motion, speed, `single_scene`, audio). The seam should
+  also admit **non-generative data APIs** (licensing, colour/reference lookups) for
+  departments whose deliverable isn't a model output. A formal `Renderer` protocol +
+  medium-keyed registry is deferred until a *third* backend justifies it.
+
+- **Secrets via Key Vault.** Backend API keys are never stored in plaintext — they
+  live in Azure Key Vault (`kv-sequitur484673472841`) and are fetched at runtime via
+  `DefaultAzureCredential` (the `az login` identity authorises the vault read). Only
+  non-secret pointers (vault name, endpoint, deployment) live in `.env`.
 - **MCP** is the eventual **control-plane** connector: sequitur as MCP *client*, the
   production/output stores fronted by MCP *servers* — added once there is more than
   one of anything to route between. It is never the byte path for media.

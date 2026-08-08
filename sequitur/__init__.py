@@ -1,9 +1,11 @@
 """Sequitur Studios — a film studio grounded in the grammar of the shot.
 
 Public surface:
-    Studio                          the render/edit client (Gemini Omni Flash)
+    Studio                          the video render/edit client (Gemini Omni Flash)
+    ImageStudio                     the still-image client (Azure Foundry gpt-image)
     Shot                            a structured shot specification
-    build_prompt                    turn a Shot into a well-formed prompt
+    build_prompt                    turn a Shot into a well-formed video prompt
+    build_image_prompt              turn a Shot into a still-image prompt
     ShotSize, CameraAngle,
     SubjectView, ShootingStyle,
     Composition, FocalLength,
@@ -29,13 +31,16 @@ from .grammar import (
     ShotSize,
     SubjectView,
 )
-from .prompt import build_prompt
+from .image import ImageStudio
+from .prompt import build_image_prompt, build_prompt
 from .studio import Studio
 
 __all__ = [
     "Studio",
+    "ImageStudio",
     "Shot",
     "build_prompt",
+    "build_image_prompt",
     "ShotSize",
     "CameraAngle",
     "SubjectView",

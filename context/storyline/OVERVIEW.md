@@ -46,13 +46,22 @@ into a film-literate prompt.
   plans whose buckets = layers, read through `ProductionProvider`/`OutputStore`
   seams; settled **SharePoint via Graph** as the output store. Design only, not yet
   built.
+- [`0006-renderer-seam-and-image-backend.md`](0006-renderer-seam-and-image-backend.md)
+  — generalized "render video with Gemini" into a **renderer seam** and *built* a
+  second, non-Google backend: still images on **Azure Foundry `gpt-image-1`**
+  (`ImageStudio`). Moved both API keys into **Azure Key Vault**, fetched at runtime
+  via `DefaultAzureCredential`; `.env` now holds only non-secret pointers.
 
 ## Current state (keep fresh)
 
-- **Code:** `sequitur/` package (`grammar`, `prompt`, `studio`, `config`) + CLI
-  `scripts/generate.py`. `grammar.py` models Bowen as *orthogonal* layers
-  (framing · lens/focus · lighting · motion). `--dry-run` composes prompts with
-  no API call. No test suite yet.
+- **Code:** `sequitur/` package (`grammar`, `prompt`, `studio`, `image`, `config`) +
+  CLI `scripts/generate.py`. `grammar.py` models Bowen as *orthogonal* layers
+  (framing · lens/focus · lighting · motion). **Two render backends over one grammar:**
+  [`Studio`](../../sequitur/studio.py) = video (Gemini Omni Flash),
+  [`ImageStudio`](../../sequitur/image.py) = still image (Azure Foundry `gpt-image-1`,
+  the first non-Google backend); `--image` on the CLI selects the still path.
+  `--dry-run` composes prompts with no API call. Interpreter is a project `.venv`
+  (Python 3.12). No test suite yet.
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
   `artifacts/INDEX.md`. First source — `grammar of the shot/` — holds the raw book
   (`extraction/` .docx, `source/` .md) and the abridged, session-ready
@@ -61,7 +70,12 @@ into a film-literate prompt.
   section tying it to the code.
 - **Architecture:** `context/architecture.md` maps phase → department (Appendix D)
   → grounding source → code layer. Implemented today: camera/grip/electric in the
-  production phase. Editorial/post is the next layer.
+  production phase, plus the **renderer seam** (video + image backends). Editorial/post
+  is the next layer.
+- **Secrets:** both backend API keys live in **Azure Key Vault**
+  (`kv-sequitur484673472841`), fetched at runtime via `DefaultAzureCredential`; `.env`
+  holds only non-secret pointers (vault name, endpoint, deployment). Never reintroduce
+  plaintext keys.
 - **Published:** public repo at
   <https://github.com/HarryJamesGreenblatt/sequitur_studios> (`main`). Verbatim
   book text (`extraction/`, `source/`) and secrets (`.env`) are gitignored; only
@@ -87,6 +101,10 @@ into a film-literate prompt.
   real production exists.
 - **Acquire *Grammar of the Edit*** — run the standard pipeline (extraction →
   source → reference → INDEX) to ground the post-production/editorial layer.
+- **Wire the reference-keyframe flow** — pass a `gpt-image-1` still into
+  `Studio.render` as a conditioning reference for a shot (the higher-leverage use of
+  the image backend); formalize a `Renderer` protocol once a third backend appears
+  (`sora` on the same Azure account is a natural next video backend).
 - **Sequence layer** — the planned multi-shot planner (180°/30°, matching/reverse,
   eye-line, screen direction). Ch. 5's reference is effectively its spec; build it
   once the editorial grounding lands.

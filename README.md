@@ -6,9 +6,11 @@ the crew **roles** and **departments** of a film production (after Bowen's
 Appendix D), working across the three production **phases**, each grounded in
 proper film-craft domain knowledge instead of vague prompts.
 
-Today the studio implements **one department in one phase** — the **camera
-department during production** — grounded in Christopher J. Bowen's *Grammar of
-the Shot* and encoded as the typed grammar in `sequitur/grammar.py`. Every other
+Today the studio implements the **camera department during production** — grounded
+in Christopher J. Bowen's *Grammar of the Shot* and encoded as the typed grammar in
+`sequitur/grammar.py` — and renders that one grammar through **two swappable
+backends**: **video** (Gemini Omni Flash) and **still image** (Azure Foundry
+`gpt-image-1`, the Production Designer's look-dev deliverable). Every other
 department and phase (pre-production, editorial/post, sound, art, delivery) is
 scaffolded as the intended architecture, ready to grow into. The full map lives
 in [`context/architecture.md`](context/architecture.md).
@@ -19,9 +21,14 @@ in [`context/architecture.md`](context/architecture.md).
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Add your key (never committed)
+# 2. Sign in to Azure (secrets are fetched from Key Vault, not stored on disk)
+az login
+
+# 3. Point the studio at your resources (non-secret config only)
 Copy-Item .env.example .env
-#    then edit .env and paste your Sequitur Studios Gemini key
+#    then edit .env: set KEY_VAULT_NAME and your AZURE_OPENAI_IMAGE_ENDPOINT.
+#    The API keys themselves live in Key Vault (secrets `gemini-api-key`,
+#    `azure-openai-image-key`) and are read at runtime via your az-login identity.
 ```
 
 ## First render
@@ -34,6 +41,17 @@ python scripts/generate.py "an old fisherman mending nets on a weathered dock" `
     --mood "weathered, resolute" --audio "gulls, distant surf, no dialogue" --dry-run
 
 # Drop --dry-run to actually render to output/clip_*.mp4
+```
+
+Render a **still** instead of video (same grammar, image backend) with `--image`:
+
+```powershell
+# Composition, angle, lighting and colour transfer unchanged; motion, speed and
+# sound are dropped. Saves to output/still_*.png.
+python scripts/generate.py "an old fisherman mending nets on a weathered dock" `
+    --size mcu --view three-quarter-front --angle low `
+    --scheme low-key --quality soft --color-temp golden-hour `
+    --mood "weathered, resolute" --image
 ```
 
 From Python / a chat session:
@@ -66,7 +84,7 @@ hands them that role's grounded vocabulary and tooling.
 
 | Phase | Departments (Bowen App. D) | Grounding source | Status |
 |-------|----------------------------|------------------|--------|
-| Pre-production | Producer · Screenwriter · Director · AD · Production Designer | *(story / design — to acquire)* | planned |
+| Pre-production | Producer · Screenwriter · Director · AD · Production Designer | *(story / design — to acquire)* | partial (image look-dev) |
 | **Production** | **Camera · Electric · Grip** (+ Sound) | **Grammar of the Shot** — encoded in `grammar.py` | **implemented** |
 | Post-production | Editor · Colorist · Sound editor | *Grammar of the Edit* — to acquire | next layer |
 | Delivery | Producer (marketing, distribution) | — | out of scope (for now) |
@@ -79,11 +97,12 @@ The full role → department → grounding → code-layer mapping is
 ```
 sequitur/      the studio code
   grammar.py   Bowen's vocabulary as typed, orthogonal enums + the Shot dataclass
-  prompt.py    Shot -> film-literate Omni Flash prompt
-  studio.py    render() / edit() over the Interactions API
-  config.py    .env loading and key handling
+  prompt.py    Shot -> film-literate prompt (build_prompt video / build_image_prompt still)
+  studio.py    video render() / edit() over the Gemini Omni Interactions API
+  image.py     still-image render() over Azure Foundry gpt-image
+  config.py    .env pointers + Key Vault secret fetch (DefaultAzureCredential)
 scripts/
-  generate.py  CLI renderer (supports --dry-run)
+  generate.py  CLI renderer (--image for stills, --dry-run to preview the prompt)
 artifacts/     grounding library — one folder per source (see INDEX.md)
   grammar of the shot/
     reference/ abridged, session-ready references (ships)
@@ -103,13 +122,18 @@ output/        generated clips (gitignored)
 - **More departments** — sound, story/screenwriting, production design, and colour
   are named in the [architecture](context/architecture.md) with no source yet;
   import each into the grounding library as the studio grows.
-- **Stills-first pipeline** — Nano Banana concept frames → image-to-video.
+- **Reference-keyframe pipeline** — the `gpt-image` still backend already lands
+  concept frames; next is feeding a still into `Studio.render` as a conditioning
+  reference so the shot inherits its composition (image-to-video).
 
 ## Model note
 
-Built on `gemini-omni-flash-preview` (the current default video model:
-native multimodal, conversational editing). Veo 3.1 remains available for
-scene-extension and last-frame control when those become useful.
+Video is built on `gemini-omni-flash-preview` (native multimodal, conversational
+editing); Veo 3.1 remains available for scene-extension and last-frame control.
+Stills are rendered on an Azure Foundry `gpt-image-1` deployment — the first
+non-Google backend, proving the grammar is model-agnostic and the renderer is a
+swappable seam. Backend API keys are never stored in plaintext: they live in Azure
+Key Vault and are fetched at runtime via `DefaultAzureCredential`.
 
 ## License
 
