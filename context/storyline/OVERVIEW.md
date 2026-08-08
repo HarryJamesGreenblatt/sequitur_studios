@@ -57,14 +57,13 @@ into a film-literate prompt.
 - **Published:** public repo at
   <https://github.com/HarryJamesGreenblatt/sequitur_studios> (`main`). Verbatim
   book text (`extraction/`, `source/`) and secrets (`.env`) are gitignored; only
-  code, docs, and the transformative `reference/` ship. No LICENSE yet.
+  code, docs, and the transformative `reference/` ship. Licensed **MIT**
+  ([`LICENSE`](../../LICENSE)).
 - **Doc naming convention:** `README.md` (repo root only) · `INDEX.md` (catalogs)
   · `OVERVIEW.md` (guides, like this file).
 
 ## Open threads (keep fresh)
 
-- **License** — none yet (all rights reserved / public-view only). Pick one (e.g.
-  MIT) before inviting reuse or contributions.
 - **Acquire *Grammar of the Edit*** — run the standard pipeline (extraction →
   source → reference → INDEX) to ground the post-production/editorial layer.
 - **Sequence layer** — the planned multi-shot planner (180°/30°, matching/reverse,

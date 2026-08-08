@@ -110,3 +110,11 @@ output/        generated clips (gitignored)
 Built on `gemini-omni-flash-preview` (the current default video model:
 native multimodal, conversational editing). Veo 3.1 remains available for
 scene-extension and last-frame control when those become useful.
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).
+
+The `reference/` materials are original abridgements that summarise concepts from
+Christopher J. Bowen's *Grammar of the Shot* (4th ed.); the book's verbatim text
+is not distributed with this repository.
