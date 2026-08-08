@@ -50,6 +50,8 @@ grow into.
 
 ### Delivery — *ship*
 
+| Department / role | Responsibility | Grounding | Code layer | Status |
+|---|---|---|---|---|
 | Producer | marketing, distribution, exhibition | — | out of scope (for now) | — |
 
 ## Reading the map
