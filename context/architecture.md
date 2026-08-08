@@ -18,7 +18,12 @@ department during production (the DP's grammar of the shot). Everything else is
 scaffolded here as the intended architecture, so subsequent work has a frame to
 grow into.
 
-## The layers, by phase
+This doc maps **two orthogonal dimensions**: the **craft layers** (immediately
+below — *what* the studio composes) and the **runtime model** (further down — *how*
+a production is represented, driven, and stored, decided in
+[`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md)).
+
+## The craft layers, by phase
 
 ### Pre-production — *plan*
 
@@ -68,6 +73,43 @@ grow into.
 - **Sound, story, and production design** are named departments with no source yet
   — placeholders in the grounding library, to be imported as the studio grows.
 
+## Runtime architecture — engine, instances, and stores
+
+The tables above are the **craft dimension**: the layers of *what* the studio can
+compose. Orthogonal to them is the **runtime dimension** — how an actual production
+is represented, driven, and stored. Decided in
+[`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md);
+not yet built.
+
+- **Engine vs. instance.** `sequitur_studios` is a singular, evolving **engine**
+  (`sequitur/` + [`artifacts/`](../artifacts/INDEX.md)). A *production* — a specific
+  music video, short, or ad — is **not a repo fork**; it is external **content** that
+  the engine drives as a **driver client**. One engine every production rides,
+  instead of N frozen scaffolds differing only in seeds.
+- **A production is a plan; its buckets are these same craft layers.** The two
+  dimensions meet here: each department/layer above is a bucket in the production's
+  plan, holding that layer's four **faces** —
+
+  | Face | Shape | Home |
+  |---|---|---|
+  | Seeds | short structured input | in the plan |
+  | History | append-only decisions/state | in the plan |
+  | Guidance / bible | prose corpus (RAG) | doc store, *by reference* |
+  | Output | media | blob store, *by pointer* |
+
+- **Provider seams** keep the platform swappable — the engine reads and writes
+  through two interfaces:
+  - `ProductionProvider` — `layer(name) → { seeds, guidance_refs, history, output_refs }`.
+    First impl: a local folder (folder-per-layer = bucket-per-layer). Later: GitHub
+    Projects v2 or ADO, chosen once a real production exists.
+  - `OutputStore` — `put(production, layer, artifact) → ref`. Output **bytes** live
+    in the **Sequitur Solutions** tenant's **SharePoint, via Microsoft Graph**
+    (least-privilege Entra app; Azure Blob deferred). `ref` is a share URL
+    registered back into the plan.
+- **MCP** is the eventual **control-plane** connector: sequitur as MCP *client*, the
+  production/output stores fronted by MCP *servers* — added once there is more than
+  one of anything to route between. It is never the byte path for media.
+
 ## Open architectural decisions
 
 - **How far to encode roles in code.** This doc encapsulates roles at the *design*
@@ -76,3 +118,9 @@ grow into.
   department (editorial) exists to justify the abstraction.
 - **Acquire *Grammar of the Edit*** — same pipeline as Grammar of the Shot
   (extraction → source → reference → index). This unlocks the post-production layer.
+- **Build the provider seams** — `ProductionProvider` + `OutputStore` with
+  local-folder implementations first (no platform, no auth), then a Graph-backed
+  `OutputStore`. See [`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md).
+- **Production-store platform** — GitHub Projects v2 vs. ADO for the plan; deferred
+  until a first real production exists (the local-folder provider stands in). See
+  [`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md).

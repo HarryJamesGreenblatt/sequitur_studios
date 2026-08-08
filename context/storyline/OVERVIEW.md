@@ -41,6 +41,11 @@ into a film-literate prompt.
 - [`0004-architecture-framing-and-license.md`](0004-architecture-framing-and-license.md)
   — reframed the README/description as a production-studio-in-layers and added the
   MIT license.
+- [`0005-productions-as-instances-and-output-storage.md`](0005-productions-as-instances-and-output-storage.md)
+  — decided productions are external *content instances* (not repo forks) modeled as
+  plans whose buckets = layers, read through `ProductionProvider`/`OutputStore`
+  seams; settled **SharePoint via Graph** as the output store. Design only, not yet
+  built.
 
 ## Current state (keep fresh)
 
@@ -64,9 +69,22 @@ into a film-literate prompt.
   ([`LICENSE`](../../LICENSE)).
 - **Doc naming convention:** `README.md` (repo root only) · `INDEX.md` (catalogs)
   · `OVERVIEW.md` (guides, like this file).
+- **Production model (decided `0005`, not yet built):** the engine is singular and
+  evolves here; a *production* is external **content** (not a repo fork), modeled as
+  a plan whose buckets = layers, each holding seeds/history *in* the plan and
+  guidance/output *by reference*. The engine is a **driver client** reading through
+  a `ProductionProvider` seam and writing via an `OutputStore` seam. Output bytes
+  live in the **Sequitur Solutions** tenant's **SharePoint via Microsoft Graph**
+  (Azure Blob deferred); MCP is the eventual control-plane connector.
 
 ## Open threads (keep fresh)
 
+- **Build the provider seams (`0005`)** — `ProductionProvider` +
+  `OutputStore` interfaces with **local-folder** implementations first (no platform,
+  no auth) to prove the driver-client loop against `output/`; then a Graph-backed
+  `OutputStore` (Entra app, least-privilege, scoped to one SharePoint library).
+  Production-store platform (GitHub Projects v2 vs. ADO) is deferred until a first
+  real production exists.
 - **Acquire *Grammar of the Edit*** — run the standard pipeline (extraction →
   source → reference → INDEX) to ground the post-production/editorial layer.
 - **Sequence layer** — the planned multi-shot planner (180°/30°, matching/reverse,
