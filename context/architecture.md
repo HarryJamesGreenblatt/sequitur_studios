@@ -42,7 +42,7 @@ a production is represented, driven, and stored, decided in
 | Director · DP · Camera Operator · AC | the shot: framing, composition, angle | Grammar of the Shot (Ch. 1–3) | `ShotSize`, `SubjectView`, `CameraAngle`, `ShootingStyle`, `Composition`, `FocalLength`, `DepthOfField` | **implemented** |
 | Gaffer · Electric · Lighting Tech | lighting scheme & quality | Grammar of the Shot (Ch. 4) | `LightQuality`, `LightScheme`, `LightDirection`, `ColorTemperature`, `eye_light` | **implemented** |
 | Key Grip · Grip · Dolly Grip | camera support & movement | Grammar of the Shot (Ch. 6) | `CameraMovement`, `MotionSpeed` | **implemented** |
-| Sound Mixer · Boom Operator | production sound (diegetic capture) | Grammar of the Edit Ch. 3 + **Yewdall** *(to acquire)* | `SpeechRenderer` (Azure Speech) + `SoundMixer` role — planned (`0009`) | partial |
+| Sound Mixer · Boom Operator | production sound (diegetic capture) | Grammar of the Edit Ch. 3 + **Rose, *Producing Great Sound*** *(staged)* | `SpeechRenderer` (Azure Speech) + `SoundMixer` role — planned (`0009`) | partial |
 | Script Supervisor · DIT | continuity notes, data, on-set color | Grammar of the Shot (Ch. 5) | feeds the edit layer | planned |
 
 ### Post-production — *assemble*  ← **the next architectural layer**
@@ -51,7 +51,7 @@ a production is represented, driven, and stored, decided in
 |---|---|---|---|---|
 | Editor | cut, continuity assembly, pacing, transitions | **Grammar of the Edit** (Ch. 1–8, abridged) + Grammar of the Shot Ch. 5 | **sequence / edit layer** (`edit.py` model + `cutter.py` executor) | grounded; code in progress |
 | Colorist / DIT | grade, look | Grammar of the Shot (Ch. 4 color) + *(color source)* | color layer | partial (`ColorTemperature`) |
-| Sound editor / mixer · Composer | sound design, score, mix | Grammar of the Edit Ch. 3 + **Yewdall** *(to acquire)* + **toaster-strudel MCP** (score) | `SpeechRenderer` (VO/ADR) · `Composer`→toaster-strudel · `SoundDesigner`/`ReRecordingMixer` — planned (`0009`) | planned |
+| Sound editor / mixer · Composer | sound design, score, mix | Grammar of the Edit Ch. 3 + **Rose** *(staged)* + **toaster-strudel MCP** (score) | `SpeechRenderer` (VO/ADR) · `Composer`→toaster-strudel · `SoundDesigner`/`ReRecordingMixer` — planned (`0009`) | planned |
 
 ### Delivery — *ship*
 
@@ -75,7 +75,7 @@ a production is represented, driven, and stored, decided in
 - **Sound, story, and production design** are named departments with no dedicated
   source yet — placeholders in the grounding library. **Sound is now designed**
   (`0009`): a multi-phase department grounded by Grammar of the Edit Ch. 3 +
-  **Yewdall** *(to acquire)* + toaster-strudel MCP, with `SpeechRenderer` /
+  **Rose, *Producing Great Sound*** *(staged)* + toaster-strudel MCP, with `SpeechRenderer` /
   `Composer` / `SoundAnalyst` capabilities.
 
 ## Runtime architecture — engine, instances, and stores
@@ -208,5 +208,5 @@ top of this doc stops being a description and becomes objects.
 - **Build the sound layer (`0009`)** — `SpeechRenderer` first (Azure Speech on the
   existing `hjg-m8jtp7uy-eastus2` AIServices account, no new resource; standard/HD
   neural voices are call-and-go, no deployment; CNV deferred). Then formalize the
-  `Renderer` protocol, acquire **Yewdall** to ground the sound roles, and wire
+  `Renderer` protocol, abridge **Rose** *(staged; its own session)* to ground the sound roles, and wire
   **toaster-strudel** as sequitur's first MCP client (`Composer`/`SoundAnalyst`).

@@ -72,8 +72,9 @@ into a film-literate prompt.
   rides the existing `hjg-m8jtp7uy-eastus2` AIServices account, **no new resource**;
   standard/HD voices are call-and-go, **no deployment**), a **`Composer`** →
   **toaster-strudel (MCP)** score renderer, and a non-generative **`SoundAnalyst`**
-  (audio MIR). Grounding is **composite**: Grammar of the Edit Ch. 3 + **Yewdall 4th**
-  *(to acquire)* + toaster-strudel MCP. First **MCP client** case. `SpeechRenderer`
+  (audio MIR). Grounding is **composite**: Grammar of the Edit Ch. 3 + a craft source
+  (Yewdall 4th — since **rejected as too anecdotal**, **Jay Rose** *Producing Great
+  Sound* staged instead) + toaster-strudel MCP. First **MCP client** case. `SpeechRenderer`
   builds first; design only so far.
 
 ## Current state (keep fresh)
@@ -142,7 +143,7 @@ into a film-literate prompt.
 - **Build the sound layer (`0009`)** — `SpeechRenderer` first (Azure Speech on the
   existing `hjg-m8jtp7uy-eastus2` AIServices account, no new resource / no
   deployment; HD neural, Entra-first + KV reuse). Then formalize the `Renderer`
-  protocol (3rd backend), acquire **Yewdall 4th** to ground the sound roles, and wire
+  protocol (3rd backend), abridge **Jay Rose** *(staged; its own session)* to ground the sound roles, and wire
   **toaster-strudel** as sequitur's first MCP client (`Composer`/`SoundAnalyst`).
 - **Reconciliation sweep (standing, `0007`)** — the edit references' "Studio
   application" tie-ins are provisional leads at the not-yet-built post layer; sweep
@@ -160,6 +161,6 @@ into a film-literate prompt.
   once the editorial grounding lands.
 - **Broader discipline library** — sound, story/screenwriting, production design,
   color, producing are named departments in `context/architecture.md`. **Sound is
-  now designed** (`0009`, source **Yewdall 4th** to acquire); story/design/color
-  still have no source.
+  now designed** (`0009`, source **Jay Rose** *Producing Great Sound* staged; abridgement
+  pending its own session); story/design/color still have no source.
 - **No test suite yet** — a small `build_prompt` smoke test would guard the grammar.
