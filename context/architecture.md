@@ -29,7 +29,7 @@ a production is represented, driven, and stored, decided in
 
 | Department / role (App. D) | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
-| Producer | financing, scheduling, logistics | — | project/orchestration | planned |
+| Producer | financing, scheduling, logistics | — | **HITL — the human seat** (works the Production/PM board) | decided (`0008`) |
 | Screenwriter | script, structure | *(story source — to acquire)* | `Script` / `Scene` model | planned |
 | Director | interpret script → shot selection | Grammar of the Shot (Ch. 1) | shot planning | partial (`Shot`) |
 | Production Designer | sets, costume, color concepts | *(design/color source)* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
@@ -49,7 +49,7 @@ a production is represented, driven, and stored, decided in
 
 | Department / role | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
-| Editor | cut, continuity assembly, pacing, transitions | **Grammar of the Edit** (Ch. 1–8, abridged) + Grammar of the Shot Ch. 5 | **sequence / edit layer** (`movie.py`, planned) | grounded; code planned |
+| Editor | cut, continuity assembly, pacing, transitions | **Grammar of the Edit** (Ch. 1–8, abridged) + Grammar of the Shot Ch. 5 | **sequence / edit layer** (`edit.py` model + `cutter.py` executor) | grounded; code in progress |
 | Colorist / DIT | grade, look | Grammar of the Shot (Ch. 4 color) + *(color source)* | color layer | partial (`ColorTemperature`) |
 | Sound editor / mixer | sound design, mix | *(sound source — to acquire)* | sound layer | planned |
 
@@ -70,8 +70,8 @@ a production is represented, driven, and stored, decided in
   (which assembles multiple `Shot`s honouring 180°/30°, matching/reverse, eye-line,
   and screen direction; see
   [Ch. 5](../artifacts/grammar%20of%20the%20shot/reference/ch05-shooting-for-editing.md))
-  can now be built on real grounding. The post-layer code (`movie.py`) is designed
-  in [`storyline/0007`](storyline/0007-grounding-the-edit-layer.md) but not yet built.
+  can now be built on real grounding. The post-layer model (`edit.py`) + its MoviePy
+  executor (`cutter.py`) are scaffolded; the cut-decision engine is designed in [`storyline/0007`](storyline/0007-grounding-the-edit-layer.md) but not yet built.
 - **Sound, story, and production design** are named departments with no source yet
   — placeholders in the grounding library, to be imported as the studio grows.
 
@@ -133,14 +133,59 @@ not yet built.
   production/output stores fronted by MCP *servers* — added once there is more than
   one of anything to route between. It is never the byte path for media.
 
+## The crew engine — roles as behavior, the Production as container
+
+Decided in [`storyline/0008`](storyline/0008-the-crew-engine.md); makes the
+department/role model *executable* rather than merely documentary. The table at the
+top of this doc stops being a description and becomes objects.
+
+- **Roles are classes; grammar stays enums.** Enums are the closed *vocabulary*
+  (`ShotSize`, `LightScheme`, `Transition`). A **`Role`** (abstract base + concrete
+  subclasses — `Cinematographer`, `Gaffer`, `KeyGrip`, `Editor`, …) is the *chooser*
+  that **owns and wields a slice** of that vocabulary. `grammar.py`/`edit.py` enums
+  get re-seated under the role that owns them — `grammar.py` today is a *flattened
+  crew* (camera + electric + grip fused into flat enums); this un-flattens it.
+- **Judgment is a swappable strategy (the A→B seam).** A role delegates reasoning to
+  a **`Judgment`**: `HeuristicJudgment` (**A**, deterministic) · `PersonaJudgment`
+  (**B**, an LLM persona over the role's *scoped* grounding) · `HumanJudgment`
+  (**HITL**). Same `propose()` signature, so any one role can be upgraded — or hand-
+  driven — individually.
+- **Three authority tiers.**
+  - **Producer = HITL (the user)** — owns *what/whether* (brief, greenlight,
+    approval). This is the code analogue the Producer row lacked: **the human seat.**
+  - **Director = agent** — owns *how*; a **`Role`** that reconciles the crew (agency
+    lives in a component, never the container).
+  - **Crew = role-components** — each decides its own concern in isolation.
+- **The container is the Production, not a new `Unit`.** The dumb container is the
+  `0005` **Production** (a plan whose buckets = department layers). It *encapsulates
+  the crew*. This is Nystrom's Component Pattern in its data-oriented (ECS) form:
+  **Entity = Production** (dumb per-instance data = the buckets), **behavior = the
+  engine's Roles** (singular), **dumb dispatch = the engine** (driver-client). No
+  film logic in the container or the dispatcher.
+- **Behavior vs. state** (maps onto `0005`'s engine-vs-instance): role *behavior*
+  lives in the singular **engine**; role *state* lives in the per-instance
+  **Production** bucket, bound at runtime via the `ProductionProvider` seam.
+- **The Production is the PM board — the keystone.** Its buckets are the
+  `ProductionProvider`'s per-department items, so the Production *is* the
+  Planner/ADO/GH-Projects board. The **Producer (human) works the board**; the
+  **agent crew executes against its buckets**. Project state lives in the PM tool,
+  as intended.
+- **Phase = which crew is on call**, not a container. A Production moves through
+  **plan → shoot → assemble** (the phase verbs above); one engine, one Production,
+  phase-activated crews.
+- **The renderer plane is unchanged.** `Studio`/`ImageStudio`/`Cutter` remain the
+  *execution* plane; roles are the *decision* plane.
+
 ## Open architectural decisions
 
-- **How far to encode roles in code.** This doc encapsulates roles at the *design*
-  level. A future step could make roles first-class (e.g. role-scoped prompt
-  personas, or a `department`/`role` module) — worth doing only once a second
-  department (editorial) exists to justify the abstraction.
-- **Build the post layer (`movie.py`)** — *Grammar of the Edit* is now grounded
-  (`0007`); build the cut-decision engine (Ch. 5's six motivators) over a
+- **How far to encode roles in code — DECIDED (`0008`).** Roles are first-class
+  behavior (`Role` + `Judgment`), the **Producer is the HITL seat**, the **Director**
+  is the reconciling agent role, and the **Production (PM board)** is the container.
+  See the crew-engine section above. Next: build phase A (heuristic roles over a
+  local-folder Production), re-seating `grammar.py`/`edit.py` under their roles.
+- **Build the post layer (`edit.py`)** — *Grammar of the Edit* is now grounded
+  (`0007`); `edit.py` holds the EDL/grammar model and `cutter.py` the MoviePy
+  executor. Build out the cut-decision engine (Ch. 5's six motivators) over a
   shots→scenes→acts model, cuts/fades first (no handles) then handle padding for
   dissolves. Then run the **reconciliation sweep** to align the edit references'
   "Studio application" leads to the real code.

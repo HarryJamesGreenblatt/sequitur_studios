@@ -58,28 +58,42 @@ into a film-literate prompt.
   shots→scenes→acts hierarchy, the **cut-to-cue** engine, the diegetic/non-diegetic
   **production-dialogue vs post-soundtrack** split, and the **handles** constraint on
   fixed-length shots. Grounding done; post-layer code not yet built.
+- [`0008-the-crew-engine.md`](0008-the-crew-engine.md)
+  — decided **how the department/role model becomes code**: a **crew engine** —
+  roles as classes (`Role` + swappable `Judgment`: heuristic **A** / persona **B** /
+  human), three authority tiers (**Producer = HITL**, **Director = agent role**,
+  **Crew = components**), and the **`0005` Production (the PM board) as the dumb
+  container** (Component/ECS shape: entity = Production data, behavior = engine's
+  roles). Retires the `movie.py`→`edit.py` model / `cutter.py` executor naming
+  confusion. Design; phase A not yet built.
 
 ## Current state (keep fresh)
 
-- **Code:** `sequitur/` package (`grammar`, `prompt`, `studio`, `image`, `config`) +
-  CLI `scripts/generate.py`. `grammar.py` models Bowen as *orthogonal* layers
-  (framing · lens/focus · lighting · motion). **Two render backends over one grammar:**
-  [`Studio`](../../sequitur/studio.py) = video (Gemini Omni Flash),
+- **Code:** `sequitur/` package (`grammar`, `prompt`, `studio`, `image`, `edit`,
+  `cutter`, `config`) + CLI `scripts/generate.py`. `grammar.py` models Bowen as
+  *orthogonal* layers (framing · lens/focus · lighting · motion) — today a *flattened
+  crew* to be re-seated under roles (`0008`). **Two render backends over one
+  grammar:** [`Studio`](../../sequitur/studio.py) = video (Gemini Omni Flash),
   [`ImageStudio`](../../sequitur/image.py) = still image (Azure Foundry `gpt-image-1`,
-  the first non-Google backend); `--image` on the CLI selects the still path.
-  `--dry-run` composes prompts with no API call. Interpreter is a project `.venv`
-  (Python 3.12). No test suite yet.
+  the first non-Google backend); `--image` on the CLI selects the still path. The
+  post layer is [`edit.py`](../../sequitur/edit.py) (EDL/grammar model) +
+  [`cutter.py`](../../sequitur/cutter.py) (MoviePy executor) — note `movie.py` was
+  renamed to `edit.py` to avoid the `moviepy` collision. `--dry-run` composes prompts
+  with no API call. Interpreter is a project `.venv` (Python 3.12). No test suite yet.
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
   `artifacts/INDEX.md`. **Two full sources** now: *Grammar of the Shot* (production/
   cinematography, encoded in `grammar.py`) and *Grammar of the Edit* (post/editorial,
-  8 abridged chapters + INDEX, grounding the not-yet-built `movie.py`). Each source
+  8 abridged chapters + INDEX, grounding [`edit.py`](../../sequitur/edit.py)). Each source
   holds the raw book (`extraction/` .docx, `source/` .md — gitignored) and the
   abridged, session-ready `reference/` with a per-source `INDEX.md` (chapter → code
   map). Each abridged chapter ends with a "Studio application" section.
 - **Architecture:** `context/architecture.md` maps phase → department (Appendix D)
   → grounding source → code layer. Implemented today: camera/grip/electric in the
-  production phase, plus the **renderer seam** (video + image backends). Editorial/post
-  is the next layer.
+  production phase, plus the **renderer seam** (video + image backends). **Direction
+  (decided `0008`, unbuilt):** a **crew engine** makes roles first-class — `Role` +
+  swappable `Judgment` (heuristic A / persona B / human), **Producer = HITL**,
+  **Director = agent role**, and the **Production (PM board) as the dumb container**.
+  Editorial/post is the next layer to build out.
 - **Secrets:** both backend API keys live in **Azure Key Vault**
   (`kv-sequitur484673472841`), fetched at runtime via `DefaultAzureCredential`; `.env`
   holds only non-secret pointers (vault name, endpoint, deployment). Never reintroduce
@@ -110,12 +124,19 @@ into a film-literate prompt.
 - **Acquire *Grammar of the Edit*** — **DONE** (`0007`): 8 chapters abridged into
   `artifacts/grammar of the edit/reference/`. Next is building the post layer it
   grounds.
+- **Build the crew engine — phase A (`0008`)** — `Role` + `Judgment` +
+  `Contribution` and a dumb engine over a **local-folder Production** (`0005`
+  provider #1), re-seating `grammar.py`'s enums under
+  `Cinematographer`/`Gaffer`/`KeyGrip` and `edit.py`'s under
+  `Editor`/`Colorist`/`SoundEditor`, with a `Director` reconciler. Heuristic
+  judgment only (no LLM); persona (**B**) and PM-board wiring come later.
 - **Reconciliation sweep (standing, `0007`)** — the edit references' "Studio
-  application" tie-ins are provisional leads at a not-yet-built `movie.py`; sweep all
-  8 to align them once that analogue is designed.
-- **Build `movie.py` (the post layer)** — the cut-decision engine (Ch. 5 six
-  motivators) over a shots→scenes→acts model; cuts/fades first (no handles), then
-  handle padding for dissolves; time-align coverage for multicam-style cutting.
+  application" tie-ins are provisional leads at the not-yet-built post layer; sweep
+  all 8 to align them once the roles/`edit.py` code settles.
+- **Build the post layer** — the cut-decision engine (Ch. 5 six motivators) over a
+  shots→scenes→acts model in [`edit.py`](../../sequitur/edit.py); cuts/fades first (no
+  handles), then handle padding for dissolves; time-align coverage for multicam-style
+  cutting. Execution via [`cutter.py`](../../sequitur/cutter.py) (MoviePy).
 - **Wire the reference-keyframe flow** — pass a `gpt-image-1` still into
   `Studio.render` as a conditioning reference for a shot (the higher-leverage use of
   the image backend); formalize a `Renderer` protocol once a third backend appears
