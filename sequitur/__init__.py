@@ -13,6 +13,11 @@ Public surface:
     MotionSpeed, LightQuality,
     LightScheme, LightDirection,
     ColorTemperature                the grammar vocabulary (orthogonal layers)
+    Transition, EditReason,
+    EditCategory                    the grammar of the edit (post layer)
+    Clip, Edit, Beat, Scene,
+    Act, Sequence, TimelineEntry    the shots -> scenes -> acts assembly model
+    Cutter                          executes an edit Sequence into a film (MoviePy)
 """
 
 from .grammar import (
@@ -32,6 +37,19 @@ from .grammar import (
     SubjectView,
 )
 from .image import ImageStudio
+from .edit import (
+    Act,
+    Beat,
+    Clip,
+    Edit,
+    EditCategory,
+    EditReason,
+    Scene,
+    Sequence,
+    TimelineEntry,
+    Transition,
+)
+from .cutter import Cutter
 from .prompt import build_image_prompt, build_prompt
 from .studio import Studio
 
@@ -54,4 +72,15 @@ __all__ = [
     "LightScheme",
     "LightDirection",
     "ColorTemperature",
+    "Transition",
+    "EditReason",
+    "EditCategory",
+    "Clip",
+    "Edit",
+    "Beat",
+    "Scene",
+    "Act",
+    "Sequence",
+    "TimelineEntry",
+    "Cutter",
 ]
