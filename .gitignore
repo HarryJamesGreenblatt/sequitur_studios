@@ -1,0 +1,32 @@
+# Secrets — never commit
+.env
+*.key
+
+# Copyright — verbatim source text (personal grounding only; never publish).
+# Only the transformative reference/ abridgements ship.
+artifacts/**/extraction/
+artifacts/**/source/
+
+# Generated media
+output/
+*.mp4
+*.mov
+*.png
+*.jpg
+*.jpeg
+!docs/**/*.png
+!docs/**/*.jpg
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
