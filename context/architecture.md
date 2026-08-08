@@ -49,7 +49,7 @@ a production is represented, driven, and stored, decided in
 
 | Department / role | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
-| Editor | cut, continuity assembly, pacing, transitions | **Grammar of the Edit** (to acquire) + Grammar of the Shot Ch. 5 | **sequence / edit layer** | planned |
+| Editor | cut, continuity assembly, pacing, transitions | **Grammar of the Edit** (Ch. 1–8, abridged) + Grammar of the Shot Ch. 5 | **sequence / edit layer** (`movie.py`, planned) | grounded; code planned |
 | Colorist / DIT | grade, look | Grammar of the Shot (Ch. 4 color) + *(color source)* | color layer | partial (`ColorTemperature`) |
 | Sound editor / mixer | sound design, mix | *(sound source — to acquire)* | sound layer | planned |
 
@@ -64,12 +64,14 @@ a production is represented, driven, and stored, decided in
 - **Grammar of the Shot already spans the production phase** — camera, grip, and
   electric departments are encoded in `grammar.py`. That is the studio's current
   reach: it can compose a single, fully-grounded **shot**.
-- **The clear next layer is editorial/post.** It needs its own grounding — Bowen's
-  companion **Grammar of the Edit** — before the *sequence* layer (which assembles
-  multiple `Shot`s honouring 180°/30°, matching/reverse, eye-line, and screen
-  direction; see
+- **The next layer is editorial/post — now grounded.** Bowen's companion
+  **Grammar of the Edit** has been imported and abridged (8 chapters +
+  [INDEX](../artifacts/grammar%20of%20the%20edit/INDEX.md)), so the *sequence* layer
+  (which assembles multiple `Shot`s honouring 180°/30°, matching/reverse, eye-line,
+  and screen direction; see
   [Ch. 5](../artifacts/grammar%20of%20the%20shot/reference/ch05-shooting-for-editing.md))
-  can be built well.
+  can now be built on real grounding. The post-layer code (`movie.py`) is designed
+  in [`storyline/0007`](storyline/0007-grounding-the-edit-layer.md) but not yet built.
 - **Sound, story, and production design** are named departments with no source yet
   — placeholders in the grounding library, to be imported as the studio grows.
 
@@ -137,8 +139,11 @@ not yet built.
   level. A future step could make roles first-class (e.g. role-scoped prompt
   personas, or a `department`/`role` module) — worth doing only once a second
   department (editorial) exists to justify the abstraction.
-- **Acquire *Grammar of the Edit*** — same pipeline as Grammar of the Shot
-  (extraction → source → reference → index). This unlocks the post-production layer.
+- **Build the post layer (`movie.py`)** — *Grammar of the Edit* is now grounded
+  (`0007`); build the cut-decision engine (Ch. 5's six motivators) over a
+  shots→scenes→acts model, cuts/fades first (no handles) then handle padding for
+  dissolves. Then run the **reconciliation sweep** to align the edit references'
+  "Studio application" leads to the real code.
 - **Build the provider seams** — `ProductionProvider` + `OutputStore` with
   local-folder implementations first (no platform, no auth), then a Graph-backed
   `OutputStore`. See [`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md).

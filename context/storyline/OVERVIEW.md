@@ -51,6 +51,13 @@ into a film-literate prompt.
   second, non-Google backend: still images on **Azure Foundry `gpt-image-1`**
   (`ImageStudio`). Moved both API keys into **Azure Key Vault**, fetched at runtime
   via `DefaultAzureCredential`; `.env` now holds only non-secret pointers.
+- [`0007-grounding-the-edit-layer.md`](0007-grounding-the-edit-layer.md)
+  — imported & abridged Bowen's **Grammar of the Edit** (8 chapters) as the second
+  full source, grounding the **post/editorial** layer. Because there's no code to
+  retrofit, used the grounding to **design the post architecture**: `movie.py`, the
+  shots→scenes→acts hierarchy, the **cut-to-cue** engine, the diegetic/non-diegetic
+  **production-dialogue vs post-soundtrack** split, and the **handles** constraint on
+  fixed-length shots. Grounding done; post-layer code not yet built.
 
 ## Current state (keep fresh)
 
@@ -63,11 +70,12 @@ into a film-literate prompt.
   `--dry-run` composes prompts with no API call. Interpreter is a project `.venv`
   (Python 3.12). No test suite yet.
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
-  `artifacts/INDEX.md`. First source — `grammar of the shot/` — holds the raw book
-  (`extraction/` .docx, `source/` .md) and the abridged, session-ready
-  `reference/` (6 chapters + 3 appendices), with a per-source `INDEX.md`
-  (chapter → code map). Each abridged chapter ends with a "Studio application"
-  section tying it to the code.
+  `artifacts/INDEX.md`. **Two full sources** now: *Grammar of the Shot* (production/
+  cinematography, encoded in `grammar.py`) and *Grammar of the Edit* (post/editorial,
+  8 abridged chapters + INDEX, grounding the not-yet-built `movie.py`). Each source
+  holds the raw book (`extraction/` .docx, `source/` .md — gitignored) and the
+  abridged, session-ready `reference/` with a per-source `INDEX.md` (chapter → code
+  map). Each abridged chapter ends with a "Studio application" section.
 - **Architecture:** `context/architecture.md` maps phase → department (Appendix D)
   → grounding source → code layer. Implemented today: camera/grip/electric in the
   production phase, plus the **renderer seam** (video + image backends). Editorial/post
@@ -99,8 +107,15 @@ into a film-literate prompt.
   `OutputStore` (Entra app, least-privilege, scoped to one SharePoint library).
   Production-store platform (GitHub Projects v2 vs. ADO) is deferred until a first
   real production exists.
-- **Acquire *Grammar of the Edit*** — run the standard pipeline (extraction →
-  source → reference → INDEX) to ground the post-production/editorial layer.
+- **Acquire *Grammar of the Edit*** — **DONE** (`0007`): 8 chapters abridged into
+  `artifacts/grammar of the edit/reference/`. Next is building the post layer it
+  grounds.
+- **Reconciliation sweep (standing, `0007`)** — the edit references' "Studio
+  application" tie-ins are provisional leads at a not-yet-built `movie.py`; sweep all
+  8 to align them once that analogue is designed.
+- **Build `movie.py` (the post layer)** — the cut-decision engine (Ch. 5 six
+  motivators) over a shots→scenes→acts model; cuts/fades first (no handles), then
+  handle padding for dissolves; time-align coverage for multicam-style cutting.
 - **Wire the reference-keyframe flow** — pass a `gpt-image-1` still into
   `Studio.render` as a conditioning reference for a shot (the higher-leverage use of
   the image backend); formalize a `Renderer` protocol once a third backend appears
