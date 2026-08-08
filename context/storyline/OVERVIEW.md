@@ -38,6 +38,9 @@ into a film-literate prompt.
   `OVERVIEW`).
 - [`0003-published.md`](0003-published.md) — abridged the verbatim appendices,
   gitignored the raw book text, and published the public repo.
+- [`0004-architecture-framing-and-license.md`](0004-architecture-framing-and-license.md)
+  — reframed the README/description as a production-studio-in-layers and added the
+  MIT license.
 
 ## Current state (keep fresh)
 
