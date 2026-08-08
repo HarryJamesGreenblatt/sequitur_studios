@@ -16,7 +16,7 @@ workflow layer and the crew roles it supports).
 | **Grammar of the Shot** — Bowen, 4th ed. | Production — cinematography: framing, composition, lens, lighting, shooting-for-the-edit | Imported · abridged · **encoded** in `sequitur/grammar.py` | [`grammar of the shot/`](grammar%20of%20the%20shot/INDEX.md) |
 | **Grammar of the Edit** — Bowen, 4th ed. | Post-production — editing, continuity assembly, pacing, transitions | Imported · **abridged** (8 ch); post layer `movie.py` planned | [`grammar of the edit/`](grammar%20of%20the%20edit/INDEX.md) |
 | Story / screenwriting | Development — script, structure | Planned | — |
-| Sound design | Production & post — sound department | Planned | — |
+| **Sound** — Yewdall, *Practical Art of Motion Picture Sound* (4th) | Production & post — sound department (multi-phase) | **Designed** (`0009`); Yewdall **to acquire**. Composite grounding: Grammar of the Edit Ch. 3 + toaster-strudel MCP (score) | — |
 | Production design / color | Art department — sets, costume, grade | Planned | — |
 
 ## Anatomy of a source folder (the convention)

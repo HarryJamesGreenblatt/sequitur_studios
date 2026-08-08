@@ -66,6 +66,15 @@ into a film-literate prompt.
   container** (Component/ECS shape: entity = Production data, behavior = engine's
   roles). Retires the `movie.py`→`edit.py` model / `cutter.py` executor naming
   confusion. Design; phase A not yet built.
+- [`0009-the-sound-layer.md`](0009-the-sound-layer.md)
+  — designed the **sound** layer: a **multi-phase department** (shoot + assemble,
+  organized by diegetic/non-diegetic), with a **`SpeechRenderer`** (Azure Speech —
+  rides the existing `hjg-m8jtp7uy-eastus2` AIServices account, **no new resource**;
+  standard/HD voices are call-and-go, **no deployment**), a **`Composer`** →
+  **toaster-strudel (MCP)** score renderer, and a non-generative **`SoundAnalyst`**
+  (audio MIR). Grounding is **composite**: Grammar of the Edit Ch. 3 + **Yewdall 4th**
+  *(to acquire)* + toaster-strudel MCP. First **MCP client** case. `SpeechRenderer`
+  builds first; design only so far.
 
 ## Current state (keep fresh)
 
@@ -130,6 +139,11 @@ into a film-literate prompt.
   `Cinematographer`/`Gaffer`/`KeyGrip` and `edit.py`'s under
   `Editor`/`Colorist`/`SoundEditor`, with a `Director` reconciler. Heuristic
   judgment only (no LLM); persona (**B**) and PM-board wiring come later.
+- **Build the sound layer (`0009`)** — `SpeechRenderer` first (Azure Speech on the
+  existing `hjg-m8jtp7uy-eastus2` AIServices account, no new resource / no
+  deployment; HD neural, Entra-first + KV reuse). Then formalize the `Renderer`
+  protocol (3rd backend), acquire **Yewdall 4th** to ground the sound roles, and wire
+  **toaster-strudel** as sequitur's first MCP client (`Composer`/`SoundAnalyst`).
 - **Reconciliation sweep (standing, `0007`)** — the edit references' "Studio
   application" tie-ins are provisional leads at the not-yet-built post layer; sweep
   all 8 to align them once the roles/`edit.py` code settles.
@@ -145,6 +159,7 @@ into a film-literate prompt.
   eye-line, screen direction). Ch. 5's reference is effectively its spec; build it
   once the editorial grounding lands.
 - **Broader discipline library** — sound, story/screenwriting, production design,
-  color, producing are named departments in `context/architecture.md` with no
-  source yet.
+  color, producing are named departments in `context/architecture.md`. **Sound is
+  now designed** (`0009`, source **Yewdall 4th** to acquire); story/design/color
+  still have no source.
 - **No test suite yet** — a small `build_prompt` smoke test would guard the grammar.
