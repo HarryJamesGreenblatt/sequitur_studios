@@ -16,7 +16,7 @@ workflow layer and the crew roles it supports).
 | **Grammar of the Shot** — Bowen, 4th ed. | Production — cinematography: framing, composition, lens, lighting, shooting-for-the-edit | Imported · abridged · **encoded** in `sequitur/grammar.py` | [`grammar of the shot/`](grammar%20of%20the%20shot/INDEX.md) |
 | **Grammar of the Edit** — Bowen, 4th ed. | Post-production — editing, continuity assembly, pacing, transitions | Imported · **abridged** (8 ch); post layer `movie.py` planned | [`grammar of the edit/`](grammar%20of%20the%20edit/INDEX.md) |
 | Story / screenwriting | Development — script, structure | Planned | — |
-| **Sound** — Jay Rose, *Producing Great Sound for Film and Video* | Production & post — sound department (multi-phase) | **Designed** (`0009`); source **staged** in `extraction/`, abridgement pending (its own session, 18 ch). Composite grounding: Grammar of the Edit Ch. 3 + toaster-strudel MCP (score). *(Yewdall 4th evaluated & rejected — too anecdotal.)* | [`producing great sound for film and video/`](producing%20great%20sound%20for%20film%20and%20video/) |
+| **Sound** — Jay Rose, *Producing Great Sound for Film and Video* (4th ed.) | Production & post — sound department (multi-phase) | Imported · **abridged** (18 ch); sound layer **designed** (`0009`), not built (`SpeechRenderer` first). Composite grounding: Grammar of the Edit Ch. 3 + toaster-strudel MCP (score). *(Yewdall 4th evaluated & rejected — too anecdotal.)* | [`producing great sound for film and video/`](producing%20great%20sound%20for%20film%20and%20video/INDEX.md) |
 | Production design / color | Art department — sets, costume, grade | Planned | — |
 
 ## Anatomy of a source folder (the convention)

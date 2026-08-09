@@ -76,6 +76,13 @@ into a film-literate prompt.
   (Yewdall 4th — since **rejected as too anecdotal**, **Jay Rose** *Producing Great
   Sound* staged instead) + toaster-strudel MCP. First **MCP client** case. `SpeechRenderer`
   builds first; design only so far.
+- [`0010-unpacking-the-rose.md`](0010-unpacking-the-rose.md)
+  — **abridged all 18 chapters** of Jay Rose's *Producing Great Sound for Film and
+  Video* (4th ed.) into `reference/` + wrote the source `INDEX.md` (chapter → sound-
+  role map), completing the craft source staged in `0009`. Recovered a corrupt
+  `CH-06.docx` (misnamed OLE2 binary, re-supplied) and **normalized the source/
+  reference filenames** to the `chNN-<slug>.md` scheme the two Bowen books use.
+  Grounding only; no sound code built.
 
 ## Current state (keep fresh)
 
@@ -91,12 +98,15 @@ into a film-literate prompt.
   renamed to `edit.py` to avoid the `moviepy` collision. `--dry-run` composes prompts
   with no API call. Interpreter is a project `.venv` (Python 3.12). No test suite yet.
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
-  `artifacts/INDEX.md`. **Two full sources** now: *Grammar of the Shot* (production/
-  cinematography, encoded in `grammar.py`) and *Grammar of the Edit* (post/editorial,
-  8 abridged chapters + INDEX, grounding [`edit.py`](../../sequitur/edit.py)). Each source
-  holds the raw book (`extraction/` .docx, `source/` .md — gitignored) and the
-  abridged, session-ready `reference/` with a per-source `INDEX.md` (chapter → code
-  map). Each abridged chapter ends with a "Studio application" section.
+  `artifacts/INDEX.md`. **Three full sources** now: *Grammar of the Shot* (production/
+  cinematography, encoded in `grammar.py`), *Grammar of the Edit* (post/editorial,
+  8 abridged chapters + INDEX, grounding [`edit.py`](../../sequitur/edit.py)), and
+  *Producing Great Sound for Film and Video* — Jay Rose, 4th ed. (sound department,
+  **18 abridged chapters + INDEX**, grounding the designed-but-unbuilt sound layer
+  `0009`). Each source holds the raw book (`extraction/` .docx, `source/` .md —
+  gitignored) and the abridged, session-ready `reference/` with a per-source
+  `INDEX.md` (chapter → code map). Each abridged chapter ends with a "Studio
+  application" section. **Naming is uniform** across all three: `chNN-<slug>.md`.
 - **Architecture:** `context/architecture.md` maps phase → department (Appendix D)
   → grounding source → code layer. Implemented today: camera/grip/electric in the
   production phase, plus the **renderer seam** (video + image backends). **Direction
@@ -143,8 +153,13 @@ into a film-literate prompt.
 - **Build the sound layer (`0009`)** — `SpeechRenderer` first (Azure Speech on the
   existing `hjg-m8jtp7uy-eastus2` AIServices account, no new resource / no
   deployment; HD neural, Entra-first + KV reuse). Then formalize the `Renderer`
-  protocol (3rd backend), abridge **Jay Rose** *(staged; its own session)* to ground the sound roles, and wire
-  **toaster-strudel** as sequitur's first MCP client (`Composer`/`SoundAnalyst`).
+  protocol (3rd backend), and wire **toaster-strudel** as sequitur's first MCP
+  client (`Composer`/`SoundAnalyst`). Grounding source **Jay Rose** is now fully
+  **abridged** (18 ch + INDEX, `0010`) — ready to extract per-role.
+- **Reconciliation sweep (sound, `0010`)** — the 18 Rose references' "Studio
+  application" tie-ins are provisional leads at the not-yet-built sound layer
+  (roles, `SpeechRenderer`); sweep them once the code settles, same as the edit
+  sweep below.
 - **Reconciliation sweep (standing, `0007`)** — the edit references' "Studio
   application" tie-ins are provisional leads at the not-yet-built post layer; sweep
   all 8 to align them once the roles/`edit.py` code settles.
