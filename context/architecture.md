@@ -29,12 +29,12 @@ a production is represented, driven, and stored, decided in
 
 | Department / role (App. D) | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
-| Producer | financing, scheduling, logistics | **Directing** Ch. 25 (line producing) · Ch. 37 (delivery) *(staged, `0015`)* | **HITL — the human seat** (works the Production/PM board) | decided (`0008`) |
-| Screenwriter | script, structure | **The Screenwriter's Taxonomy** (genre/voice/pathway/POV) *([abridged, 8 ch, `0016`](../artifacts/the%20screenwriter's%20taxonomy/INDEX.md))* + **Directing** Ch. 3–8 *(staged, `0015`)* | `Screenwriter` role · typed genre vocabulary (`crew/screenwriting.py`) | grounded; role planned |
-| Director | interpret script → shot selection | **Directing** Ch. 7–11, 17 (aesthetics, POV, style) *(staged, `0015`)* + Grammar of the Shot Ch. 1 | `Director` role (crew reconciler, `0014`) | partial (`Director`) |
-| Casting · Actors | casting, performance | **Directing** Ch. 18–20 *(staged, `0015`)* — **a new dimension** the architecture did not model | *(unmodeled — future role)* | new (`0015`) |
-| Production Designer | sets, costume, color concepts | **Directing** Ch. 23 (visual design) *(staged, `0015`)* + *(dedicated design/color source still open)* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
-| Assistant Director | schedule, coverage, shot list | **Directing** Ch. 24–26 *(staged, `0015`)* + Grammar of the Shot Ch. 1 | shot list / coverage | planned |
+| Producer | financing, scheduling, logistics | **Directing** Ch. 25 (line producing) · Ch. 37 (delivery) *(abridged, `0017`)* | **HITL — the human seat** (works the Production/PM board) | decided (`0008`) |
+| Screenwriter | script, structure | **The Screenwriter's Taxonomy** (genre/voice/pathway/POV) *([abridged, 8 ch, `0016`](../artifacts/the%20screenwriter's%20taxonomy/INDEX.md))* + **Directing** Ch. 3–8 *(abridged, `0017`)* | `Screenwriter` role · typed genre vocabulary (`crew/screenwriting.py`) | grounded; role planned |
+| Director | interpret script → shot selection | **Directing** Ch. 7–11, 17 (aesthetics, POV, style) *(abridged, `0017`)* + Grammar of the Shot Ch. 1 | `Director` role (crew reconciler, `0014`) | partial (`Director`) |
+| Casting · Actors | casting, performance | **Directing** Ch. 18–20 *(abridged, `0017`)* — **a new dimension** the architecture did not model | *(unmodeled — future role)* | new (`0015`) |
+| Production Designer | sets, costume, color concepts | **Directing** Ch. 23 (visual design) *(abridged, `0017`)* + *(dedicated design/color source still open)* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
+| Assistant Director | schedule, coverage, shot list | **Directing** Ch. 24–26 *(abridged, `0017`)* + Grammar of the Shot Ch. 1 | shot list / coverage | planned |
 
 ### Production — *shoot*  ← **implemented today**
 
@@ -50,15 +50,15 @@ a production is represented, driven, and stored, decided in
 
 | Department / role | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
-| Editor | cut, continuity assembly, pacing, transitions | **Grammar of the Edit** (Ch. 1–8, abridged) + Grammar of the Shot Ch. 5 | **sequence / edit layer** (`edit.py` model + `cutter.py` executor) | grounded; code in progress |
-| Colorist / DIT | grade, look | Grammar of the Shot (Ch. 4 color) + *(color source)* | color layer | partial (`ColorTemperature`) |
-| Sound editor / mixer · Composer | sound design, score, mix | Grammar of the Edit Ch. 3 + **Rose** *(abridged)* + **toaster-strudel MCP** (score) | `SpeechRenderer` (VO/ADR) · `Composer`→toaster-strudel · `SoundDesigner`/`ReRecordingMixer` — planned (`0009`) | planned |
+| Editor | cut, continuity assembly, pacing, transitions | **Grammar of the Edit** (Ch. 1–8, abridged) + **Directing** Ch. 30–34 *(abridged, `0017`)* + Grammar of the Shot Ch. 5 | **sequence / edit layer** (`edit.py` model + `cutter.py` executor) | grounded; code in progress |
+| Colorist / DIT | grade, look | Grammar of the Shot (Ch. 4 color) + **Directing** Ch. 36 (grade/finishing) *(abridged, `0017`)* + *(color source)* | color layer | partial (`ColorTemperature`) |
+| Sound editor / mixer · Composer | sound design, score, mix | Grammar of the Edit Ch. 3 + **Rose** *(abridged)* + **Directing** Ch. 35–36 *(abridged, `0017`)* + **toaster-strudel MCP** (score) | `SpeechRenderer` (VO/ADR) · `Composer`→toaster-strudel · `SoundDesigner`/`ReRecordingMixer` — planned (`0009`) | planned |
 
 ### Delivery — *ship*
 
 | Department / role | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
-| Producer | marketing, distribution, exhibition | — | out of scope (for now) | — |
+| Producer | marketing, distribution, exhibition | **Directing** Ch. 37 (getting it out there) *(abridged, `0017`)* | out of scope (for now) | grounded |
 
 ## Reading the map
 
@@ -74,19 +74,26 @@ a production is represented, driven, and stored, decided in
   [Ch. 5](../artifacts/grammar%20of%20the%20shot/reference/ch05-shooting-for-editing.md))
   can now be built on real grounding. The post-layer model (`edit.py`) + its MoviePy
   executor (`cutter.py`) are scaffolded; the cut-decision engine is designed in [`storyline/0007`](storyline/0007-grounding-the-edit-layer.md) but not yet built.
-- **Sound, story, and the director's craft are now sourced.** **Sound is designed**
-  (`0009`): a multi-phase department grounded by Grammar of the Edit Ch. 3 +
-  **Rose, *Producing Great Sound*** *(abridged, 18 ch — `0010`)* + toaster-strudel MCP, with `SpeechRenderer` /
-  `Composer` / `SoundAnalyst` capabilities. **Story is now abridged; the rest of the
-  plan phase staged** (`0015`–`0016`): **The Screenwriter's Taxonomy** (a genre/voice/
-  pathway/POV *classification system* → a future typed `Screenwriter` vocabulary) is
-  **abridged** (8 ch, `0016`), and **Directing** (Rabiger &
-  Hurbis-Cherrier — a Director-centric *spine* across every phase) remains staged.
-  Directing is imported and copyright-gated; **its abridgement is deferred to
-  designated sessions** (start with the Director chapters 7–11, 17). Directing also
-  opens a **casting/actors**
-  dimension the architecture had never modelled (Ch. 18–20). Production design gains a
-  first source (Directing Ch. 23); a dedicated design/**color** source is still open.
+- **Sound, story, and the director's craft are now sourced — and the whole grounding
+  library is abridged.** **Sound is designed** (`0009`): a multi-phase department
+  grounded by Grammar of the Edit Ch. 3 + **Rose, *Producing Great Sound*** *(abridged,
+  18 ch — `0010`)* + toaster-strudel MCP, with `SpeechRenderer` / `Composer` /
+  `SoundAnalyst` capabilities. **Both plan-phase sources are now abridged** (`0016`–`0017`):
+  **The Screenwriter's Taxonomy** (a genre/voice/pathway/POV *classification system* →
+  a future typed `Screenwriter` vocabulary) is **abridged** (8 ch, `0016`), and
+  **Directing** (Rabiger & Hurbis-Cherrier — a Director-centric *spine* across every
+  phase) is now **abridged** (28 ch, `0017` — a full comprehensive scan, nothing
+  dropped), touching every seat from Screenwriter to Producer-ship. Directing also
+  opens a **casting/actors** dimension the architecture had never modelled (Ch. 18–20,
+  still unmodeled in code). Production design gains its first source (Directing Ch. 23),
+  and finishing/grade a second (Ch. 36); a **dedicated design/color source is still
+  open.** With five sources abridged, the library is **complete for the departments
+  modelled today** — the next work is *code*, not grounding.
+- **Overlaps to reconcile when the axes are encoded:** POV (Directing Ch. 9 ↔ Taxonomy
+  Ch. 7 — craft vs. classification), structure/pathway (Directing Ch. 5 ↔ Taxonomy
+  Ch. 6), and the post chapters (Directing Ch. 30–34 ↔ Grammar of the Edit — the
+  director's-eye complement to the editor's working manual). Directing Ch. 35 (music)
+  overlaps Rose Ch. 14 + the toaster-strudel score seam.
 
 ## Runtime architecture — engine, instances, and stores
 
@@ -142,7 +149,7 @@ not yet built.
   MIR) sensor.
 
 - **Secrets via Key Vault.** Backend API keys are never stored in plaintext — they
-  live in Azure Key Vault (`kv-sequitur484673472841`) and are fetched at runtime via
+  live in Azure Key Vault and are fetched at runtime via
   `DefaultAzureCredential` (the `az login` identity authorises the vault read). Only
   non-secret pointers (vault name, endpoint, deployment) live in `.env`.
 - **MCP** is the eventual **control-plane** connector: sequitur as MCP *client*, the

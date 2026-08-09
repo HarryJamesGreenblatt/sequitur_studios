@@ -127,6 +127,17 @@ into a film-literate prompt.
   `Microgenre` open tag · `Voice` a struct of axes · `Pathway` closed enum · `POV` three
   small enums) that a future `crew/screenwriting.py` `Screenwriter` owns and that acts
   as the plan-phase control surface (POV→camera, Pathway→edit, Voice→renderers). No code.
+- [`0017-abridging-directing.md`](0017-abridging-directing.md)
+  — ran the **last designated abridgement session**: transformed **Directing** (Rabiger
+  & Hurbis-Cherrier, 6th ed.) into **28 abridged `reference/` chapters** + a refreshed
+  INDEX (the **fifth and final staged source**), spanning every phase. Fanned the full
+  comprehensive read out to **nine parallel subagents** (3–4 ch each, by arc) to avoid
+  semantic-search fidelity loss. Confirmed Directing as a **control spine**: POV as a
+  hard coverage constraint, tone/genre as a global style contract, the shooting script
+  as the PLAN→SHOOT bridge, Ch. 26 as *meta to the crew engine*, Ch. 30 as the shoot↔edit
+  seam, and the natural corpus for a Director `PersonaJudgment`. **All five sources now
+  abridged** — the grounding library is complete for the departments modelled today;
+  next work is code. No code.
 
 ## Current state (keep fresh)
 
@@ -151,13 +162,14 @@ into a film-literate prompt.
   renamed to `edit.py` to avoid the `moviepy` collision. `--dry-run` composes prompts
   with no API call. Interpreter is a project `.venv` (Python 3.12); tests in `tests/`.
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
-  `artifacts/INDEX.md`. **Four abridged sources** now: *Grammar of the Shot* (production/
-  cinematography, encoded in `grammar.py`), *Grammar of the Edit* (post/editorial,
-  8 abridged chapters + INDEX, grounding [`edit.py`](../../sequitur/edit.py)),
-  *Producing Great Sound* (Rose — sound, **18 abridged chapters** + INDEX, `0010`), and
-  *The Screenwriter's Taxonomy* (Williams — story/development, **8 abridged chapters** +
-  INDEX, `0016`), plus one **staged** source (*Directing* — 28 curated ch, abridgement
-  deferred). Each source
+  `artifacts/INDEX.md`. **Five abridged sources** now — the library is **complete for
+  the departments modelled today**: *Grammar of the Shot* (production/cinematography,
+  encoded under `crew/`), *Grammar of the Edit* (post/editorial, 8 abridged chapters +
+  INDEX, grounding [`edit.py`](../../sequitur/edit.py)), *Producing Great Sound* (Rose —
+  sound, **18 abridged chapters** + INDEX, `0010`), *The Screenwriter's Taxonomy*
+  (Williams — story/development, **8 abridged chapters** + INDEX, `0016`), and
+  *Directing* (Rabiger & Hurbis-Cherrier — a Director-centric spine across every phase,
+  **28 abridged chapters** + INDEX, `0017`). Each source
   holds the raw book (`extraction/` .docx, `source/` .md — gitignored) and the
   abridged, session-ready `reference/` with a per-source `INDEX.md` (chapter → code
   map). Each abridged chapter ends with a "Studio application" section.
@@ -168,10 +180,9 @@ into a film-literate prompt.
   swappable `Judgment` (heuristic A / persona B / human), **Producer = HITL**,
   **Director = agent role**, and the **Production (PM board) as the dumb container**.
   Editorial/post is the next layer to build out.
-- **Secrets:** both backend API keys live in **Azure Key Vault**
-  (`kv-sequitur484673472841`), fetched at runtime via `DefaultAzureCredential`; `.env`
-  holds only non-secret pointers (vault name, endpoint, deployment). Never reintroduce
-  plaintext keys.
+- **Secrets:** both backend API keys live in **Azure Key Vault**, fetched at runtime
+  via `DefaultAzureCredential`; `.env` holds only non-secret pointers (vault name,
+  endpoint, deployment). Never reintroduce plaintext keys.
 - **Published:** public repo at
   <https://github.com/HarryJamesGreenblatt/sequitur_studios> (`main`). Verbatim
   book text (`extraction/`, `source/`) and secrets (`.env`) are gitignored; only

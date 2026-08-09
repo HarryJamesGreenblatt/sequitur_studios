@@ -42,8 +42,8 @@ composition/orientation; a reference image can).
    *video* alternative to Omni — noted, not wired.)
 
 4. **Secrets live in Azure Key Vault, never in plaintext.** Both API keys
-   (`gemini-api-key`, `azure-openai-image-key`) live in vault
-   `kv-sequitur484673472841`. [`config.py`](../../sequitur/config.py) fetches them at
+   (`gemini-api-key`, `azure-openai-image-key`) live in a project Key Vault.
+   [`config.py`](../../sequitur/config.py) fetches them at
    runtime via `DefaultAzureCredential` — the `az login` identity authorises the
    *vault read*, so no key ever touches the repo, `.env`, or model context. `.env`
    holds only **non-secret pointers** (vault name, endpoint, deployment,
