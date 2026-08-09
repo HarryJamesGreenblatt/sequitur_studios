@@ -110,6 +110,14 @@ into a film-literate prompt.
   `Engine().run(Phase.SHOOT, Brief(...))` assembles a grammar-complete `Shot` (each
   department fills its owned fields, the Director merges the disjoint slices) that
   renders via `build_prompt`. Guard test `tests/test_engine.py`.
+- [`0015-staging-preproduction-sources.md`](0015-staging-preproduction-sources.md)
+  — **imported & staged** two *plan*-phase grounding sources: **Directing** (Rabiger &
+  Hurbis-Cherrier, 6th ed. — 28 curated ch, a Director-centric spine across every
+  phase) and **The Screenwriter's Taxonomy** (Williams — 8 ch, a genre/voice/pathway/
+  POV *classification system*, enum-friendly for a future `Screenwriter` role).
+  Converted to verbatim `source/` (copyright-gated), mapped chapters→roles in both
+  `INDEX.md` files, reconciled the catalog + architecture. **Abridgement deferred to
+  designated sessions.** Surfaced a new **casting/actors** dimension (Directing 18–20).
 
 ## Current state (keep fresh)
 
@@ -206,7 +214,12 @@ into a film-literate prompt.
   eye-line, screen direction). Ch. 5's reference is effectively its spec; build it
   once the editorial grounding lands.
 - **Broader discipline library** — sound, story/screenwriting, production design,
-  color, producing are named departments in `context/architecture.md`. **Sound is
-  now designed** (`0009`) and its source **abridged** (`0010`, Jay Rose *Producing Great
-  Sound*, 18 ch); story/design/color still have no source.
-- **No test suite yet** — a small `build_prompt` smoke test would guard the grammar.
+  color, producing are named departments in `context/architecture.md`. **Sound**
+  designed (`0009`) + **abridged** (`0010`, Jay Rose, 18 ch). **Story + the plan phase
+  staged** (`0015`): **The Screenwriter's Taxonomy** (8 ch) and **Directing** (28 ch)
+  imported & mapped, **abridgement deferred to designated sessions** — abridge per
+  role, on demand, starting with the Director chapters. A dedicated **color** source
+  is still open; a **casting/actors** department is newly surfaced but unmodelled.
+- **No test suite yet** — **done (`0012`–`0014`):** `tests/` holds `test_prompt.py`,
+  `test_edit.py`, `test_engine.py` (assert the public surface). Add coverage as new
+  layers land.

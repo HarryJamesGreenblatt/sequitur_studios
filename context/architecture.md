@@ -29,11 +29,12 @@ a production is represented, driven, and stored, decided in
 
 | Department / role (App. D) | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
-| Producer | financing, scheduling, logistics | — | **HITL — the human seat** (works the Production/PM board) | decided (`0008`) |
-| Screenwriter | script, structure | *(story source — to acquire)* | `Script` / `Scene` model | planned |
-| Director | interpret script → shot selection | Grammar of the Shot (Ch. 1) | shot planning | partial (`Shot`) |
-| Production Designer | sets, costume, color concepts | *(design/color source)* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
-| Assistant Director | schedule, coverage, shot list | Grammar of the Shot (Ch. 1) | shot list / coverage | planned |
+| Producer | financing, scheduling, logistics | **Directing** Ch. 25 (line producing) · Ch. 37 (delivery) *(staged, `0015`)* | **HITL — the human seat** (works the Production/PM board) | decided (`0008`) |
+| Screenwriter | script, structure | **The Screenwriter's Taxonomy** (genre/voice/pathway/POV) + **Directing** Ch. 3–8 *(staged, `0015`)* | `Screenwriter` role · typed genre vocabulary | planned |
+| Director | interpret script → shot selection | **Directing** Ch. 7–11, 17 (aesthetics, POV, style) *(staged, `0015`)* + Grammar of the Shot Ch. 1 | `Director` role (crew reconciler, `0014`) | partial (`Director`) |
+| Casting · Actors | casting, performance | **Directing** Ch. 18–20 *(staged, `0015`)* — **a new dimension** the architecture did not model | *(unmodeled — future role)* | new (`0015`) |
+| Production Designer | sets, costume, color concepts | **Directing** Ch. 23 (visual design) *(staged, `0015`)* + *(dedicated design/color source still open)* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
+| Assistant Director | schedule, coverage, shot list | **Directing** Ch. 24–26 *(staged, `0015`)* + Grammar of the Shot Ch. 1 | shot list / coverage | planned |
 
 ### Production — *shoot*  ← **implemented today**
 
@@ -73,11 +74,17 @@ a production is represented, driven, and stored, decided in
   [Ch. 5](../artifacts/grammar%20of%20the%20shot/reference/ch05-shooting-for-editing.md))
   can now be built on real grounding. The post-layer model (`edit.py`) + its MoviePy
   executor (`cutter.py`) are scaffolded; the cut-decision engine is designed in [`storyline/0007`](storyline/0007-grounding-the-edit-layer.md) but not yet built.
-- **Sound, story, and production design** are named departments with no dedicated
-  source yet — placeholders in the grounding library. **Sound is now designed**
+- **Sound, story, and the director's craft are now sourced.** **Sound is designed**
   (`0009`): a multi-phase department grounded by Grammar of the Edit Ch. 3 +
   **Rose, *Producing Great Sound*** *(abridged, 18 ch — `0010`)* + toaster-strudel MCP, with `SpeechRenderer` /
-  `Composer` / `SoundAnalyst` capabilities.
+  `Composer` / `SoundAnalyst` capabilities. **Story and the plan phase are now staged**
+  (`0015`): **The Screenwriter's Taxonomy** (a genre/voice/pathway/POV *classification
+  system* → a future typed `Screenwriter` vocabulary) and **Directing** (Rabiger &
+  Hurbis-Cherrier — a Director-centric *spine* across every phase). Both are imported
+  and copyright-gated; **abridgement is deferred to designated sessions** (the two
+  landed together and the books are long). Directing also opens a **casting/actors**
+  dimension the architecture had never modelled (Ch. 18–20). Production design gains a
+  first source (Directing Ch. 23); a dedicated design/**color** source is still open.
 
 ## Runtime architecture — engine, instances, and stores
 
