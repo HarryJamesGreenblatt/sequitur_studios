@@ -30,7 +30,7 @@ a production is represented, driven, and stored, decided in
 | Department / role (App. D) | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
 | Producer | financing, scheduling, logistics | **Directing** Ch. 25 (line producing) · Ch. 37 (delivery) *(staged, `0015`)* | **HITL — the human seat** (works the Production/PM board) | decided (`0008`) |
-| Screenwriter | script, structure | **The Screenwriter's Taxonomy** (genre/voice/pathway/POV) + **Directing** Ch. 3–8 *(staged, `0015`)* | `Screenwriter` role · typed genre vocabulary | planned |
+| Screenwriter | script, structure | **The Screenwriter's Taxonomy** (genre/voice/pathway/POV) *([abridged, 8 ch, `0016`](../artifacts/the%20screenwriter's%20taxonomy/INDEX.md))* + **Directing** Ch. 3–8 *(staged, `0015`)* | `Screenwriter` role · typed genre vocabulary (`crew/screenwriting.py`) | grounded; role planned |
 | Director | interpret script → shot selection | **Directing** Ch. 7–11, 17 (aesthetics, POV, style) *(staged, `0015`)* + Grammar of the Shot Ch. 1 | `Director` role (crew reconciler, `0014`) | partial (`Director`) |
 | Casting · Actors | casting, performance | **Directing** Ch. 18–20 *(staged, `0015`)* — **a new dimension** the architecture did not model | *(unmodeled — future role)* | new (`0015`) |
 | Production Designer | sets, costume, color concepts | **Directing** Ch. 23 (visual design) *(staged, `0015`)* + *(dedicated design/color source still open)* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
@@ -77,12 +77,14 @@ a production is represented, driven, and stored, decided in
 - **Sound, story, and the director's craft are now sourced.** **Sound is designed**
   (`0009`): a multi-phase department grounded by Grammar of the Edit Ch. 3 +
   **Rose, *Producing Great Sound*** *(abridged, 18 ch — `0010`)* + toaster-strudel MCP, with `SpeechRenderer` /
-  `Composer` / `SoundAnalyst` capabilities. **Story and the plan phase are now staged**
-  (`0015`): **The Screenwriter's Taxonomy** (a genre/voice/pathway/POV *classification
-  system* → a future typed `Screenwriter` vocabulary) and **Directing** (Rabiger &
-  Hurbis-Cherrier — a Director-centric *spine* across every phase). Both are imported
-  and copyright-gated; **abridgement is deferred to designated sessions** (the two
-  landed together and the books are long). Directing also opens a **casting/actors**
+  `Composer` / `SoundAnalyst` capabilities. **Story is now abridged; the rest of the
+  plan phase staged** (`0015`–`0016`): **The Screenwriter's Taxonomy** (a genre/voice/
+  pathway/POV *classification system* → a future typed `Screenwriter` vocabulary) is
+  **abridged** (8 ch, `0016`), and **Directing** (Rabiger &
+  Hurbis-Cherrier — a Director-centric *spine* across every phase) remains staged.
+  Directing is imported and copyright-gated; **its abridgement is deferred to
+  designated sessions** (start with the Director chapters 7–11, 17). Directing also
+  opens a **casting/actors**
   dimension the architecture had never modelled (Ch. 18–20). Production design gains a
   first source (Directing Ch. 23); a dedicated design/**color** source is still open.
 

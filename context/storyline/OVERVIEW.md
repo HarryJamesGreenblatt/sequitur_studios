@@ -118,6 +118,15 @@ into a film-literate prompt.
   Converted to verbatim `source/` (copyright-gated), mapped chapters→roles in both
   `INDEX.md` files, reconciled the catalog + architecture. **Abridgement deferred to
   designated sessions.** Surfaced a new **casting/actors** dimension (Directing 18–20).
+- [`0016-abridging-the-screenwriters-taxonomy.md`](0016-abridging-the-screenwriters-taxonomy.md)
+  — ran the first **designated abridgement session**: transformed **The Screenwriter's
+  Taxonomy** (the smaller staged source) into **8 abridged `reference/` chapters** + a
+  refreshed INDEX — the library's **fourth abridged source**. Full scan, nothing
+  dropped. Converged the Studio applications on one design: the taxonomy as a **layered
+  descriptor vector** (`MovieType`/`Supergenre` closed enums · `Macrogenre` large enum ·
+  `Microgenre` open tag · `Voice` a struct of axes · `Pathway` closed enum · `POV` three
+  small enums) that a future `crew/screenwriting.py` `Screenwriter` owns and that acts
+  as the plan-phase control surface (POV→camera, Pathway→edit, Voice→renderers). No code.
 
 ## Current state (keep fresh)
 
@@ -142,10 +151,13 @@ into a film-literate prompt.
   renamed to `edit.py` to avoid the `moviepy` collision. `--dry-run` composes prompts
   with no API call. Interpreter is a project `.venv` (Python 3.12); tests in `tests/`.
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
-  `artifacts/INDEX.md`. **Three full sources** now: *Grammar of the Shot* (production/
+  `artifacts/INDEX.md`. **Four abridged sources** now: *Grammar of the Shot* (production/
   cinematography, encoded in `grammar.py`), *Grammar of the Edit* (post/editorial,
-  8 abridged chapters + INDEX, grounding [`edit.py`](../../sequitur/edit.py)), and
-  *Producing Great Sound* (Rose — sound, **18 abridged chapters** + INDEX, `0010`). Each source
+  8 abridged chapters + INDEX, grounding [`edit.py`](../../sequitur/edit.py)),
+  *Producing Great Sound* (Rose — sound, **18 abridged chapters** + INDEX, `0010`), and
+  *The Screenwriter's Taxonomy* (Williams — story/development, **8 abridged chapters** +
+  INDEX, `0016`), plus one **staged** source (*Directing* — 28 curated ch, abridgement
+  deferred). Each source
   holds the raw book (`extraction/` .docx, `source/` .md — gitignored) and the
   abridged, session-ready `reference/` with a per-source `INDEX.md` (chapter → code
   map). Each abridged chapter ends with a "Studio application" section.
@@ -215,11 +227,13 @@ into a film-literate prompt.
   once the editorial grounding lands.
 - **Broader discipline library** — sound, story/screenwriting, production design,
   color, producing are named departments in `context/architecture.md`. **Sound**
-  designed (`0009`) + **abridged** (`0010`, Jay Rose, 18 ch). **Story + the plan phase
-  staged** (`0015`): **The Screenwriter's Taxonomy** (8 ch) and **Directing** (28 ch)
-  imported & mapped, **abridgement deferred to designated sessions** — abridge per
-  role, on demand, starting with the Director chapters. A dedicated **color** source
-  is still open; a **casting/actors** department is newly surfaced but unmodelled.
+  designed (`0009`) + **abridged** (`0010`, Jay Rose, 18 ch). **Story abridged**
+  (`0016`): **The Screenwriter's Taxonomy** (8 ch) transformed into `reference/` — the
+  basis for a typed `Screenwriter` vocabulary. **The rest of the plan phase staged**
+  (`0015`): **Directing** (28 ch) imported & mapped, **abridgement deferred to the
+  remaining designated session(s)** — start with the Director chapters (7–11, 17). A
+  dedicated **color** source is still open; a **casting/actors** department is newly
+  surfaced but unmodelled.
 - **No test suite yet** — **done (`0012`–`0014`):** `tests/` holds `test_prompt.py`,
   `test_edit.py`, `test_engine.py` (assert the public surface). Add coverage as new
   layers land.

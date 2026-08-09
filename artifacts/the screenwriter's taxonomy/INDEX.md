@@ -9,32 +9,32 @@ vocabulary of genre, voice, pathway, and point of view. That makes it
 (a `crew/screenwriting.py`), exactly as *Grammar of the Shot* became the camera
 roles' enums.
 
-> **Staged, not yet abridged.** The verbatim `source/` is complete (8 chapters);
-> the `reference/` abridgement is **deferred to a designated session** (0015). The
-> chapter → role map below is the plan; mappings are **provisional** until the
-> `Screenwriter` role exists in code.
+> **Abridged (8 ch) — 0016.** The verbatim `source/` (8 chapters) has been abridged
+> into 8 session-ready [`reference/`](reference/) chapters, each ending in a **Studio
+> application** section. The chapter → role map below now links each reference;
+> mappings remain **provisional** until the `Screenwriter` role exists in code.
 
 ## Folder layout
 
 - [`extraction/`](extraction/) — the raw `.docx` originals. *(gitignored)*
 - [`source/`](source/) — pandoc-converted verbatim Markdown, the **ground truth**. *(gitignored)*
-- `reference/` — abridged, session-ready references. *(pending; ships when written)*
+- [`reference/`](reference/) — abridged, session-ready references (8 chapters). *(ships)*
 
 ## Chapter → (planned) role map
 
 All chapters ground the **Screenwriter** (plan phase). The bold chapters are the
 ones that most directly become **typed vocabulary** (candidate enums).
 
-| Ch | Title | Grounds |
-|----|-------|---------|
-| 1 | The Need for a Road Map | rationale — why a shared story taxonomy matters |
-| 2 | **Movie Types and Supergenres** | candidate `Supergenre` enum (the top classification) |
-| 3 | **Macrogenres and Microgenres** | candidate `Macrogenre` / `Microgenre` enums |
-| 4 | Genre Case Studies | worked examples for the genre vocabulary |
-| 5 | **Voice** | candidate `Voice` enum (the storytelling stance) |
-| 6 | **Pathway** | candidate `Pathway` enum (structural arc; pairs with Directing Ch. 5) |
-| 7 | **Point of View** | candidate `PointOfView` enum (overlaps Directing Ch. 9) |
-| 8 | Case Studies | worked examples applying the whole taxonomy |
+| Ch | Reference | Grounds |
+|----|-----------|---------|
+| 1 | [The Need for a Road Map](reference/ch01-the-need-for-a-road-map.md) | rationale — the 7-layer model; shape of a future `Screenwriter` role |
+| 2 | [**Movie Types and Supergenres**](reference/ch02-movie-types-and-supergenres.md) | `MovieType` enum + closed 11-value `Supergenre` enum (Story·Character·Atmosphere bundles) |
+| 3 | [**Macrogenres and Microgenres**](reference/ch03-macrogenres-and-microgenres.md) | large `Macrogenre` enum + open macro-scoped `Microgenre` tag |
+| 4 | [Genre Case Studies](reference/ch04-genre-case-studies.md) | one logline → 3 films; super-choice cascades to POV/pathway |
+| 5 | [**Voice**](reference/ch05-voice.md) | `Voice` = a *struct of ~6 axes* (the seam to the render grammar) |
+| 6 | [**Pathway**](reference/ch06-pathway.md) | closed ~20-value `Pathway` enum (structural arc; pairs with Directing Ch. 5) |
+| 7 | [**Point of View**](reference/ch07-point-of-view.md) | 3 small enums (Scope×Focus×Stance); upstream of camera coverage (overlaps Directing Ch. 9) |
+| 8 | [Case Studies](reference/ch08-case-studies.md) | the full six-layer descriptor *vector*; analytic + generative |
 
 ## Scope note
 
