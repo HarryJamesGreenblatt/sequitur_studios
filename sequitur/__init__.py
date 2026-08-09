@@ -3,6 +3,7 @@
 Public surface:
     Studio                          the video render/edit client (Gemini Omni Flash)
     ImageStudio                     the still-image client (Azure Foundry gpt-image)
+    SpeechRenderer                  the text-to-speech client (Azure AI Speech)
     Shot                            a structured shot specification
     build_prompt                    turn a Shot into a well-formed video prompt
     build_image_prompt              turn a Shot into a still-image prompt
@@ -51,11 +52,13 @@ from .edit import (
 )
 from .cutter import Cutter
 from .prompt import build_image_prompt, build_prompt
+from .speech import SpeechRenderer
 from .studio import Studio
 
 __all__ = [
     "Studio",
     "ImageStudio",
+    "SpeechRenderer",
     "Shot",
     "build_prompt",
     "build_image_prompt",

@@ -106,3 +106,50 @@ def get_azure_image_config() -> AzureImageConfig:
         api_version=os.environ.get("AZURE_OPENAI_API_VERSION", "2025-04-01-preview"),
         api_key=api_key,
     )
+
+
+# A reliable multilingual neural voice available in the eastus2 region. HD voices
+# (e.g. ``en-US-Ava:DragonHDLatestNeural``) can be selected per render.
+DEFAULT_SPEECH_VOICE = "en-US-AvaMultilingualNeural"
+
+
+@dataclass(frozen=True)
+class AzureSpeechConfig:
+    """Settings for the Azure AI Speech backend (text-to-speech).
+
+    Speech rides the *same* AIServices account as the image backend
+    (``hjg-m8jtp7uy-eastus2``) — no new resource, no deployment for standard/HD
+    neural voices. ``key`` is that account's key (reused from Key Vault); when it
+    is ``None`` the renderer authenticates with Entra ID, which needs the account's
+    ARM ``resource_id`` for the Speech SDK's ``aad#…`` token form.
+    """
+
+    region: str
+    voice: str
+    key: str | None
+    resource_id: str | None
+
+
+def get_azure_speech_config() -> AzureSpeechConfig:
+    """Return Azure Speech settings, reusing the shared AIServices account.
+
+    Only the non-secret region (default ``eastus2``) is needed in ``.env``. The
+    key is the shared account key fetched from Key Vault (secret
+    ``azure-openai-image-key`` — the *same* account hosts Speech and gpt-image);
+    set ``AZURE_SPEECH_KEY`` to override for CI or offline use. With no key, set
+    ``AZURE_SPEECH_RESOURCE_ID`` to authenticate via Entra ID.
+    """
+    key = os.environ.get("AZURE_SPEECH_KEY")
+    if not key:
+        try:
+            key = _get_secret(
+                os.environ.get("AZURE_IMAGE_KEY_SECRET", "azure-openai-image-key")
+            )
+        except Exception:  # noqa: BLE001 - fall through to Entra auth in the renderer
+            key = None
+    return AzureSpeechConfig(
+        region=os.environ.get("AZURE_SPEECH_REGION", "eastus2"),
+        voice=os.environ.get("AZURE_SPEECH_VOICE", DEFAULT_SPEECH_VOICE),
+        key=key,
+        resource_id=os.environ.get("AZURE_SPEECH_RESOURCE_ID"),
+    )

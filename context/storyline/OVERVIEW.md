@@ -83,16 +83,23 @@ into a film-literate prompt.
   diegetic split as D/M/E stems; cut-to-cue = beat grid × content cues; `SpeechRenderer`
   brief = Ch. 9 dry-render + ADR-match; Ch. 18 = spec for a sound-layer `validate()`).
   Normalized filenames to `chNN-<slug>.md` across all three sources. No code built.
+- [`0011-the-voice-layer.md`](0011-the-voice-layer.md)
+  — **built** the `SpeechRenderer` (`0009`'s first slice): Azure AI Speech text-to-
+  speech, the studio's **third render backend** and first *sound* renderer. Rides the
+  existing `hjg-m8jtp7uy-eastus2` AIServices account (**no new resource/deployment**),
+  reuses the shared KV key, and emits the Rose Ch. 2/9/12 contract — **dry, 48 kHz /
+  16-bit / mono** — validated with a live synth. First code since `0006`.
 
 ## Current state (keep fresh)
 
-- **Code:** `sequitur/` package (`grammar`, `prompt`, `studio`, `image`, `edit`,
-  `cutter`, `config`) + CLI `scripts/generate.py`. `grammar.py` models Bowen as
-  *orthogonal* layers (framing · lens/focus · lighting · motion) — today a *flattened
-  crew* to be re-seated under roles (`0008`). **Two render backends over one
+- **Code:** `sequitur/` package (`grammar`, `prompt`, `studio`, `image`, `speech`,
+  `edit`, `cutter`, `config`) + CLI `scripts/generate.py`. `grammar.py` models Bowen
+  as *orthogonal* layers (framing · lens/focus · lighting · motion) — today a *flattened
+  crew* to be re-seated under roles (`0008`). **Three render backends over one
   grammar:** [`Studio`](../../sequitur/studio.py) = video (Gemini Omni Flash),
-  [`ImageStudio`](../../sequitur/image.py) = still image (Azure Foundry `gpt-image-1`,
-  the first non-Google backend); `--image` on the CLI selects the still path. The
+  [`ImageStudio`](../../sequitur/image.py) = still image (Azure Foundry `gpt-image-1`),
+  and [`SpeechRenderer`](../../sequitur/speech.py) = voice (Azure AI Speech, built
+  `0011`); `--image` on the CLI selects the still path. The
   post layer is [`edit.py`](../../sequitur/edit.py) (EDL/grammar model) +
   [`cutter.py`](../../sequitur/cutter.py) (MoviePy executor) — note `movie.py` was
   renamed to `edit.py` to avoid the `moviepy` collision. `--dry-run` composes prompts
@@ -148,11 +155,12 @@ into a film-literate prompt.
   `Cinematographer`/`Gaffer`/`KeyGrip` and `edit.py`'s under
   `Editor`/`Colorist`/`SoundEditor`, with a `Director` reconciler. Heuristic
   judgment only (no LLM); persona (**B**) and PM-board wiring come later.
-- **Build the sound layer (`0009`)** — `SpeechRenderer` first (Azure Speech on the
-  existing `hjg-m8jtp7uy-eastus2` AIServices account, no new resource / no
-  deployment; HD neural, Entra-first + KV reuse). Then formalize the `Renderer`
-  protocol (3rd backend), ground the sound roles from the **abridged Rose** (`0010`), and wire
-  **toaster-strudel** as sequitur's first MCP client (`Composer`/`SoundAnalyst`).
+- **Build the sound layer (`0009`)** — `SpeechRenderer` **built** (`0011`: Azure
+  Speech on the existing `hjg-m8jtp7uy-eastus2` account, no new resource / no
+  deployment; dry 48 kHz/16-bit/mono, validated live). Next: formalize the `Renderer`
+  protocol (3rd backend now justifies it), ground the sound roles from the **abridged
+  Rose** (`0010`) once the crew engine lands, and wire **toaster-strudel** as
+  sequitur's first MCP client (`Composer`/`SoundAnalyst`).
 - **Reconciliation sweep (standing, `0007`)** — the edit references' "Studio
   application" tie-ins are provisional leads at the not-yet-built post layer; sweep
   all 8 to align them once the roles/`edit.py` code settles.
