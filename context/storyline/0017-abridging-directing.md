@@ -84,6 +84,22 @@ smaller staged source (the Taxonomy). This session clears the last one: **Direct
   Ch. 30–34 ↔ Grammar of the Edit), **music** (Directing Ch. 35 ↔ Rose Ch. 14 +
   toaster-strudel).
 
+## Follow-ups (same session, post-abridgement)
+
+- **Scrubbed the Key Vault name from every shipped doc** — removed the hard-coded vault
+  name from [`architecture.md`](../architecture.md), [`OVERVIEW.md`](OVERVIEW.md), and the
+  [`0006`](0006-renderer-seam-and-image-backend.md) devlog. It's a non-secret pointer,
+  but there's no reason to publish infra names; it now lives only in the gitignored
+  `.env` (`KEY_VAULT_NAME`) and local memory.
+- **Comprehensively revised the [README](../../README.md)** to match current state
+  (it predated the crew engine, the speech backend, and the last two groundings):
+  reframed the intro around the studio's two halves (a crew that *decides* + a grammar
+  that renders through **three** backends), added a crew-engine usage example
+  (`Engine().run(Phase.SHOOT, Brief(...))`), updated the architecture table (pre-prod +
+  post + delivery now grounded), the Layout (all eight `crew/` modules, `tests/`, the
+  two new grounding folders), the Roadmap ("grounding done → code next"; `SpeechRenderer`
+  already built), and the License (added Williams + Rabiger & Hurbis-Cherrier). Docs only.
+
 ## Open threads
 
 - **Design the `Screenwriter` role** — `crew/screenwriting.py` with the typed
