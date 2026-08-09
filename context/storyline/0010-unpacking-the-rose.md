@@ -39,6 +39,15 @@
    [`artifacts/INDEX.md`](../../artifacts/INDEX.md) row from *"Designed · staged ·
    abridgement pending"* to *"Imported · abridged (18 ch)."*
 
+5. **Reconciled the living docs.** Flipped the four Rose references in
+   [`architecture.md`](../architecture.md) (both Sound rows, the reading-the-map
+   bullet, the open-decision) from *staged* → *abridged (18 ch)* with INDEX links,
+   and **refreshed the [`README.md`](../../README.md)**, which had gone stale around
+   `0006`: it still called *Grammar of the Edit* "to acquire" and omitted the edit
+   (`edit.py`/`cutter.py`) and sound layers. The README now reflects both companion
+   sources as grounded, lists all three library sources + the post-layer code, and
+   broadens the license note to all three works.
+
 ## Decisions
 
 1. **Map each chapter to the sound role it grounds**, not to a generic "post

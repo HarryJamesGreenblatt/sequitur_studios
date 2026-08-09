@@ -10,10 +10,13 @@ Today the studio implements the **camera department during production** — grou
 in Christopher J. Bowen's *Grammar of the Shot* and encoded as the typed grammar in
 `sequitur/grammar.py` — and renders that one grammar through **two swappable
 backends**: **video** (Gemini Omni Flash) and **still image** (Azure Foundry
-`gpt-image-1`, the Production Designer's look-dev deliverable). Every other
-department and phase (pre-production, editorial/post, sound, art, delivery) is
-scaffolded as the intended architecture, ready to grow into. The full map lives
-in [`context/architecture.md`](context/architecture.md).
+`gpt-image-1`, the Production Designer's look-dev deliverable). The **editorial/post**
+and **sound** departments are already **grounded** — their reference libraries
+imported and abridged (Bowen's *Grammar of the Edit* and Jay Rose's *Producing Great
+Sound for Film and Video*) — with their code layers next to build. Every other
+department and phase (pre-production, art, delivery) is scaffolded as the intended
+architecture, ready to grow into. The full map lives in
+[`context/architecture.md`](context/architecture.md).
 
 ## Setup
 
@@ -86,7 +89,7 @@ hands them that role's grounded vocabulary and tooling.
 |-------|----------------------------|------------------|--------|
 | Pre-production | Producer · Screenwriter · Director · AD · Production Designer | *(story / design — to acquire)* | partial (image look-dev) |
 | **Production** | **Camera · Electric · Grip** (+ Sound) | **Grammar of the Shot** — encoded in `grammar.py` | **implemented** |
-| Post-production | Editor · Colorist · Sound editor | *Grammar of the Edit* — to acquire | next layer |
+| Post-production | Editor · Colorist · Sound editor · Composer | **Grammar of the Edit** + **Rose, *Producing Great Sound*** — abridged | grounded; code next |
 | Delivery | Producer (marketing, distribution) | — | out of scope (for now) |
 
 The full role → department → grounding → code-layer mapping is
@@ -100,11 +103,15 @@ sequitur/      the studio code
   prompt.py    Shot -> film-literate prompt (build_prompt video / build_image_prompt still)
   studio.py    video render() / edit() over the Gemini Omni Interactions API
   image.py     still-image render() over Azure Foundry gpt-image
+  edit.py      post/editorial EDL + grammar model (Transition, Clip/Scene/Act)
+  cutter.py    MoviePy executor for the edit model
   config.py    .env pointers + Key Vault secret fetch (DefaultAzureCredential)
 scripts/
   generate.py  CLI renderer (--image for stills, --dry-run to preview the prompt)
 artifacts/     grounding library — one folder per source (see INDEX.md)
-  grammar of the shot/
+  grammar of the shot/               production — cinematography (encoded in grammar.py)
+  grammar of the edit/               post — editorial (grounds edit.py)
+  producing great sound for film.../ sound department (Jay Rose, 18 ch)
     reference/ abridged, session-ready references (ships)
     source/    verbatim ground truth (gitignored)
 context/
@@ -115,13 +122,19 @@ output/        generated clips (gitignored)
 
 ## Roadmap (by layer)
 
-- **Editorial / post** — acquire Bowen's *Grammar of the Edit* to ground the edit
-  layer, then build the **sequence** planner: chain shots into scenes honouring
-  the 180°/30° rules, matching/reverse shots, eye-line, and screen direction
-  (Ch. 5 of Grammar of the Shot is effectively its spec).
-- **More departments** — sound, story/screenwriting, production design, and colour
-  are named in the [architecture](context/architecture.md) with no source yet;
-  import each into the grounding library as the studio grows.
+- **Editorial / post** — *Grammar of the Edit* is imported and abridged; the
+  `edit.py` model + `cutter.py` executor are scaffolded. Next: build the
+  **cut-decision engine** and the **sequence** planner — chain shots into scenes
+  honouring the 180°/30° rules, matching/reverse shots, eye-line, and screen
+  direction (Ch. 5 of Grammar of the Shot is effectively its spec).
+- **Sound** — designed as a multi-phase department and grounded by Jay Rose's
+  *Producing Great Sound for Film and Video* (18 ch abridged); build
+  `SpeechRenderer` (Azure Speech) first, then the `Composer`/`SoundAnalyst` roles
+  over the [toaster-strudel](https://github.com/HarryJamesGreenblatt/toaster-strudel)
+  MCP seam.
+- **More departments** — story/screenwriting, production design, and colour are
+  named in the [architecture](context/architecture.md) with no source yet; import
+  each into the grounding library as the studio grows.
 - **Reference-keyframe pipeline** — the `gpt-image` still backend already lands
   concept frames; next is feeding a still into `Studio.render` as a conditioning
   reference so the shot inherits its composition (image-to-video).
@@ -140,5 +153,6 @@ Key Vault and are fetched at runtime via `DefaultAzureCredential`.
 MIT — see [`LICENSE`](LICENSE).
 
 The `reference/` materials are original abridgements that summarise concepts from
-Christopher J. Bowen's *Grammar of the Shot* (4th ed.); the book's verbatim text
-is not distributed with this repository.
+their source works — Christopher J. Bowen's *Grammar of the Shot* and *Grammar of
+the Edit* (4th eds.) and Jay Rose's *Producing Great Sound for Film and Video*
+(4th ed.); the books' verbatim text is not distributed with this repository.
