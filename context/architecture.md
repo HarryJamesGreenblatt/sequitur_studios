@@ -265,11 +265,12 @@ flowchart TB
 - **How far to encode roles in code — DECIDED (`0008`); phase A STARTED (`0012`).**
   Roles are first-class behavior (`Role` + `Judgment`), the **Producer is the HITL
   seat**, the **Director** is the reconciling agent role, and the **Production (PM
-  board)** is the container. See the crew-engine section above. **Started (`0012`):**
-  `grammar.py` un-flattened into a `crew/` package — a thin `Role` base +
-  `Cinematographer`/`Gaffer`/`KeyGrip` owning their vocabulary (vocabulary-only).
-  Next: re-seat `edit.py` under `Editor`, then add the `Judgment` behaviour layer and
-  a `Director` reconciler over a dumb engine + local-folder Production.
+  board)** is the container. See the crew-engine section above. **In progress:**
+  `grammar.py` un-flattened into a `crew/` package (`0012`) and `edit.py`'s
+  vocabulary re-seated under an `Editor` role (`0013`) — `Cinematographer`/`Gaffer`/
+  `KeyGrip`/`Editor` each own their vocabulary (vocabulary-only). Next: add the
+  `Judgment` behaviour layer and a `Director` reconciler over a dumb engine +
+  local-folder Production.
 - **Build the post layer (`edit.py`)** — *Grammar of the Edit* is now grounded
   (`0007`); `edit.py` holds the EDL/grammar model and `cutter.py` the MoviePy
   executor. Build out the cut-decision engine (Ch. 5's six motivators) over a

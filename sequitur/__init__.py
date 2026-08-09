@@ -16,9 +16,9 @@ Public surface:
     ColorTemperature                the grammar vocabulary (owned by crew roles)
     Role, Department, Phase         the crew seat and the axes that place a role
     Cinematographer, Gaffer,
-    KeyGrip                         the shoot-phase roles that own the vocabulary
+    KeyGrip, Editor                 the roles that own the shot / edit vocabulary
     Transition, EditReason,
-    EditCategory                    the grammar of the edit (post layer)
+    EditCategory                    the grammar of the edit (owned by the Editor)
     Clip, Edit, Beat, Scene,
     Act, Sequence, TimelineEntry    the shots -> scenes -> acts assembly model
     Cutter                          executes an edit Sequence into a film (MoviePy)
@@ -35,6 +35,7 @@ from .crew.camera import (
     ShotSize,
     SubjectView,
 )
+from .crew.editorial import EditCategory, EditReason, Editor, Transition
 from .crew.grip import CameraMovement, KeyGrip, MotionSpeed
 from .crew.lighting import (
     ColorTemperature,
@@ -50,12 +51,9 @@ from .edit import (
     Beat,
     Clip,
     Edit,
-    EditCategory,
-    EditReason,
     Scene,
     Sequence,
     TimelineEntry,
-    Transition,
 )
 from .cutter import Cutter
 from .prompt import build_image_prompt, build_prompt
@@ -88,6 +86,7 @@ __all__ = [
     "Cinematographer",
     "Gaffer",
     "KeyGrip",
+    "Editor",
     "Transition",
     "EditReason",
     "EditCategory",

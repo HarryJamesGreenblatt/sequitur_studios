@@ -1,82 +1,29 @@
-"""The grammar of the edit — the post-production assembly engine.
+"""The grammar of the edit — the post-production assembly model.
 
-Where :mod:`sequitur.shot` gives the studio the language of a single *shot*,
-this module gives it the language of the *cut*: how shots are chosen, joined, and
-paced into a sequence. The vocabulary and the shots -> scenes -> acts model are
-distilled from Christopher J. Bowen's *Grammar of the Edit* (4th ed.); see
-``artifacts/grammar of the edit/`` for the grounding.
+Where :mod:`sequitur.shot` gives the studio the language of a single *shot*, this
+module gives it the language of the *cut*: how shots are chosen, joined, and paced
+into a sequence. The **vocabulary** of the cut (`Transition`, `EditReason`,
+`EditCategory`) is owned by the **Editor** role in :mod:`sequitur.crew.editorial`;
+this module is the editorial counterpart to :mod:`sequitur.shot` — the *aggregate*
+the Editor composes: an edit decision list (an EDL), the shots -> scenes -> acts
+hierarchy, and the rules that validate them (handles for dissolves, a reason for
+every cut). Distilled from Christopher J. Bowen's *Grammar of the Edit* (4th ed.);
+see ``artifacts/grammar of the edit/`` for the grounding.
 
-This is the **model-agnostic core** of the post layer — the counterpart to
-``grammar.py``, not to ``studio.py``. It represents an edit decision list (an EDL)
-and the reasons behind it, and it validates that list against the source's rules
-(handles for dissolves, a reason for every cut). It is deliberately **free of any
-rendering dependency** so this decision state can be serialised into a production
-plan — a PM framework such as Planner, ADO, or GitHub Projects (storyline 0005 /
-0007). Turning the EDL into a finished film — stitching the rendered clips with real
-transitions — is a separate, swappable *executor* concern: :class:`sequitur.cutter.Cutter`
-(MoviePy), the post layer's data-plane renderer.
+It is deliberately **free of any rendering dependency** so this decision state can
+be serialised into a production plan — a PM framework such as Planner, ADO, or
+GitHub Projects (storyline 0005 / 0007). Turning the EDL into a finished film —
+stitching the rendered clips with real transitions — is a separate, swappable
+*executor* concern: :class:`sequitur.cutter.Cutter` (MoviePy), the post layer's
+data-plane renderer.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
 
+from .crew.editorial import EditCategory, EditReason, Transition
 from .shot import Shot
-
-
-class Transition(Enum):
-    """How one shot gives way to the next (Grammar of the Edit, Ch. 6).
-
-    ``needs_handles`` marks transitions that borrow frames from *beyond* the
-    visible clip — a hard constraint on fixed-length generated coverage, which
-    must be produced with handle padding for those transitions to be possible.
-    """
-
-    CUT = ("a straight cut", "instantaneous; continuous action or a clean change of information", False)
-    DISSOLVE = ("a dissolve", "gradual blend; a change of time or place, or a softer, somber link", True)
-    WIPE = ("a wipe", "a shape or line pushes the old shot off; fanciful, a bold change of place", True)
-    FADE_IN = ("a fade in from black", "opens a program, act, or scene out of black", False)
-    FADE_OUT = ("a fade out to black", "closes a program, act, or scene into black", False)
-    DIP_TO_BLACK = ("a dip to black", "a fade out straight into a fade in; a long, slow blink between segments", False)
-
-    def __init__(self, phrase: str, intent: str, needs_handles: bool) -> None:
-        self.phrase = phrase
-        self.intent = intent
-        self.needs_handles = needs_handles
-
-
-class EditReason(Enum):
-    """Why cut here — the six motivators for an edit (Ch. 5).
-
-    Every edit should name at least one: "there should be a reason for every
-    edit" (Ch. 8).
-    """
-
-    INFORMATION = ("new information", "the incoming shot delivers something new to see, hear, or feel")
-    MOTIVATION = ("motivation", "a movement, look, or sound in the outgoing shot prompts the leave")
-    COMPOSITION = ("composition", "eye-line and eye-trace carry the viewer across the cut")
-    CAMERA_ANGLE = ("camera angle", "a sufficiently different angle (>30 deg) avoids a jump cut")
-    CONTINUITY = ("continuity", "matched action, screen direction, and position keep the flow invisible")
-    SOUND = ("sound", "a sound in or under the shot motivates or bridges the cut")
-
-    def __init__(self, phrase: str, intent: str) -> None:
-        self.phrase = phrase
-        self.intent = intent
-
-
-class EditCategory(Enum):
-    """The kind of edit — why it works (Ch. 6)."""
-
-    ACTION = ("action edit", "a cut on continuous, matched movement (the match cut)")
-    SCREEN_POSITION = ("screen-position edit", "subject placement directs the eye across the frame; shot/reverse dialogue")
-    FORM = ("form edit", "matched shape, colour, or composition across the cut (often a match dissolve)")
-    CONCEPT = ("concept edit", "juxtaposition creates implied meaning not stated in the story")
-    COMBINED = ("combined edit", "two or more of the above satisfied in one edit")
-
-    def __init__(self, phrase: str, intent: str) -> None:
-        self.phrase = phrase
-        self.intent = intent
 
 
 @dataclass

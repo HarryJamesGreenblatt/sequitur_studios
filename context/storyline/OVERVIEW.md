@@ -97,6 +97,12 @@ into a film-literate prompt.
   (**Cinematographer**/**Gaffer**/**KeyGrip**) each owning its verbatim vocabulary;
   `Shot` moved to `shot.py`. Guarded by a new smoke test and proven **byte-for-byte
   behaviour-neutral**. Vocabulary-only — `Judgment`/`Director` are the next pass.
+- [`0013-the-editor-seat.md`](0013-the-editor-seat.md)
+  — **built** the second crew pass: re-seated `edit.py`'s vocabulary
+  (`Transition`/`EditReason`/`EditCategory`) under a new **`Editor`** role
+  (`crew/editorial.py`, assemble phase), leaving the shots→scenes→acts EDL +
+  `timeline()`/`validate()` in `edit.py` as the editorial analogue of `shot.py`.
+  Added a guard test (`tests/test_edit.py`); public API + `cutter.py` untouched.
 
 ## Current state (keep fresh)
 
@@ -111,10 +117,12 @@ into a film-literate prompt.
   Omni Flash), [`ImageStudio`](../../sequitur/image.py) = still image (Azure Foundry
   `gpt-image-1`), and [`SpeechRenderer`](../../sequitur/speech.py) = voice (Azure AI
   Speech, built `0011`); `--image` on the CLI selects the still path. The
-  post layer is [`edit.py`](../../sequitur/edit.py) (EDL/grammar model) +
+  post layer is [`edit.py`](../../sequitur/edit.py) (the editorial EDL model + its
+  `timeline()`/`validate()`, the analogue of `shot.py`) with its vocabulary owned by
+  the **`Editor`** role (`crew/editorial.py`, `0013`) +
   [`cutter.py`](../../sequitur/cutter.py) (MoviePy executor) — note `movie.py` was
   renamed to `edit.py` to avoid the `moviepy` collision. `--dry-run` composes prompts
-  with no API call. Interpreter is a project `.venv` (Python 3.12).
+  with no API call. Interpreter is a project `.venv` (Python 3.12); tests in `tests/`.
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
   `artifacts/INDEX.md`. **Three full sources** now: *Grammar of the Shot* (production/
   cinematography, encoded in `grammar.py`), *Grammar of the Edit* (post/editorial,
@@ -160,12 +168,12 @@ into a film-literate prompt.
 - **Acquire *Grammar of the Edit*** — **DONE** (`0007`): 8 chapters abridged into
   `artifacts/grammar of the edit/reference/`. Next is building the post layer it
   grounds.
-- **Build the crew engine — phase A (`0008`)** — **started (`0012`):** `grammar.py`
-  un-flattened into a `crew/` package (`Role` base + `Cinematographer`/`Gaffer`/
-  `KeyGrip` owning their vocabulary), vocabulary-only. Next: re-seat `edit.py`'s enums
-  under `Editor` (+ `Colorist`/`SoundEditor`), then add the `Judgment` behaviour layer
-  (heuristic A) and a `Director` reconciler over a dumb engine + **local-folder
-  Production** (`0005` provider #1). Persona (**B**) and PM-board wiring come later.
+- **Build the crew engine — phase A (`0008`)** — **in progress:** vocabulary re-seated
+  under `crew/` — `Cinematographer`/`Gaffer`/`KeyGrip` (`0012`) and `Editor` (`0013`),
+  each owning its enums. Next: add the `Judgment` behaviour layer (heuristic **A**) +
+  a `Contribution` type + a `Director` reconciler over a dumb engine, then a minimal
+  in-memory Production, later the **local-folder Production** (`0005` provider #1).
+  Persona (**B**) and PM-board wiring come later.
 - **Build the sound layer (`0009`)** — `SpeechRenderer` **built** (`0011`: Azure
   Speech on the existing `hjg-m8jtp7uy-eastus2` account, no new resource / no
   deployment; dry 48 kHz/16-bit/mono, validated live). Next: formalize the `Renderer`
