@@ -3,20 +3,32 @@
 A generative **film studio** built on the Gemini **Omni Flash** video model. The
 premise isn't "prompt a video model" — it's to model a *real production studio*:
 the crew **roles** and **departments** of a film production (after Bowen's
-Appendix D), working across the three production **phases**, each grounded in
-proper film-craft domain knowledge instead of vague prompts.
+Appendix D), working across the production **phases**, each grounded in proper
+film-craft domain knowledge instead of vague prompts.
 
-Today the studio implements the **camera department during production** — grounded
-in Christopher J. Bowen's *Grammar of the Shot* and encoded as the typed grammar
-under `sequitur/crew/` (the `Cinematographer`/`Gaffer`/`KeyGrip` roles that own it)
-— and renders that one grammar through **two swappable
-backends**: **video** (Gemini Omni Flash) and **still image** (Azure Foundry
-`gpt-image-1`, the Production Designer's look-dev deliverable). The **editorial/post**
-and **sound** departments are already **grounded** — their reference libraries
-imported and abridged (Bowen's *Grammar of the Edit* and Jay Rose's *Producing Great
-Sound for Film and Video*) — with their code layers next to build. Every other
-department and phase (pre-production, art, delivery) is scaffolded as the intended
-architecture, ready to grow into. The full map lives in
+The studio has two halves, both taking shape:
+
+- **A crew that decides.** Roles are first-class objects — a `Cinematographer`,
+  `Gaffer`, and `KeyGrip` each *own* a slice of the shot grammar and *choose* their
+  own values; a `Director` reconciles their proposals into a single, complete `Shot`;
+  a dumb `Engine` dispatches a phase. Each role delegates its reasoning to a swappable
+  `Judgment` (a deterministic **heuristic** today, an LLM **persona** or a **human**
+  tomorrow), so any one seat can be upgraded — or hand-driven — on its own. The
+  human is the **Producer** (brief, greenlight, approve); the agent crew executes.
+- **A grammar that renders anywhere.** One model-agnostic grammar drives **three
+  swappable backends**: **video** (Gemini Omni Flash), **still image** (Azure Foundry
+  `gpt-image-1` — the Production Designer's look-dev deliverable), and **voice**
+  (Azure AI Speech text-to-speech).
+
+Today the studio fully implements the **camera department during production** —
+grounded in Christopher J. Bowen's *Grammar of the Shot* and encoded as the typed
+grammar under `sequitur/crew/`. The **grounding library is now complete for every
+department the architecture models**: five film-craft sources imported and abridged —
+Bowen's *Grammar of the Shot* and *Grammar of the Edit*, Jay Rose's *Producing Great
+Sound for Film and Video*, Eric R. Williams' *The Screenwriter's Taxonomy*, and
+Rabiger & Hurbis-Cherrier's *Directing: Film Techniques and Aesthetics* (a
+Director-centric spine across every phase). With grounding done, the remaining work is
+**code** — building out the crew engine's other phases and roles. The full map lives in
 [`context/architecture.md`](context/architecture.md).
 
 ## Setup
@@ -33,6 +45,8 @@ Copy-Item .env.example .env
 #    then edit .env: set KEY_VAULT_NAME and your AZURE_OPENAI_IMAGE_ENDPOINT.
 #    The API keys themselves live in Key Vault (secrets `gemini-api-key`,
 #    `azure-openai-image-key`) and are read at runtime via your az-login identity.
+#    The voice backend reuses the same Azure AI Services account (no new secret);
+#    set AZURE_SPEECH_REGION in .env if it differs from the default.
 ```
 
 ## First render
@@ -79,6 +93,31 @@ print(path)
 _, path2 = studio.edit(interaction.id, "Add a slow blink. Keep everything else the same.")
 ```
 
+### Let the crew compose the shot
+
+Instead of specifying every grammar field yourself, hand the `Engine` a `Brief` and
+let each role *choose* its own slice — the `Cinematographer` picks size/angle/lens,
+the `Gaffer` the lighting, the `KeyGrip` the movement — and the `Director` reconciles
+them into one complete `Shot`. Producer-level `hints` override any role's default:
+
+```python
+from sequitur import Engine, Brief, Phase, ShotSize, build_prompt
+
+shot = Engine().run(
+    Phase.SHOOT,
+    Brief(
+        scene="a detective studies a rain-streaked window at night",
+        mood="tense, watchful",
+        hints={"size": ShotSize.CLOSE_UP},   # the Producer overriding one default
+    ),
+)
+print(build_prompt(shot))
+```
+
+Each role's reasoning is a swappable `Judgment` — deterministic (`HeuristicJudgment`)
+today, an LLM `PersonaJudgment` over that role's grounded reference library, or a
+`HumanJudgment`, later — so the crew can be upgraded seat by seat.
+
 ## Architecture — a production studio in layers
 
 Design principle: each department/role owns a responsibility; every responsibility
@@ -88,33 +127,48 @@ hands them that role's grounded vocabulary and tooling.
 
 | Phase | Departments (Bowen App. D) | Grounding source | Status |
 |-------|----------------------------|------------------|--------|
-| Pre-production | Producer · Screenwriter · Director · AD · Production Designer | *(story / design — to acquire)* | partial (image look-dev) |
+| Pre-production | Producer · Screenwriter · Director · AD · Production Designer | **The Screenwriter's Taxonomy** (story) + **Directing** (dramaturgy, aesthetics, design) — abridged | grounded; roles next |
 | **Production** | **Camera · Electric · Grip** (+ Sound) | **Grammar of the Shot** — encoded under `crew/` | **implemented** |
-| Post-production | Editor · Colorist · Sound editor · Composer | **Grammar of the Edit** + **Rose, *Producing Great Sound*** — abridged | grounded; code next |
-| Delivery | Producer (marketing, distribution) | — | out of scope (for now) |
+| Post-production | Editor · Colorist · Sound editor · Composer | **Grammar of the Edit** + **Rose, *Producing Great Sound*** + **Directing** Ch. 30–36 — abridged | grounded; `Editor` seated, code in progress |
+| Delivery | Producer (marketing, distribution) | **Directing** Ch. 37 — abridged | grounded; out of code scope (for now) |
 
-The full role → department → grounding → code-layer mapping is
-[`context/architecture.md`](context/architecture.md).
+The studio's executable core is the **crew engine**: roles as behaviour (`Role` +
+swappable `Judgment`), three authority tiers — **Producer = the human**,
+**Director = the reconciling agent**, **Crew = the role components** — and the
+**Production** (a plan whose buckets are these department layers) as the dumb
+container. The full role → department → grounding → code-layer mapping, the runtime
+model, and the diagrams are in [`context/architecture.md`](context/architecture.md).
 
 ## Layout
 
 ```
 sequitur/      the studio code
-  crew/        the crew — roles that own the grammar (Role base + Cinematographer/Gaffer/KeyGrip)
+  crew/        the crew engine — roles as behaviour, not just vocabulary
+    role.py        Role base + Department/Phase axes + Brief/Contribution
+    camera.py      Cinematographer — owns ShotSize/Angle/View/Lens/DoF/Composition
+    lighting.py    Gaffer — owns LightQuality/Scheme/Direction/ColorTemperature
+    grip.py        KeyGrip — owns CameraMovement/MotionSpeed
+    editorial.py   Editor — owns Transition/EditReason/EditCategory
+    judgment.py    swappable reasoning (HeuristicJudgment A · Persona B · Human)
+    director.py    Director — reconciles crew Contributions into one Shot
+    engine.py      dumb dispatch — Engine().run(phase, brief) -> Shot
   shot.py      the Shot aggregate the camera/electric/grip crews compose
   prompt.py    Shot -> film-literate prompt (build_prompt video / build_image_prompt still)
   studio.py    video render() / edit() over the Gemini Omni Interactions API
   image.py     still-image render() over Azure Foundry gpt-image
   speech.py    text-to-speech render() over Azure AI Speech (dry 48kHz/16-bit/mono)
-  edit.py      post/editorial EDL + grammar model (Transition, Clip/Scene/Act)
+  edit.py      post/editorial EDL + assembly model (Clip/Beat/Scene/Act/Sequence)
   cutter.py    MoviePy executor for the edit model
   config.py    .env pointers + Key Vault secret fetch (DefaultAzureCredential)
 scripts/
   generate.py  CLI renderer (--image for stills, --dry-run to preview the prompt)
+tests/         behaviour-guard tests (test_prompt · test_edit · test_engine)
 artifacts/     grounding library — one folder per source (see INDEX.md)
-  grammar of the shot/               production — cinematography (encoded under crew/)
-  grammar of the edit/               post — editorial (grounds edit.py)
-  producing great sound for film.../ sound department (Jay Rose, 18 ch)
+  grammar of the shot/     production — cinematography (encoded under crew/)
+  grammar of the edit/     post — editorial (grounds edit.py + the Editor)
+  producing great sound.../ sound department (Jay Rose, 18 ch)
+  the screenwriter's taxonomy/  development — genre/voice/pathway/POV (Williams, 8 ch)
+  directing/               Director spine across every phase (Rabiger, 28 ch)
     reference/ abridged, session-ready references (ships)
     source/    verbatim ground truth (gitignored)
 context/
@@ -125,19 +179,27 @@ output/        generated clips (gitignored)
 
 ## Roadmap (by layer)
 
-- **Editorial / post** — *Grammar of the Edit* is imported and abridged; the
-  `edit.py` model + `cutter.py` executor are scaffolded. Next: build the
-  **cut-decision engine** and the **sequence** planner — chain shots into scenes
-  honouring the 180°/30° rules, matching/reverse shots, eye-line, and screen
-  direction (Ch. 5 of Grammar of the Shot is effectively its spec).
-- **Sound** — designed as a multi-phase department and grounded by Jay Rose's
-  *Producing Great Sound for Film and Video* (18 ch abridged); build
-  `SpeechRenderer` (Azure Speech) first, then the `Composer`/`SoundAnalyst` roles
-  over the [toaster-strudel](https://github.com/HarryJamesGreenblatt/toaster-strudel)
-  MCP seam.
-- **More departments** — story/screenwriting, production design, and colour are
-  named in the [architecture](context/architecture.md) with no source yet; import
-  each into the grounding library as the studio grows.
+Grounding is complete for every department the architecture models; the remaining
+work is **code**.
+
+- **Crew engine — the next phases.** The shoot phase composes a `Shot` today
+  (`Engine().run(Phase.SHOOT, Brief(...))`). Next: the **assemble** phase — the
+  `Editor` chaining shots into a `Sequence` (honouring the 180°/30° rules,
+  matching/reverse, eye-line, and screen direction; Ch. 5 of *Grammar of the Shot* is
+  effectively its spec) — and binding a real **Production** (the PM board) in place of
+  a bare `Brief`, through the `ProductionProvider`/`OutputStore` seams.
+- **The `Screenwriter` role** — `crew/screenwriting.py` with the typed
+  genre/voice/pathway/POV vocabulary the abridged *Screenwriter's Taxonomy* grounds;
+  its contribution seeds the `Brief` the `Director` reconciles.
+- **A Director persona** — swap the `Director`'s heuristic for a `PersonaJudgment`
+  grounded in the abridged *Directing* chapters (the **B** in the A→B seam).
+- **Sound & score** — `SpeechRenderer` (Azure Speech) is **built**; next are the
+  `Composer`/`SoundAnalyst` roles over the
+  [toaster-strudel](https://github.com/HarryJamesGreenblatt/toaster-strudel) MCP seam,
+  and a formal `Renderer` protocol now that a third backend exists.
+- **The casting/actors dimension** — a new layer *Directing* Ch. 18–20 grounds but no
+  code models yet: a `Casting` role + a playable-intent performance concept wired to
+  the image (character keyframes) and voice backends.
 - **Reference-keyframe pipeline** — the `gpt-image` still backend already lands
   concept frames; next is feeding a still into `Studio.render` as a conditioning
   reference so the shot inherits its composition (image-to-video).
@@ -146,10 +208,10 @@ output/        generated clips (gitignored)
 
 Video is built on `gemini-omni-flash-preview` (native multimodal, conversational
 editing); Veo 3.1 remains available for scene-extension and last-frame control.
-Stills are rendered on an Azure Foundry `gpt-image-1` deployment — the first
-non-Google backend, proving the grammar is model-agnostic and the renderer is a
-swappable seam. Backend API keys are never stored in plaintext: they live in Azure
-Key Vault and are fetched at runtime via `DefaultAzureCredential`.
+Stills are rendered on an Azure Foundry `gpt-image-1` deployment, and voice on Azure
+AI Speech — the first non-Google backends, proving the grammar is model-agnostic and
+the renderer is a swappable seam. Backend API keys are never stored in plaintext:
+they live in Azure Key Vault and are fetched at runtime via `DefaultAzureCredential`.
 
 ## License
 
@@ -157,5 +219,7 @@ MIT — see [`LICENSE`](LICENSE).
 
 The `reference/` materials are original abridgements that summarise concepts from
 their source works — Christopher J. Bowen's *Grammar of the Shot* and *Grammar of
-the Edit* (4th eds.) and Jay Rose's *Producing Great Sound for Film and Video*
-(4th ed.); the books' verbatim text is not distributed with this repository.
+the Edit* (4th eds.), Jay Rose's *Producing Great Sound for Film and Video* (4th ed.),
+Eric R. Williams' *The Screenwriter's Taxonomy*, and Michael Rabiger &
+Mick Hurbis-Cherrier's *Directing: Film Techniques and Aesthetics* (6th ed.); the
+books' verbatim text is not distributed with this repository.
