@@ -266,11 +266,12 @@ flowchart TB
   Roles are first-class behavior (`Role` + `Judgment`), the **Producer is the HITL
   seat**, the **Director** is the reconciling agent role, and the **Production (PM
   board)** is the container. See the crew-engine section above. **In progress:**
-  `grammar.py` un-flattened into a `crew/` package (`0012`) and `edit.py`'s
-  vocabulary re-seated under an `Editor` role (`0013`) — `Cinematographer`/`Gaffer`/
-  `KeyGrip`/`Editor` each own their vocabulary (vocabulary-only). Next: add the
-  `Judgment` behaviour layer and a `Director` reconciler over a dumb engine +
-  local-folder Production.
+  `grammar.py` un-flattened into a `crew/` package (`0012`), `edit.py`'s vocabulary
+  re-seated under an `Editor` role (`0013`), and the **behaviour** layer built
+  (`0014`) — a swappable `Judgment` (`HeuristicJudgment` = deterministic A), a
+  `Brief`/`Contribution` pair, a `Director` reconciler, and a dumb `Engine` that
+  assembles a shoot-phase `Shot`. Next: assemble-phase behaviour (Editor → `Sequence`)
+  and binding a local-folder Production in place of the bare `Brief`.
 - **Build the post layer (`edit.py`)** — *Grammar of the Edit* is now grounded
   (`0007`); `edit.py` holds the EDL/grammar model and `cutter.py` the MoviePy
   executor. Build out the cut-decision engine (Ch. 5's six motivators) over a

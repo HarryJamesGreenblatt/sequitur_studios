@@ -6,13 +6,28 @@ package re-seats the vocabulary that used to live flat in ``grammar.py`` (a
 *flattened crew* — camera, electric, and grip fused into one module) under the
 department roles that actually own it, per storyline 0008.
 
-This first pass establishes the seat and the ownership only: a role *declares*
-its department, phase, and vocabulary. The reasoning layer (a swappable
-``Judgment``) and the ``Director`` reconciler are the next step.
+Beyond ownership, a role turns a :class:`Brief` into a :class:`Contribution` via a
+swappable :class:`Judgment` (heuristic **A** now; persona **B** / human later); the
+:class:`Director` reconciles the crew's contributions and the :class:`Engine`
+dispatches them.
 """
 
 from __future__ import annotations
 
-from .role import Department, Phase, Role
+from .director import Director
+from .engine import Engine, shoot_crew
+from .judgment import HeuristicJudgment, Judgment
+from .role import Brief, Contribution, Department, Phase, Role
 
-__all__ = ["Role", "Department", "Phase"]
+__all__ = [
+    "Role",
+    "Department",
+    "Phase",
+    "Brief",
+    "Contribution",
+    "Judgment",
+    "HeuristicJudgment",
+    "Director",
+    "Engine",
+    "shoot_crew",
+]

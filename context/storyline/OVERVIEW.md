@@ -103,16 +103,26 @@ into a film-literate prompt.
   (`crew/editorial.py`, assemble phase), leaving the shots→scenes→acts EDL +
   `timeline()`/`validate()` in `edit.py` as the editorial analogue of `shot.py`.
   Added a guard test (`tests/test_edit.py`); public API + `cutter.py` untouched.
+- [`0014-the-crew-behaviour.md`](0014-the-crew-behaviour.md)
+  — **built** the crew-engine **behaviour** layer: a swappable `Judgment`
+  (`HeuristicJudgment` = deterministic **A**), a `Brief`/`Contribution` pair, a
+  `Director` reconciler, and a dumb `Engine`. The shoot-phase crew now *chooses* —
+  `Engine().run(Phase.SHOOT, Brief(...))` assembles a grammar-complete `Shot` (each
+  department fills its owned fields, the Director merges the disjoint slices) that
+  renders via `build_prompt`. Guard test `tests/test_engine.py`.
 
 ## Current state (keep fresh)
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
-  `speech`, `edit`, `cutter`, `config`) + CLI `scripts/generate.py` + a first test
-  (`tests/test_prompt.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a
+  `speech`, `edit`, `cutter`, `config`) + CLI `scripts/generate.py` + tests
+  (`tests/test_prompt.py` · `test_edit.py` · `test_engine.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a
   thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
   (`crew/camera.py`), `Gaffer` (`crew/lighting.py`), `KeyGrip` (`crew/grip.py`) — each
-  *owning* its slice of the grammar enums (the old flat `grammar.py`, un-flattened).
-  Roles are vocabulary-only so far; `Judgment`/`Director` come next. **Three render
+  *owning* its slice of the grammar enums (the old flat `grammar.py`, un-flattened),
+  plus the assemble-phase `Editor` (`crew/editorial.py`). Roles now have **behaviour**
+  (`0014`): a swappable `Judgment` (`HeuristicJudgment` = deterministic A), and
+  `Engine().run(Phase.SHOOT, Brief(...))` dispatches the crew — each proposes a
+  `Contribution`, the `Director` reconciles them into a complete `Shot`. **Three render
   backends over one grammar:** [`Studio`](../../sequitur/studio.py) = video (Gemini
   Omni Flash), [`ImageStudio`](../../sequitur/image.py) = still image (Azure Foundry
   `gpt-image-1`), and [`SpeechRenderer`](../../sequitur/speech.py) = voice (Azure AI
@@ -169,11 +179,12 @@ into a film-literate prompt.
   `artifacts/grammar of the edit/reference/`. Next is building the post layer it
   grounds.
 - **Build the crew engine — phase A (`0008`)** — **in progress:** vocabulary re-seated
-  under `crew/` — `Cinematographer`/`Gaffer`/`KeyGrip` (`0012`) and `Editor` (`0013`),
-  each owning its enums. Next: add the `Judgment` behaviour layer (heuristic **A**) +
-  a `Contribution` type + a `Director` reconciler over a dumb engine, then a minimal
-  in-memory Production, later the **local-folder Production** (`0005` provider #1).
-  Persona (**B**) and PM-board wiring come later.
+  under `crew/` — `Cinematographer`/`Gaffer`/`KeyGrip` (`0012`) and `Editor` (`0013`);
+  **behaviour** added (`0014`) — `Judgment`/`HeuristicJudgment`, `Brief`/`Contribution`,
+  `Director`, and a dumb `Engine` that assembles a shoot-phase `Shot`. Next:
+  assemble-phase behaviour (Editor over clips → `Sequence`, phase-aware Director),
+  then bind a **local-folder Production** (`0005` provider #1) in place of the bare
+  `Brief`, then `PersonaJudgment` (**B**) and PM-board wiring.
 - **Build the sound layer (`0009`)** — `SpeechRenderer` **built** (`0011`: Azure
   Speech on the existing `hjg-m8jtp7uy-eastus2` account, no new resource / no
   deployment; dry 48 kHz/16-bit/mono, validated live). Next: formalize the `Renderer`

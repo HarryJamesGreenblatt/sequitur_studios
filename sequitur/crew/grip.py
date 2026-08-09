@@ -9,8 +9,12 @@ the grammar; a still has neither.
 from __future__ import annotations
 
 from enum import Enum
+from typing import TYPE_CHECKING, Any
 
 from .role import Department, Phase, Role
+
+if TYPE_CHECKING:
+    from .role import Brief
 
 
 class CameraMovement(Enum):
@@ -58,3 +62,10 @@ class KeyGrip(Role):
     department = Department.GRIP
     phase = Phase.SHOOT
     vocabulary = (CameraMovement, MotionSpeed)
+
+    def heuristic(self, brief: Brief) -> dict[str, Any]:
+        h = brief.hints
+        return {
+            "movement": h.get("movement", CameraMovement.STATIC),
+            "speed": h.get("speed"),
+        }

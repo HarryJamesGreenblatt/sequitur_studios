@@ -9,8 +9,12 @@ independently of what the camera frames.
 from __future__ import annotations
 
 from enum import Enum
+from typing import TYPE_CHECKING, Any
 
 from .role import Department, Phase, Role
+
+if TYPE_CHECKING:
+    from .role import Brief
 
 
 class LightQuality(Enum):
@@ -77,3 +81,13 @@ class Gaffer(Role):
     department = Department.ELECTRIC
     phase = Phase.SHOOT
     vocabulary = (LightScheme, LightQuality, LightDirection, ColorTemperature)
+
+    def heuristic(self, brief: Brief) -> dict[str, Any]:
+        h = brief.hints
+        return {
+            "light_scheme": h.get("light_scheme", LightScheme.THREE_POINT),
+            "light_quality": h.get("light_quality", LightQuality.SOFT),
+            "light_direction": h.get("light_direction"),
+            "color_temp": h.get("color_temp", ColorTemperature.NEUTRAL),
+            "eye_light": h.get("eye_light", False),
+        }

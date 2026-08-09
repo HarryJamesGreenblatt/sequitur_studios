@@ -17,6 +17,9 @@ Public surface:
     Role, Department, Phase         the crew seat and the axes that place a role
     Cinematographer, Gaffer,
     KeyGrip, Editor                 the roles that own the shot / edit vocabulary
+    Brief, Contribution             a role's decision context and its proposed slice
+    Judgment, HeuristicJudgment     the swappable reasoning strategy (heuristic A)
+    Director, Engine, shoot_crew    reconcile the crew · dispatch a phase · default crew
     Transition, EditReason,
     EditCategory                    the grammar of the edit (owned by the Editor)
     Clip, Edit, Beat, Scene,
@@ -24,7 +27,18 @@ Public surface:
     Cutter                          executes an edit Sequence into a film (MoviePy)
 """
 
-from .crew import Department, Phase, Role
+from .crew import (
+    Brief,
+    Contribution,
+    Department,
+    Director,
+    Engine,
+    HeuristicJudgment,
+    Judgment,
+    Phase,
+    Role,
+    shoot_crew,
+)
 from .crew.camera import (
     CameraAngle,
     Cinematographer,
@@ -87,6 +101,13 @@ __all__ = [
     "Gaffer",
     "KeyGrip",
     "Editor",
+    "Brief",
+    "Contribution",
+    "Judgment",
+    "HeuristicJudgment",
+    "Director",
+    "Engine",
+    "shoot_crew",
     "Transition",
     "EditReason",
     "EditCategory",

@@ -9,8 +9,12 @@ the video/still renderers to realise it.
 from __future__ import annotations
 
 from enum import Enum
+from typing import TYPE_CHECKING, Any
 
 from .role import Department, Phase, Role
+
+if TYPE_CHECKING:
+    from .role import Brief
 
 
 class ShotSize(Enum):
@@ -122,3 +126,16 @@ class Cinematographer(Role):
         FocalLength,
         DepthOfField,
     )
+
+    def heuristic(self, brief: Brief) -> dict[str, Any]:
+        h = brief.hints
+        return {
+            "size": h.get("size", ShotSize.MEDIUM),
+            "view": h.get("view"),
+            "angle": h.get("angle", CameraAngle.EYE_LEVEL),
+            "style": h.get("style", ShootingStyle.OBJECTIVE),
+            "composition": h.get("composition", Composition.RULE_OF_THIRDS),
+            "focal_length": h.get("focal_length"),
+            "depth_of_field": h.get("depth_of_field"),
+            "lens": h.get("lens"),
+        }
