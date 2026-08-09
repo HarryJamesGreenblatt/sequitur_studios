@@ -12,7 +12,7 @@ from pathlib import Path
 from google import genai
 
 from .config import OUTPUT_DIR, get_api_key
-from .grammar import Shot
+from .shot import Shot
 from .prompt import build_prompt
 
 MODEL = "gemini-omni-flash-preview"

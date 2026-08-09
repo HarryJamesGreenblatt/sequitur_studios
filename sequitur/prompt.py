@@ -1,4 +1,4 @@
-"""Compose a :class:`~sequitur.grammar.Shot` into a well-formed model prompt.
+"""Compose a :class:`~sequitur.shot.Shot` into a well-formed model prompt.
 
 Two renderers, two builders sharing one grammar:
 
@@ -12,7 +12,7 @@ Two renderers, two builders sharing one grammar:
 
 from __future__ import annotations
 
-from .grammar import Shot
+from .shot import Shot
 
 
 def _compose(shot: Shot, *, moving: bool) -> str:

@@ -13,7 +13,10 @@ Public surface:
     DepthOfField, CameraMovement,
     MotionSpeed, LightQuality,
     LightScheme, LightDirection,
-    ColorTemperature                the grammar vocabulary (orthogonal layers)
+    ColorTemperature                the grammar vocabulary (owned by crew roles)
+    Role, Department, Phase         the crew seat and the axes that place a role
+    Cinematographer, Gaffer,
+    KeyGrip                         the shoot-phase roles that own the vocabulary
     Transition, EditReason,
     EditCategory                    the grammar of the edit (post layer)
     Clip, Edit, Beat, Scene,
@@ -21,23 +24,27 @@ Public surface:
     Cutter                          executes an edit Sequence into a film (MoviePy)
 """
 
-from .grammar import (
+from .crew import Department, Phase, Role
+from .crew.camera import (
     CameraAngle,
-    CameraMovement,
-    ColorTemperature,
+    Cinematographer,
     Composition,
     DepthOfField,
     FocalLength,
-    LightDirection,
-    LightQuality,
-    LightScheme,
-    MotionSpeed,
-    Shot,
     ShootingStyle,
     ShotSize,
     SubjectView,
 )
+from .crew.grip import CameraMovement, KeyGrip, MotionSpeed
+from .crew.lighting import (
+    ColorTemperature,
+    Gaffer,
+    LightDirection,
+    LightQuality,
+    LightScheme,
+)
 from .image import ImageStudio
+from .shot import Shot
 from .edit import (
     Act,
     Beat,
@@ -75,6 +82,12 @@ __all__ = [
     "LightScheme",
     "LightDirection",
     "ColorTemperature",
+    "Role",
+    "Department",
+    "Phase",
+    "Cinematographer",
+    "Gaffer",
+    "KeyGrip",
     "Transition",
     "EditReason",
     "EditCategory",

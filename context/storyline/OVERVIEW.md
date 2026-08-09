@@ -11,7 +11,8 @@ A small film studio built on the Gemini **Omni Flash** video model. Its premise:
 compose every shot through the **grammar of the shot** (Christopher J. Bowen,
 *Grammar of the Shot*, 4th ed.) so the studio speaks proper cinematographic
 language to the model instead of vague prompts. The Bowen vocabulary is encoded
-as typed enums in `sequitur/grammar.py`; `sequitur/prompt.py` renders a `Shot`
+as typed enums under `sequitur/crew/` (re-seated from the old `grammar.py`, `0012`);
+`sequitur/prompt.py` renders a `Shot`
 into a film-literate prompt.
 
 ## How to use this devlog
@@ -89,21 +90,31 @@ into a film-literate prompt.
   existing `hjg-m8jtp7uy-eastus2` AIServices account (**no new resource/deployment**),
   reuses the shared KV key, and emits the Rose Ch. 2/9/12 contract — **dry, 48 kHz /
   16-bit / mono** — validated with a live synth. First code since `0006`.
+- [`0012-the-crew-unflattened.md`](0012-the-crew-unflattened.md)
+  — **built** the first structural step of the crew engine (`0008`): decomposed the
+  source-named, three-departments-in-one `grammar.py` into a **`crew/` package** — a
+  thin `Role` base + `Department`/`Phase` axes, and three shoot-phase roles
+  (**Cinematographer**/**Gaffer**/**KeyGrip**) each owning its verbatim vocabulary;
+  `Shot` moved to `shot.py`. Guarded by a new smoke test and proven **byte-for-byte
+  behaviour-neutral**. Vocabulary-only — `Judgment`/`Director` are the next pass.
 
 ## Current state (keep fresh)
 
-- **Code:** `sequitur/` package (`grammar`, `prompt`, `studio`, `image`, `speech`,
-  `edit`, `cutter`, `config`) + CLI `scripts/generate.py`. `grammar.py` models Bowen
-  as *orthogonal* layers (framing · lens/focus · lighting · motion) — today a *flattened
-  crew* to be re-seated under roles (`0008`). **Three render backends over one
-  grammar:** [`Studio`](../../sequitur/studio.py) = video (Gemini Omni Flash),
-  [`ImageStudio`](../../sequitur/image.py) = still image (Azure Foundry `gpt-image-1`),
-  and [`SpeechRenderer`](../../sequitur/speech.py) = voice (Azure AI Speech, built
-  `0011`); `--image` on the CLI selects the still path. The
+- **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
+  `speech`, `edit`, `cutter`, `config`) + CLI `scripts/generate.py` + a first test
+  (`tests/test_prompt.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a
+  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
+  (`crew/camera.py`), `Gaffer` (`crew/lighting.py`), `KeyGrip` (`crew/grip.py`) — each
+  *owning* its slice of the grammar enums (the old flat `grammar.py`, un-flattened).
+  Roles are vocabulary-only so far; `Judgment`/`Director` come next. **Three render
+  backends over one grammar:** [`Studio`](../../sequitur/studio.py) = video (Gemini
+  Omni Flash), [`ImageStudio`](../../sequitur/image.py) = still image (Azure Foundry
+  `gpt-image-1`), and [`SpeechRenderer`](../../sequitur/speech.py) = voice (Azure AI
+  Speech, built `0011`); `--image` on the CLI selects the still path. The
   post layer is [`edit.py`](../../sequitur/edit.py) (EDL/grammar model) +
   [`cutter.py`](../../sequitur/cutter.py) (MoviePy executor) — note `movie.py` was
   renamed to `edit.py` to avoid the `moviepy` collision. `--dry-run` composes prompts
-  with no API call. Interpreter is a project `.venv` (Python 3.12). No test suite yet.
+  with no API call. Interpreter is a project `.venv` (Python 3.12).
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
   `artifacts/INDEX.md`. **Three full sources** now: *Grammar of the Shot* (production/
   cinematography, encoded in `grammar.py`), *Grammar of the Edit* (post/editorial,
@@ -149,12 +160,12 @@ into a film-literate prompt.
 - **Acquire *Grammar of the Edit*** — **DONE** (`0007`): 8 chapters abridged into
   `artifacts/grammar of the edit/reference/`. Next is building the post layer it
   grounds.
-- **Build the crew engine — phase A (`0008`)** — `Role` + `Judgment` +
-  `Contribution` and a dumb engine over a **local-folder Production** (`0005`
-  provider #1), re-seating `grammar.py`'s enums under
-  `Cinematographer`/`Gaffer`/`KeyGrip` and `edit.py`'s under
-  `Editor`/`Colorist`/`SoundEditor`, with a `Director` reconciler. Heuristic
-  judgment only (no LLM); persona (**B**) and PM-board wiring come later.
+- **Build the crew engine — phase A (`0008`)** — **started (`0012`):** `grammar.py`
+  un-flattened into a `crew/` package (`Role` base + `Cinematographer`/`Gaffer`/
+  `KeyGrip` owning their vocabulary), vocabulary-only. Next: re-seat `edit.py`'s enums
+  under `Editor` (+ `Colorist`/`SoundEditor`), then add the `Judgment` behaviour layer
+  (heuristic A) and a `Director` reconciler over a dumb engine + **local-folder
+  Production** (`0005` provider #1). Persona (**B**) and PM-board wiring come later.
 - **Build the sound layer (`0009`)** — `SpeechRenderer` **built** (`0011`: Azure
   Speech on the existing `hjg-m8jtp7uy-eastus2` account, no new resource / no
   deployment; dry 48 kHz/16-bit/mono, validated live). Next: formalize the `Renderer`

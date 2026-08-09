@@ -16,7 +16,7 @@ import time
 from pathlib import Path
 
 from .config import OUTPUT_DIR, AzureImageConfig, get_azure_image_config
-from .grammar import Shot
+from .shot import Shot
 from .prompt import build_image_prompt
 
 # gpt-image supports a fixed set of sizes; map the studio's aspect ratios onto them.

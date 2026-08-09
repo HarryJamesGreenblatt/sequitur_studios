@@ -3,8 +3,8 @@
 Christopher J. Bowen, *Grammar of the Shot* (4th ed.), DOI
 `10.4324/9781003257356`. This is the studio's **production-phase /
 cinematography** grounding: how to frame, compose, light, and shoot-for-the-edit.
-It is the source the vocabulary in [`sequitur/grammar.py`](../../sequitur/grammar.py)
-is derived from.
+It is the source the vocabulary under [`sequitur/crew/`](../../sequitur/crew/)
+(the `Cinematographer`/`Gaffer`/`KeyGrip` roles) is derived from.
 
 > This file was the project's original one-page overview; it is now the **index**
 > for this source. The faithful, chapter-by-chapter material lives in

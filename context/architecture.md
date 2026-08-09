@@ -62,7 +62,8 @@ a production is represented, driven, and stored, decided in
 ## Reading the map
 
 - **Grammar of the Shot already spans the production phase** — camera, grip, and
-  electric departments are encoded in `grammar.py`. That is the studio's current
+  electric departments are encoded under `crew/` (re-seated from the old `grammar.py`,
+  `0012`, as `Cinematographer`/`Gaffer`/`KeyGrip`). That is the studio's current
   reach: it can compose a single, fully-grounded **shot**.
 - **The next layer is editorial/post — now grounded.** Bowen's companion
   **Grammar of the Edit** has been imported and abridged (8 chapters +
@@ -261,11 +262,14 @@ flowchart TB
 
 ## Open architectural decisions
 
-- **How far to encode roles in code — DECIDED (`0008`).** Roles are first-class
-  behavior (`Role` + `Judgment`), the **Producer is the HITL seat**, the **Director**
-  is the reconciling agent role, and the **Production (PM board)** is the container.
-  See the crew-engine section above. Next: build phase A (heuristic roles over a
-  local-folder Production), re-seating `grammar.py`/`edit.py` under their roles.
+- **How far to encode roles in code — DECIDED (`0008`); phase A STARTED (`0012`).**
+  Roles are first-class behavior (`Role` + `Judgment`), the **Producer is the HITL
+  seat**, the **Director** is the reconciling agent role, and the **Production (PM
+  board)** is the container. See the crew-engine section above. **Started (`0012`):**
+  `grammar.py` un-flattened into a `crew/` package — a thin `Role` base +
+  `Cinematographer`/`Gaffer`/`KeyGrip` owning their vocabulary (vocabulary-only).
+  Next: re-seat `edit.py` under `Editor`, then add the `Judgment` behaviour layer and
+  a `Director` reconciler over a dumb engine + local-folder Production.
 - **Build the post layer (`edit.py`)** — *Grammar of the Edit* is now grounded
   (`0007`); `edit.py` holds the EDL/grammar model and `cutter.py` the MoviePy
   executor. Build out the cut-decision engine (Ch. 5's six motivators) over a

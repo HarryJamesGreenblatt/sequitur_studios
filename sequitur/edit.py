@@ -1,6 +1,6 @@
 """The grammar of the edit — the post-production assembly engine.
 
-Where :mod:`sequitur.grammar` gives the studio the language of a single *shot*,
+Where :mod:`sequitur.shot` gives the studio the language of a single *shot*,
 this module gives it the language of the *cut*: how shots are chosen, joined, and
 paced into a sequence. The vocabulary and the shots -> scenes -> acts model are
 distilled from Christopher J. Bowen's *Grammar of the Edit* (4th ed.); see
@@ -22,7 +22,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 
-from .grammar import Shot
+from .shot import Shot
 
 
 class Transition(Enum):
@@ -81,7 +81,7 @@ class EditCategory(Enum):
 
 @dataclass
 class Clip:
-    """A unit of coverage in the timeline: a :class:`~sequitur.grammar.Shot` with edit timing.
+    """A unit of coverage in the timeline: a :class:`~sequitur.shot.Shot` with edit timing.
 
     ``duration`` is the visible length on screen. ``head_handle`` / ``tail_handle``
     are the spare seconds of the *same* shot beyond the visible IN/OUT — the

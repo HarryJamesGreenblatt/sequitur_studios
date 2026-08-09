@@ -7,8 +7,9 @@ Appendix D), working across the three production **phases**, each grounded in
 proper film-craft domain knowledge instead of vague prompts.
 
 Today the studio implements the **camera department during production** — grounded
-in Christopher J. Bowen's *Grammar of the Shot* and encoded as the typed grammar in
-`sequitur/grammar.py` — and renders that one grammar through **two swappable
+in Christopher J. Bowen's *Grammar of the Shot* and encoded as the typed grammar
+under `sequitur/crew/` (the `Cinematographer`/`Gaffer`/`KeyGrip` roles that own it)
+— and renders that one grammar through **two swappable
 backends**: **video** (Gemini Omni Flash) and **still image** (Azure Foundry
 `gpt-image-1`, the Production Designer's look-dev deliverable). The **editorial/post**
 and **sound** departments are already **grounded** — their reference libraries
@@ -88,7 +89,7 @@ hands them that role's grounded vocabulary and tooling.
 | Phase | Departments (Bowen App. D) | Grounding source | Status |
 |-------|----------------------------|------------------|--------|
 | Pre-production | Producer · Screenwriter · Director · AD · Production Designer | *(story / design — to acquire)* | partial (image look-dev) |
-| **Production** | **Camera · Electric · Grip** (+ Sound) | **Grammar of the Shot** — encoded in `grammar.py` | **implemented** |
+| **Production** | **Camera · Electric · Grip** (+ Sound) | **Grammar of the Shot** — encoded under `crew/` | **implemented** |
 | Post-production | Editor · Colorist · Sound editor · Composer | **Grammar of the Edit** + **Rose, *Producing Great Sound*** — abridged | grounded; code next |
 | Delivery | Producer (marketing, distribution) | — | out of scope (for now) |
 
@@ -99,17 +100,19 @@ The full role → department → grounding → code-layer mapping is
 
 ```
 sequitur/      the studio code
-  grammar.py   Bowen's vocabulary as typed, orthogonal enums + the Shot dataclass
+  crew/        the crew — roles that own the grammar (Role base + Cinematographer/Gaffer/KeyGrip)
+  shot.py      the Shot aggregate the camera/electric/grip crews compose
   prompt.py    Shot -> film-literate prompt (build_prompt video / build_image_prompt still)
   studio.py    video render() / edit() over the Gemini Omni Interactions API
   image.py     still-image render() over Azure Foundry gpt-image
+  speech.py    text-to-speech render() over Azure AI Speech (dry 48kHz/16-bit/mono)
   edit.py      post/editorial EDL + grammar model (Transition, Clip/Scene/Act)
   cutter.py    MoviePy executor for the edit model
   config.py    .env pointers + Key Vault secret fetch (DefaultAzureCredential)
 scripts/
   generate.py  CLI renderer (--image for stills, --dry-run to preview the prompt)
 artifacts/     grounding library — one folder per source (see INDEX.md)
-  grammar of the shot/               production — cinematography (encoded in grammar.py)
+  grammar of the shot/               production — cinematography (encoded under crew/)
   grammar of the edit/               post — editorial (grounds edit.py)
   producing great sound for film.../ sound department (Jay Rose, 18 ch)
     reference/ abridged, session-ready references (ships)
