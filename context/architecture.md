@@ -42,7 +42,7 @@ a production is represented, driven, and stored, decided in
 | Director · DP · Camera Operator · AC | the shot: framing, composition, angle | Grammar of the Shot (Ch. 1–3) | `ShotSize`, `SubjectView`, `CameraAngle`, `ShootingStyle`, `Composition`, `FocalLength`, `DepthOfField` | **implemented** |
 | Gaffer · Electric · Lighting Tech | lighting scheme & quality | Grammar of the Shot (Ch. 4) | `LightQuality`, `LightScheme`, `LightDirection`, `ColorTemperature`, `eye_light` | **implemented** |
 | Key Grip · Grip · Dolly Grip | camera support & movement | Grammar of the Shot (Ch. 6) | `CameraMovement`, `MotionSpeed` | **implemented** |
-| Sound Mixer · Boom Operator | production sound (diegetic capture) | Grammar of the Edit Ch. 3 + **[Rose, *Producing Great Sound*](../artifacts/producing%20great%20sound%20for%20film%20and%20video/INDEX.md)** (18 ch) | `SpeechRenderer` (Azure Speech) + `SoundMixer` role — planned (`0009`) | partial |
+| Sound Mixer · Boom Operator | production sound (diegetic capture) | Grammar of the Edit Ch. 3 + **Rose, *Producing Great Sound*** *([abridged, 18 ch](../artifacts/producing%20great%20sound%20for%20film%20and%20video/INDEX.md))* | `SpeechRenderer` (Azure Speech) + `SoundMixer` role — planned (`0009`) | partial |
 | Script Supervisor · DIT | continuity notes, data, on-set color | Grammar of the Shot (Ch. 5) | feeds the edit layer | planned |
 
 ### Post-production — *assemble*  ← **the next architectural layer**
@@ -51,7 +51,7 @@ a production is represented, driven, and stored, decided in
 |---|---|---|---|---|
 | Editor | cut, continuity assembly, pacing, transitions | **Grammar of the Edit** (Ch. 1–8, abridged) + Grammar of the Shot Ch. 5 | **sequence / edit layer** (`edit.py` model + `cutter.py` executor) | grounded; code in progress |
 | Colorist / DIT | grade, look | Grammar of the Shot (Ch. 4 color) + *(color source)* | color layer | partial (`ColorTemperature`) |
-| Sound editor / mixer · Composer | sound design, score, mix | Grammar of the Edit Ch. 3 + **[Rose](../artifacts/producing%20great%20sound%20for%20film%20and%20video/INDEX.md)** (18 ch) + **toaster-strudel MCP** (score) | `SpeechRenderer` (VO/ADR) · `Composer`→toaster-strudel · `SoundDesigner`/`ReRecordingMixer` — planned (`0009`) | planned |
+| Sound editor / mixer · Composer | sound design, score, mix | Grammar of the Edit Ch. 3 + **Rose** *(abridged)* + **toaster-strudel MCP** (score) | `SpeechRenderer` (VO/ADR) · `Composer`→toaster-strudel · `SoundDesigner`/`ReRecordingMixer` — planned (`0009`) | planned |
 
 ### Delivery — *ship*
 
@@ -72,13 +72,11 @@ a production is represented, driven, and stored, decided in
   [Ch. 5](../artifacts/grammar%20of%20the%20shot/reference/ch05-shooting-for-editing.md))
   can now be built on real grounding. The post-layer model (`edit.py`) + its MoviePy
   executor (`cutter.py`) are scaffolded; the cut-decision engine is designed in [`storyline/0007`](storyline/0007-grounding-the-edit-layer.md) but not yet built.
-- **Sound, story, and production design** are named departments. **Sound is now
-  designed *and* grounded** (`0009` design, `0010` grounding): a multi-phase
-  department grounded by Grammar of the Edit Ch. 3 +
-  **[Rose, *Producing Great Sound*](../artifacts/producing%20great%20sound%20for%20film%20and%20video/INDEX.md)**
-  (18 chapters abridged) + toaster-strudel MCP, with `SpeechRenderer` /
-  `Composer` / `SoundAnalyst` capabilities still to build. **Story and production
-  design** remain placeholders with no dedicated source yet.
+- **Sound, story, and production design** are named departments with no dedicated
+  source yet — placeholders in the grounding library. **Sound is now designed**
+  (`0009`): a multi-phase department grounded by Grammar of the Edit Ch. 3 +
+  **Rose, *Producing Great Sound*** *(abridged, 18 ch — `0010`)* + toaster-strudel MCP, with `SpeechRenderer` /
+  `Composer` / `SoundAnalyst` capabilities.
 
 ## Runtime architecture — engine, instances, and stores
 
@@ -188,6 +186,79 @@ top of this doc stops being a description and becomes objects.
 - **The renderer plane is unchanged.** `Studio`/`ImageStudio`/`Cutter` remain the
   *execution* plane; roles are the *decision* plane.
 
+### The shape, in diagrams
+
+**Structure — entity vs. behavior (Component / ECS).** The Production holds dumb
+per-department data; the engine binds role *behavior*; the Director is itself a role;
+the Judgment is a swappable strategy (heuristic → persona → human).
+
+```mermaid
+classDiagram
+    class Production {
+        <<entity · PM board · dumb data>>
+        +buckets: Department to Bucket
+    }
+    class Bucket {
+        +seeds
+        +history
+        +guidance_refs
+        +output_refs
+    }
+    class Engine {
+        <<driver-client · dumb dispatch>>
+        +mount(production)
+        +run(phase, context) Decision
+    }
+    class Role {
+        <<behavior · in engine>>
+        +concern
+        +grounding
+        +judgment
+        +propose(context, bucket) Contribution
+    }
+    class Director {
+        +reconcile(contributions) Decision
+    }
+    class Judgment {
+        <<strategy>>
+        +decide(role, context) Contribution
+    }
+    class HeuristicJudgment
+    class PersonaJudgment
+    class HumanJudgment
+    Production o-- Bucket
+    Engine --> Production : mounts
+    Engine o-- Role : binds crew
+    Role <|-- Director
+    Role o-- Judgment
+    Judgment <|-- HeuristicJudgment
+    Judgment <|-- PersonaJudgment
+    Judgment <|-- HumanJudgment
+    Role ..> Bucket : reads seeds/guidance · writes history/output
+```
+
+**Authority & data flow — the Producer works the PM board; the crew executes
+against its buckets; the Director reconciles.**
+
+```mermaid
+flowchart TB
+    PROD["Producer — HITL"]
+    subgraph BOARD["Production = PM board (Planner / ADO / GH Projects)"]
+        BC["Camera bucket"]
+        BE["Electric bucket"]
+        BG["Grip bucket"]
+        BED["Editorial bucket"]
+    end
+    subgraph ENG["Engine (singular driver-client) — dumb dispatch"]
+        DP["Cinematographer"] --> DIR["Director (reconciler)"]
+        GAF["Gaffer"] --> DIR
+        GRP["Key Grip"] --> DIR
+    end
+    PROD -->|"brief · greenlight · approve"| BOARD
+    ENG -->|"read seeds/guidance"| BOARD
+    DIR -->|"write decision → history/output"| BOARD
+```
+
 ## Open architectural decisions
 
 - **How far to encode roles in code — DECIDED (`0008`).** Roles are first-class
@@ -210,6 +281,5 @@ top of this doc stops being a description and becomes objects.
 - **Build the sound layer (`0009`)** — `SpeechRenderer` first (Azure Speech on the
   existing `hjg-m8jtp7uy-eastus2` AIServices account, no new resource; standard/HD
   neural voices are call-and-go, no deployment; CNV deferred). Then formalize the
-  `Renderer` protocol and wire **toaster-strudel** as sequitur's first MCP client
-  (`Composer`/`SoundAnalyst`). Grounding source **Rose** is now abridged (18 ch +
-  INDEX, `0010`) — extract per role as the roles are built.
+  `Renderer` protocol, ground the sound roles from the **abridged Rose** (`0010`), and wire
+  **toaster-strudel** as sequitur's first MCP client (`Composer`/`SoundAnalyst`).
