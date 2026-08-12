@@ -147,6 +147,17 @@ into a film-literate prompt.
   panel encodes the DP's grammar, so it *is* a pre-rendered `Shot` and the literal form
   of the keyframe the video studio conditions on (`ImageStudio`). Ch. 8 maps continuity
   board → `Shot` list, animatic → assembled edit, previs → `studio.py` + edit layer. No code.
+- [`0019-readiness-renderer-audit-color-gap.md`](0019-readiness-renderer-audit-color-gap.md)
+  — a **design/planning** session (no code): assessed deployment readiness (grounding
+  spans all four phases, but role code is **one vertical slice** — only the shoot crew
+  executes; `Editor` unwired, only `HeuristicJudgment` A, `Production` unbound); named
+  the **facilitative-renderer** pattern (decision plane = roles, execution plane =
+  renderers) and its principle — *a role warrants its own renderer only when it produces
+  or transforms a distinct media artifact*; and decided to **ground color grading**
+  (Van Hurkman, *Color Correction Handbook* 2e — **seventh source**, scoped to grading
+  only) *before* formalizing the `Renderer` protocol and building the **Colorist + grade
+  renderer**. Sequence LOCKED: ground color → protocol → Colorist. Abridgement runs in
+  its own fresh session (context-heavy).
 
 ## Current state (keep fresh)
 
@@ -246,6 +257,23 @@ into a film-literate prompt.
   of the image backend); a future `StoryboardArtist` role emits that per-shot keyframe.
   Formalize a `Renderer` protocol once a third backend appears (`sora` on the same Azure
   account is a natural next video backend).
+- **Ground color grading (next session, `0019`)** — **decided:** **Van Hurkman,
+  *Color Correction Handbook* (2e)** as the **seventh source**, scoped to *grading only*
+  (primary/secondary, lift/gamma/gain, hue-vs-sat curves, scopes, shot-matching, LUTs,
+  looks); production design stays a separate open cell. Drop chapters into
+  `artifacts/color grading/extraction/` (`.docx`) → convert → abridge → reconcile; log
+  the capture-vs-grade `ColorTemperature` overlap (`Gaffer` ↔ `Colorist`). **Abridgement
+  runs as its own fresh session** (context-heavy, per `0017`/`0018`).
+- **Formalize the `Renderer` protocol (`0006`; sequenced after color, `0019`)** — the
+  deferral has expired (four backends: `Studio`/`ImageStudio`/`SpeechRenderer`/`Cutter`).
+  Define a common `render(decision) -> (result, ref)` + a medium-keyed registry and
+  retrofit the four, so a **role can hold its renderer** instead of the CLI hard-wiring
+  `Studio`.
+- **Build the `Colorist` + grade renderer (`0019`)** — a **transform-flavor** renderer
+  (LUT/curve over rendered clips, ffmpeg/MoviePy) on the color grounding; the `Colorist`
+  owns the grade vocabulary. The renderer audit also queued a **sound-mix renderer**
+  (Re-Recording Mixer, anticipated in `speech.py`) and a non-generative **production-
+  design reference/lookbook** reader.
 - **Sequence layer** — the planned multi-shot planner (180°/30°, matching/reverse,
   eye-line, screen direction). Ch. 5's reference is effectively its spec; build it
   once the editorial grounding lands.
@@ -256,8 +284,9 @@ into a film-literate prompt.
   basis for a typed `Screenwriter` vocabulary. **The rest of the plan phase staged**
   (`0015`): **Directing** (28 ch) imported & mapped, **abridgement deferred to the
   remaining designated session(s)** — start with the Director chapters (7–11, 17). A
-  dedicated **color** source is still open; a **casting/actors** department is newly
-  surfaced but unmodelled.
+  dedicated **color** source is now **decided** (`0019`: Van Hurkman, *Color Correction
+  Handbook* 2e — awaiting import); **production design** remains a separate open cell; a
+  **casting/actors** department is surfaced but unmodelled.
 - **No test suite yet** — **done (`0012`–`0014`):** `tests/` holds `test_prompt.py`,
   `test_edit.py`, `test_engine.py` (assert the public surface). Add coverage as new
   layers land.
