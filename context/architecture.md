@@ -212,7 +212,7 @@ the Judgment is a swappable strategy (heuristic → persona → human).
 ```mermaid
 classDiagram
     class Production {
-        <<entity · PM board · dumb data>>
+        «entity · PM board · dumb data»
         +buckets: Department to Bucket
     }
     class Bucket {
@@ -222,12 +222,12 @@ classDiagram
         +output_refs
     }
     class Engine {
-        <<driver-client · dumb dispatch>>
+        «driver-client · dumb dispatch»
         +mount(production)
         +run(phase, context) Decision
     }
     class Role {
-        <<behavior · in engine>>
+        «behavior · in engine»
         +concern
         +grounding
         +judgment
@@ -237,7 +237,7 @@ classDiagram
         +reconcile(contributions) Decision
     }
     class Judgment {
-        <<strategy>>
+        «strategy»
         +decide(role, context) Contribution
     }
     class HeuristicJudgment
