@@ -138,6 +138,15 @@ into a film-literate prompt.
   seam, and the natural corpus for a Director `PersonaJudgment`. **All five sources now
   abridged** — the grounding library is complete for the departments modelled today;
   next work is code. No code.
+- [`0018-abridging-professional-storyboarding.md`](0018-abridging-professional-storyboarding.md)
+  — folded in a **sixth grounding source**: transformed Paez & Jew's *Professional
+  Storyboarding: Rules of Thumb* (10 curated ch — career/business ch 11–12 dropped) into
+  **10 abridged `reference/` chapters** + a source INDEX, via **four parallel subagents**
+  (the `0017` pattern). Grounds a new **Storyboard Artist / previz** seat, and
+  crucially gives the deferred **reference-keyframe** flow a grounded home: a storyboard
+  panel encodes the DP's grammar, so it *is* a pre-rendered `Shot` and the literal form
+  of the keyframe the video studio conditions on (`ImageStudio`). Ch. 8 maps continuity
+  board → `Shot` list, animatic → assembled edit, previs → `studio.py` + edit layer. No code.
 
 ## Current state (keep fresh)
 
@@ -162,14 +171,16 @@ into a film-literate prompt.
   renamed to `edit.py` to avoid the `moviepy` collision. `--dry-run` composes prompts
   with no API call. Interpreter is a project `.venv` (Python 3.12); tests in `tests/`.
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
-  `artifacts/INDEX.md`. **Five abridged sources** now — the library is **complete for
-  the departments modelled today**: *Grammar of the Shot* (production/cinematography,
+  `artifacts/INDEX.md`. **Six abridged sources** now — spanning every department the
+  architecture models: *Grammar of the Shot* (production/cinematography,
   encoded under `crew/`), *Grammar of the Edit* (post/editorial, 8 abridged chapters +
   INDEX, grounding [`edit.py`](../../sequitur/edit.py)), *Producing Great Sound* (Rose —
   sound, **18 abridged chapters** + INDEX, `0010`), *The Screenwriter's Taxonomy*
-  (Williams — story/development, **8 abridged chapters** + INDEX, `0016`), and
+  (Williams — story/development, **8 abridged chapters** + INDEX, `0016`),
   *Directing* (Rabiger & Hurbis-Cherrier — a Director-centric spine across every phase,
-  **28 abridged chapters** + INDEX, `0017`). Each source
+  **28 abridged chapters** + INDEX, `0017`), and *Professional Storyboarding* (Paez &
+  Jew — previsualization / a Storyboard-Artist seat, **10 abridged chapters** + INDEX,
+  `0018`; a board panel = a pre-rendered `Shot` = the reference keyframe). Each source
   holds the raw book (`extraction/` .docx, `source/` .md — gitignored) and the
   abridged, session-ready `reference/` with a per-source `INDEX.md` (chapter → code
   map). Each abridged chapter ends with a "Studio application" section.
@@ -229,10 +240,12 @@ into a film-literate prompt.
   shots→scenes→acts model in [`edit.py`](../../sequitur/edit.py); cuts/fades first (no
   handles), then handle padding for dissolves; time-align coverage for multicam-style
   cutting. Execution via [`cutter.py`](../../sequitur/cutter.py) (MoviePy).
-- **Wire the reference-keyframe flow** — pass a `gpt-image-1` still into
-  `Studio.render` as a conditioning reference for a shot (the higher-leverage use of
-  the image backend); formalize a `Renderer` protocol once a third backend appears
-  (`sora` on the same Azure account is a natural next video backend).
+- **Wire the reference-keyframe flow** — **now grounded** (`0018`, *Professional
+  Storyboarding*: a board panel *is* a reference keyframe). Pass a `gpt-image-1` still
+  into `Studio.render` as a conditioning reference for a shot (the higher-leverage use
+  of the image backend); a future `StoryboardArtist` role emits that per-shot keyframe.
+  Formalize a `Renderer` protocol once a third backend appears (`sora` on the same Azure
+  account is a natural next video backend).
 - **Sequence layer** — the planned multi-shot planner (180°/30°, matching/reverse,
   eye-line, screen direction). Ch. 5's reference is effectively its spec; build it
   once the editorial grounding lands.

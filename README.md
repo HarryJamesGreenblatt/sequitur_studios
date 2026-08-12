@@ -22,13 +22,14 @@ The studio has two halves, both taking shape:
 
 Today the studio fully implements the **camera department during production** —
 grounded in Christopher J. Bowen's *Grammar of the Shot* and encoded as the typed
-grammar under `sequitur/crew/`. The **grounding library is now complete for every
-department the architecture models**: five film-craft sources imported and abridged —
-Bowen's *Grammar of the Shot* and *Grammar of the Edit*, Jay Rose's *Producing Great
-Sound for Film and Video*, Eric R. Williams' *The Screenwriter's Taxonomy*, and
-Rabiger & Hurbis-Cherrier's *Directing: Film Techniques and Aesthetics* (a
-Director-centric spine across every phase). With grounding done, the remaining work is
-**code** — building out the crew engine's other phases and roles. The full map lives in
+grammar under `sequitur/crew/`. The **grounding library spans every department the
+architecture models**: six film-craft sources imported and abridged — Bowen's *Grammar
+of the Shot* and *Grammar of the Edit*, Jay Rose's *Producing Great Sound for Film and
+Video*, Eric R. Williams' *The Screenwriter's Taxonomy*, Rabiger & Hurbis-Cherrier's
+*Directing: Film Techniques and Aesthetics* (a Director-centric spine across every
+phase), and Paez & Jew's *Professional Storyboarding* (previsualization — a storyboard
+panel *is* a pre-rendered shot). The remaining work is largely **code** — building out
+the crew engine's other phases and roles. The full map lives in
 [`context/architecture.md`](context/architecture.md).
 
 ## Setup
@@ -127,7 +128,7 @@ hands them that role's grounded vocabulary and tooling.
 
 | Phase | Departments (Bowen App. D) | Grounding source | Status |
 |-------|----------------------------|------------------|--------|
-| Pre-production | Producer · Screenwriter · Director · AD · Production Designer | **The Screenwriter's Taxonomy** (story) + **Directing** (dramaturgy, aesthetics, design) — abridged | grounded; roles next |
+| Pre-production | Producer · Screenwriter · Director · AD · Production Designer · Storyboard Artist | **The Screenwriter's Taxonomy** (story) + **Directing** (dramaturgy, aesthetics, design) + **Professional Storyboarding** (previs) — abridged | grounded; roles next |
 | **Production** | **Camera · Electric · Grip** (+ Sound) | **Grammar of the Shot** — encoded under `crew/` | **implemented** |
 | Post-production | Editor · Colorist · Sound editor · Composer | **Grammar of the Edit** + **Rose, *Producing Great Sound*** + **Directing** Ch. 30–36 — abridged | grounded; `Editor` seated, code in progress |
 | Delivery | Producer (marketing, distribution) | **Directing** Ch. 37 — abridged | grounded; out of code scope (for now) |
@@ -169,6 +170,7 @@ artifacts/     grounding library — one folder per source (see INDEX.md)
   producing great sound.../ sound department (Jay Rose, 18 ch)
   the screenwriter's taxonomy/  development — genre/voice/pathway/POV (Williams, 8 ch)
   directing/               Director spine across every phase (Rabiger, 28 ch)
+  professional storyboarding/  previs — staging/board types/workflow (Paez & Jew, 10 ch)
     reference/ abridged, session-ready references (ships)
     source/    verbatim ground truth (gitignored)
 context/
@@ -200,9 +202,11 @@ work is **code**.
 - **The casting/actors dimension** — a new layer *Directing* Ch. 18–20 grounds but no
   code models yet: a `Casting` role + a playable-intent performance concept wired to
   the image (character keyframes) and voice backends.
-- **Reference-keyframe pipeline** — the `gpt-image` still backend already lands
-  concept frames; next is feeding a still into `Studio.render` as a conditioning
-  reference so the shot inherits its composition (image-to-video).
+- **Reference-keyframe pipeline** — now grounded by the abridged *Professional
+  Storyboarding* (a board panel *is* a reference keyframe): the `gpt-image` still
+  backend already lands concept frames; next is a `StoryboardArtist` role that emits a
+  per-shot keyframe and feeds it into `Studio.render` as a conditioning reference so the
+  shot inherits its composition (image-to-video).
 
 ## Model note
 
@@ -220,6 +224,7 @@ MIT — see [`LICENSE`](LICENSE).
 The `reference/` materials are original abridgements that summarise concepts from
 their source works — Christopher J. Bowen's *Grammar of the Shot* and *Grammar of
 the Edit* (4th eds.), Jay Rose's *Producing Great Sound for Film and Video* (4th ed.),
-Eric R. Williams' *The Screenwriter's Taxonomy*, and Michael Rabiger &
-Mick Hurbis-Cherrier's *Directing: Film Techniques and Aesthetics* (6th ed.); the
+Eric R. Williams' *The Screenwriter's Taxonomy*, Michael Rabiger &
+Mick Hurbis-Cherrier's *Directing: Film Techniques and Aesthetics* (6th ed.), and
+Sergio Paez & Anson Jew's *Professional Storyboarding: Rules of Thumb*; the
 books' verbatim text is not distributed with this repository.

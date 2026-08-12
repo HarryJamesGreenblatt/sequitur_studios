@@ -34,6 +34,7 @@ a production is represented, driven, and stored, decided in
 | Director | interpret script → shot selection | **Directing** Ch. 7–11, 17 (aesthetics, POV, style) *(abridged, `0017`)* + Grammar of the Shot Ch. 1 | `Director` role (crew reconciler, `0014`) | partial (`Director`) |
 | Casting · Actors | casting, performance | **Directing** Ch. 18–20 *(abridged, `0017`)* — **a new dimension** the architecture did not model | *(unmodeled — future role)* | new (`0015`) |
 | Production Designer | sets, costume, color concepts | **Directing** Ch. 23 (visual design) *(abridged, `0017`)* + *(dedicated design/color source still open)* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
+| Storyboard Artist · Previs | previsualize the script → a shot-by-shot visual plan | **Professional Storyboarding** (Paez & Jew) *([abridged, 10 ch, `0018`](../artifacts/professional%20storyboarding/INDEX.md))* + Grammar of the Shot Ch. 1–3 | **reference keyframes** (`ImageStudio`) a video shot conditions on · a future `StoryboardArtist` role | grounded (`0018`); role planned |
 | Assistant Director | schedule, coverage, shot list | **Directing** Ch. 24–26 *(abridged, `0017`)* + Grammar of the Shot Ch. 1 | shot list / coverage | planned |
 
 ### Production — *shoot*  ← **implemented today**
@@ -89,6 +90,20 @@ a production is represented, driven, and stored, decided in
   and finishing/grade a second (Ch. 36); a **dedicated design/color source is still
   open.** With five sources abridged, the library is **complete for the departments
   modelled today** — the next work is *code*, not grounding.
+- **Previsualization is now sourced — a sixth abridged source (`0018`).** **Professional
+  Storyboarding** (Paez & Jew — *[abridged, 10 ch](../artifacts/professional%20storyboarding/INDEX.md)*)
+  grounds a seat the architecture had gestured at but never modelled: the **Storyboard
+  Artist / previz** role. Its payoff is unusually concrete because Sequitur *is* a
+  generative previs pipeline — a storyboard panel encodes the same grammar the DP owns
+  (shot size, angle, composition, movement), so a board is a *pre-rendered* `Shot`, and
+  a board panel is the literal form of the **reference keyframe** the video studio
+  conditions a shot on (`ImageStudio`). It gives the long-deferred reference-keyframe
+  flow a grounded home, and its Ch. 8 taxonomy maps a *continuity board* → the ordered
+  `Shot` list, an *animatic* → the assembled edit, and *previs* → what `studio.py` + the
+  edit layer produce. It **overlaps** existing sources from the board artist's upstream
+  lens (Cinema Language/Staging ↔ Grammar of the Shot; Story Structure ↔ Taxonomy Ch. 6
+  / Directing Ch. 5; Emotion ↔ Directing Ch. 10–11) — the plan-phase seat that *commits
+  the shot grammar first*, which the shoot then executes.
 - **Overlaps to reconcile when the axes are encoded:** POV (Directing Ch. 9 ↔ Taxonomy
   Ch. 7 — craft vs. classification), structure/pathway (Directing Ch. 5 ↔ Taxonomy
   Ch. 6), and the post chapters (Directing Ch. 30–34 ↔ Grammar of the Edit — the
