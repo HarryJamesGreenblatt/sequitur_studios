@@ -2,6 +2,9 @@
 .env
 *.key
 
+# Local infra config (contains ADO org / infra names — keep out of the public repo)
+.vscode/mcp.json
+
 # Copyright — verbatim source text (personal grounding only; never publish).
 # Only the transformative reference/ abridgements ship.
 artifacts/**/extraction/

@@ -206,6 +206,21 @@ into a film-literate prompt.
   **colour-science**, and the `Grader` applies it with ffmpeg **`lut3d`**. Contained
   executor swap (the `Grade`/registry untouched). Guard tests (`test_engine` 5, a
   LUT-bake test in `test_grade`); all 26 green + verified end-to-end.
+- [`0024-the-production-board.md`](0024-the-production-board.md)
+  — an **infrastructure + design** session (no `sequitur/` code): realized the `0008`
+  decision that *the Production **is** the PM board* by choosing **Azure DevOps** as the
+  platform (the choice `0005` deferred) and standing up the actual board. Picked ADO over
+  **Microsoft Planner** — both auth-proven from the local `az login`, but Planner is
+  effectively two levels (plan → bucket → task) while the EDL is **four**
+  (Act → Scene → Beat → Shot), which ADO's work-item hierarchy carries natively. Built a
+  custom **Basic-derived process** with four domain-named work-item types
+  (**Act / Scene / Beat / Shot**) wired to the four backlog levels (a new top portfolio
+  for Act; inherited Basic types disabled; states To do / Doing / Done), the seven crew
+  **departments as Area Paths** (orthogonal to status — the ADO-native "bucket = layer"),
+  and **one project = one Production instance** (`0005`). Driven via the official **Azure
+  DevOps MCP** (the toaster-strudel MCP-client pattern); process customization is
+  REST + portal (the backlog-level *behaviors* REST surface is too thin, per first-party
+  docs). Concrete infra identifiers stay in gitignored local notes.
 
 ## Current state (keep fresh)
 
@@ -276,22 +291,29 @@ into a film-literate prompt.
   ([`LICENSE`](../../LICENSE)).
 - **Doc naming convention:** `README.md` (repo root only) · `INDEX.md` (catalogs)
   · `OVERVIEW.md` (guides, like this file).
-- **Production model (decided `0005`, not yet built):** the engine is singular and
-  evolves here; a *production* is external **content** (not a repo fork), modeled as
-  a plan whose buckets = layers, each holding seeds/history *in* the plan and
-  guidance/output *by reference*. The engine is a **driver client** reading through
-  a `ProductionProvider` seam and writing via an `OutputStore` seam. Output bytes
-  live in the **Sequitur Solutions** tenant's **SharePoint via Microsoft Graph**
-  (Azure Blob deferred); MCP is the eventual control-plane connector.
+- **Production model (decided `0005`; board built `0024`, provider code pending):** the
+  engine is singular and evolves here; a *production* is external **content** (not a repo
+  fork), modeled as a plan whose buckets = layers, each holding seeds/history *in* the
+  plan and guidance/output *by reference*. The engine is a **driver client** reading
+  through a `ProductionProvider` seam and writing via an `OutputStore` seam. The
+  **production board is now backed by Azure DevOps** (`0024`: a custom Basic-derived
+  process, Act→Scene→Beat→Shot hierarchy, departments as Area Paths, driven via the ADO
+  MCP); the `ProductionProvider` *code* seam over it is the next build. Output bytes live
+  in the **Sequitur Solutions** tenant's **SharePoint via Microsoft Graph** (Azure Blob
+  deferred).
 
 ## Open threads (keep fresh)
 
 - **Build the provider seams (`0005`)** — `ProductionProvider` +
-  `OutputStore` interfaces with **local-folder** implementations first (no platform,
-  no auth) to prove the driver-client loop against `output/`; then a Graph-backed
-  `OutputStore` (Entra app, least-privilege, scoped to one SharePoint library).
-  Production-store platform (GitHub Projects v2 vs. ADO) is deferred until a first
-  real production exists.
+  `OutputStore` interfaces. The **production-store platform is now chosen and stood up**
+  (`0024`): **Azure DevOps** backs the Production board — a custom Basic-derived process
+  modelling **Act → Scene → Beat → Shot** as a 4-level work-item hierarchy, crew
+  departments as **Area Paths**, one project = one Production. Next: build
+  `ProductionProvider.read_brief()` (board tree → `Brief`) / `write_sequence()` (graded
+  `Sequence` → work items) against it via `DefaultAzureCredential`, with a **local-folder**
+  implementation as the test double; then a Graph-backed `OutputStore` (Entra app,
+  least-privilege, scoped to one SharePoint library) for output bytes. Still pending on
+  the board: the `Mood`/`Look` fields on Shot, and a scaffolded example tree.
 - **Acquire *Grammar of the Edit*** — **DONE** (`0007`): 8 chapters abridged into
   `artifacts/grammar of the edit/reference/`. Next is building the post layer it
   grounds.
