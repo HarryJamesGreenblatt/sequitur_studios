@@ -158,6 +158,18 @@ into a film-literate prompt.
   only) *before* formalizing the `Renderer` protocol and building the **Colorist + grade
   renderer**. Sequence LOCKED: ground color → protocol → Colorist. Abridgement runs in
   its own fresh session (context-heavy).
+- [`0020-grounding-color-the-colorists-handbook.md`](0020-grounding-color-the-colorists-handbook.md)
+  — ran the dedicated abridgement session for `0019`'s **step 1**: folded in a **seventh
+  grounding source**, **Alexis Van Hurkman's *Color Correction Handbook*** (shipped
+  already converted to Markdown), transforming its 10 chapters into **10 abridged
+  `reference/` chapters** + a source INDEX via **five parallel subagents**. Grounds a
+  future **Colorist** role in the post/finishing phase and its two renderer flavors — a
+  *transform* **grade renderer** (LUT/curve over rendered clips, the `Cutter` plane) and
+  a *sensor/reader* **scope read** backing a color `validate()`/broadcast-safe gate.
+  Lift/gamma/gain = the Colorist's first owned vocabulary; Ch. 9 shot matching = the
+  color analogue of the Editor's continuity check across a `Sequence`. Logged the
+  **`ColorTemperature` two-seat overlap** (Gaffer capture ↔ Colorist grade). Scoped to
+  grading only; production-design concepts stay separate. No code.
 
 ## Current state (keep fresh)
 
@@ -182,16 +194,18 @@ into a film-literate prompt.
   renamed to `edit.py` to avoid the `moviepy` collision. `--dry-run` composes prompts
   with no API call. Interpreter is a project `.venv` (Python 3.12); tests in `tests/`.
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
-  `artifacts/INDEX.md`. **Six abridged sources** now — spanning every department the
+  `artifacts/INDEX.md`. **Seven abridged sources** now — spanning every department the
   architecture models: *Grammar of the Shot* (production/cinematography,
   encoded under `crew/`), *Grammar of the Edit* (post/editorial, 8 abridged chapters +
   INDEX, grounding [`edit.py`](../../sequitur/edit.py)), *Producing Great Sound* (Rose —
   sound, **18 abridged chapters** + INDEX, `0010`), *The Screenwriter's Taxonomy*
   (Williams — story/development, **8 abridged chapters** + INDEX, `0016`),
   *Directing* (Rabiger & Hurbis-Cherrier — a Director-centric spine across every phase,
-  **28 abridged chapters** + INDEX, `0017`), and *Professional Storyboarding* (Paez &
+  **28 abridged chapters** + INDEX, `0017`), *Professional Storyboarding* (Paez &
   Jew — previsualization / a Storyboard-Artist seat, **10 abridged chapters** + INDEX,
-  `0018`; a board panel = a pre-rendered `Shot` = the reference keyframe). Each source
+  `0018`; a board panel = a pre-rendered `Shot` = the reference keyframe), and *Color
+  Correction Handbook* (Van Hurkman — post/finishing color grading, grounding a future
+  **Colorist**, **10 abridged chapters** + INDEX, `0020`). Each source
   holds the raw book (`extraction/` .docx, `source/` .md — gitignored) and the
   abridged, session-ready `reference/` with a per-source `INDEX.md` (chapter → code
   map). Each abridged chapter ends with a "Studio application" section.

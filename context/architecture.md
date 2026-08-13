@@ -33,7 +33,7 @@ a production is represented, driven, and stored, decided in
 | Screenwriter | script, structure | **The Screenwriter's Taxonomy** (genre/voice/pathway/POV) *([abridged, 8 ch, `0016`](../artifacts/the%20screenwriter's%20taxonomy/INDEX.md))* + **Directing** Ch. 3–8 *(abridged, `0017`)* | `Screenwriter` role · typed genre vocabulary (`crew/screenwriting.py`) | grounded; role planned |
 | Director | interpret script → shot selection | **Directing** Ch. 7–11, 17 (aesthetics, POV, style) *(abridged, `0017`)* + Grammar of the Shot Ch. 1 | `Director` role (crew reconciler, `0014`) | partial (`Director`) |
 | Casting · Actors | casting, performance | **Directing** Ch. 18–20 *(abridged, `0017`)* — **a new dimension** the architecture did not model | *(unmodeled — future role)* | new (`0015`) |
-| Production Designer | sets, costume, color concepts | **Directing** Ch. 23 (visual design) *(abridged, `0017`)* + *(dedicated design/color source still open)* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
+| Production Designer | sets, costume, color concepts | **Directing** Ch. 23 (visual design) *(abridged, `0017`)* + *(dedicated production-design source still open)* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
 | Storyboard Artist · Previs | previsualize the script → a shot-by-shot visual plan | **Professional Storyboarding** (Paez & Jew) *([abridged, 10 ch, `0018`](../artifacts/professional%20storyboarding/INDEX.md))* + Grammar of the Shot Ch. 1–3 | **reference keyframes** (`ImageStudio`) a video shot conditions on · a future `StoryboardArtist` role | grounded (`0018`); role planned |
 | Assistant Director | schedule, coverage, shot list | **Directing** Ch. 24–26 *(abridged, `0017`)* + Grammar of the Shot Ch. 1 | shot list / coverage | planned |
 
@@ -52,7 +52,7 @@ a production is represented, driven, and stored, decided in
 | Department / role | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
 | Editor | cut, continuity assembly, pacing, transitions | **Grammar of the Edit** (Ch. 1–8, abridged) + **Directing** Ch. 30–34 *(abridged, `0017`)* + Grammar of the Shot Ch. 5 | **sequence / edit layer** (`edit.py` model + `cutter.py` executor) | grounded; code in progress |
-| Colorist / DIT | grade, look | Grammar of the Shot (Ch. 4 color) + **Directing** Ch. 36 (grade/finishing) *(abridged, `0017`)* + *(color source)* | color layer | partial (`ColorTemperature`) |
+| Colorist / DIT | grade, look | **Color Correction Handbook** (Van Hurkman) *([abridged, 10 ch, `0020`](../artifacts/color%20correction%20handbook/INDEX.md))* + Grammar of the Shot (Ch. 4 color) + **Directing** Ch. 36 (grade/finishing) *(abridged, `0017`)* | color layer · a future `Colorist` role + *transform*-flavor **grade renderer** | grounded (`0020`); role planned |
 | Sound editor / mixer · Composer | sound design, score, mix | Grammar of the Edit Ch. 3 + **Rose** *(abridged)* + **Directing** Ch. 35–36 *(abridged, `0017`)* + **toaster-strudel MCP** (score) | `SpeechRenderer` (VO/ADR) · `Composer`→toaster-strudel · `SoundDesigner`/`ReRecordingMixer` — planned (`0009`) | planned |
 
 ### Delivery — *ship*
@@ -104,9 +104,25 @@ a production is represented, driven, and stored, decided in
   lens (Cinema Language/Staging ↔ Grammar of the Shot; Story Structure ↔ Taxonomy Ch. 6
   / Directing Ch. 5; Emotion ↔ Directing Ch. 10–11) — the plan-phase seat that *commits
   the shot grammar first*, which the shoot then executes.
+- **Color grading is now sourced — a seventh abridged source (`0020`).** The
+  **Color Correction Handbook** (Van Hurkman — *[abridged, 10 ch](../artifacts/color%20correction%20handbook/INDEX.md)*)
+  closes the color gap flagged in [`storyline/0019`](storyline/0019-readiness-renderer-audit-color-gap.md):
+  before it, color was only *borrowed* — the Gaffer's capture-time `ColorTemperature`
+  (Grammar of the Shot Ch. 4) plus a paragraph of Directing Ch. 36. It grounds a future
+  **Colorist** role in the post/finishing phase and its two renderer flavors: a
+  *transform* **grade renderer** (LUT/curve over rendered clips — the `Cutter` plane
+  under the coming `Renderer` protocol) and a *sensor/reader* **scope read** (waveform/
+  vectorscope/histogram/parade) that backs a color **`validate()`** / broadcast-safe
+  gate — the color counterpart of `Sequence.validate()` and the Rose sound-layer
+  validate(). Scoped to **grading only**; production-design *concepts* stay a separate
+  open cell (Directing Ch. 23). Its **lift/gamma/gain** primary vocabulary is the
+  Colorist's first owned enum, and its Ch. 9 **shot matching** is the color analogue of
+  the Editor's continuity check across a `Sequence`.
 - **Overlaps to reconcile when the axes are encoded:** POV (Directing Ch. 9 ↔ Taxonomy
   Ch. 7 — craft vs. classification), structure/pathway (Directing Ch. 5 ↔ Taxonomy
-  Ch. 6), and the post chapters (Directing Ch. 30–34 ↔ Grammar of the Edit — the
+  Ch. 6), **`ColorTemperature` in two seats** (Gaffer *capture* / in-camera white
+  balance ↔ Colorist *grade* / re-balance — Color Correction Handbook Ch. 4), and the
+  post chapters (Directing Ch. 30–34 ↔ Grammar of the Edit — the
   director's-eye complement to the editor's working manual). Directing Ch. 35 (music)
   overlaps Rose Ch. 14 + the toaster-strudel score seam.
 

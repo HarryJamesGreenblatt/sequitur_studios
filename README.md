@@ -23,13 +23,14 @@ The studio has two halves, both taking shape:
 Today the studio fully implements the **camera department during production** —
 grounded in Christopher J. Bowen's *Grammar of the Shot* and encoded as the typed
 grammar under `sequitur/crew/`. The **grounding library spans every department the
-architecture models**: six film-craft sources imported and abridged — Bowen's *Grammar
+architecture models**: seven film-craft sources imported and abridged — Bowen's *Grammar
 of the Shot* and *Grammar of the Edit*, Jay Rose's *Producing Great Sound for Film and
 Video*, Eric R. Williams' *The Screenwriter's Taxonomy*, Rabiger & Hurbis-Cherrier's
 *Directing: Film Techniques and Aesthetics* (a Director-centric spine across every
-phase), and Paez & Jew's *Professional Storyboarding* (previsualization — a storyboard
-panel *is* a pre-rendered shot). The remaining work is largely **code** — building out
-the crew engine's other phases and roles. The full map lives in
+phase), Paez & Jew's *Professional Storyboarding* (previsualization — a storyboard
+panel *is* a pre-rendered shot), and Alexis Van Hurkman's *Color Correction Handbook*
+(the grade — grounding a future Colorist). The remaining work is largely **code** —
+building out the crew engine's other phases and roles. The full map lives in
 [`context/architecture.md`](context/architecture.md).
 
 ## Setup
@@ -130,7 +131,7 @@ hands them that role's grounded vocabulary and tooling.
 |-------|----------------------------|------------------|--------|
 | Pre-production | Producer · Screenwriter · Director · AD · Production Designer · Storyboard Artist | **The Screenwriter's Taxonomy** (story) + **Directing** (dramaturgy, aesthetics, design) + **Professional Storyboarding** (previs) — abridged | grounded; roles next |
 | **Production** | **Camera · Electric · Grip** (+ Sound) | **Grammar of the Shot** — encoded under `crew/` | **implemented** |
-| Post-production | Editor · Colorist · Sound editor · Composer | **Grammar of the Edit** + **Rose, *Producing Great Sound*** + **Directing** Ch. 30–36 — abridged | grounded; `Editor` seated, code in progress |
+| Post-production | Editor · Colorist · Sound editor · Composer | **Grammar of the Edit** + **Rose, *Producing Great Sound*** + **Color Correction Handbook** (Van Hurkman) + **Directing** Ch. 30–36 — abridged | grounded; `Editor` seated, code in progress |
 | Delivery | Producer (marketing, distribution) | **Directing** Ch. 37 — abridged | grounded; out of code scope (for now) |
 
 The studio's executable core is the **crew engine**: roles as behaviour (`Role` +
@@ -171,6 +172,7 @@ artifacts/     grounding library — one folder per source (see INDEX.md)
   the screenwriter's taxonomy/  development — genre/voice/pathway/POV (Williams, 8 ch)
   directing/               Director spine across every phase (Rabiger, 28 ch)
   professional storyboarding/  previs — staging/board types/workflow (Paez & Jew, 10 ch)
+  color correction handbook/   post — color grading (Van Hurkman, 10 ch)
     reference/ abridged, session-ready references (ships)
     source/    verbatim ground truth (gitignored)
 context/
@@ -225,6 +227,7 @@ The `reference/` materials are original abridgements that summarise concepts fro
 their source works — Christopher J. Bowen's *Grammar of the Shot* and *Grammar of
 the Edit* (4th eds.), Jay Rose's *Producing Great Sound for Film and Video* (4th ed.),
 Eric R. Williams' *The Screenwriter's Taxonomy*, Michael Rabiger &
-Mick Hurbis-Cherrier's *Directing: Film Techniques and Aesthetics* (6th ed.), and
-Sergio Paez & Anson Jew's *Professional Storyboarding: Rules of Thumb*; the
+Mick Hurbis-Cherrier's *Directing: Film Techniques and Aesthetics* (6th ed.),
+Sergio Paez & Anson Jew's *Professional Storyboarding: Rules of Thumb*, and
+Alexis Van Hurkman's *Color Correction Handbook*; the
 books' verbatim text is not distributed with this repository.
