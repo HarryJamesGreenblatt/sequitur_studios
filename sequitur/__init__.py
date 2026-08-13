@@ -16,7 +16,8 @@ Public surface:
     ColorTemperature                the grammar vocabulary (owned by crew roles)
     Role, Department, Phase         the crew seat and the axes that place a role
     Cinematographer, Gaffer,
-    KeyGrip, Editor                 the roles that own the shot / edit vocabulary
+    KeyGrip, Editor, Colorist       the roles that own the shot / edit / grade vocabulary
+    Look, TonalRange, Cast          the grade vocabulary (owned by the Colorist)
     Brief, Contribution             a role's decision context and its proposed slice
     Judgment, HeuristicJudgment     the swappable reasoning strategy (heuristic A)
     Director, Engine, shoot_crew    reconcile the crew · dispatch a phase · default crew
@@ -24,10 +25,18 @@ Public surface:
     EditCategory                    the grammar of the edit (owned by the Editor)
     Clip, Edit, Beat, Scene,
     Act, Sequence, TimelineEntry    the shots -> scenes -> acts assembly model
+    Grade, GradeOp, Contrast,
+    ColorBalance, Saturation        the reified grade decision model (a Command stack)
+    register_look, named_look,
+    registered_looks                a production's own named looks (Grade templates)
     Cutter                          executes an edit Sequence into a film (MoviePy)
-    Renderer, Medium, RenderResult  the execution-plane seam (decision -> media artifact)
+    Grader                          executes a Grade over a rendered clip (ffmpeg)
+    Renderer, Medium, RenderResult  the producer seam (decision -> new media artifact)
+    Transform, Operation            the operator seam (artifact + decision -> same medium)
     renderer_for, register,
-    registered_media                the medium-keyed renderer registry
+    registered_media                the medium-keyed producer registry
+    operator_for, register_operator,
+    registered_operations           the operation-keyed transform registry
 """
 
 from .crew import (
@@ -53,6 +62,7 @@ from .crew.camera import (
     SubjectView,
 )
 from .crew.editorial import EditCategory, EditReason, Editor, Transition
+from .crew.colorist import Cast, Colorist, Look, TonalRange
 from .crew.grip import CameraMovement, KeyGrip, MotionSpeed
 from .crew.lighting import (
     ColorTemperature,
@@ -72,14 +82,21 @@ from .edit import (
     Sequence,
     TimelineEntry,
 )
+from .grade import ColorBalance, Contrast, Grade, GradeOp, Saturation, named_look, register_look, registered_looks
 from .cutter import Cutter
+from .grader import Grader
 from .prompt import build_image_prompt, build_prompt
 from .render import (
     Medium,
+    Operation,
     RenderResult,
     Renderer,
+    Transform,
+    operator_for,
     register,
+    register_operator,
     registered_media,
+    registered_operations,
     renderer_for,
 )
 from .speech import SpeechRenderer
@@ -112,6 +129,10 @@ __all__ = [
     "Gaffer",
     "KeyGrip",
     "Editor",
+    "Colorist",
+    "Look",
+    "TonalRange",
+    "Cast",
     "Brief",
     "Contribution",
     "Judgment",
@@ -129,11 +150,25 @@ __all__ = [
     "Act",
     "Sequence",
     "TimelineEntry",
+    "Grade",
+    "GradeOp",
+    "Contrast",
+    "ColorBalance",
+    "Saturation",
+    "register_look",
+    "named_look",
+    "registered_looks",
     "Cutter",
+    "Grader",
     "Renderer",
+    "Transform",
     "Medium",
+    "Operation",
     "RenderResult",
     "renderer_for",
+    "operator_for",
     "register",
+    "register_operator",
     "registered_media",
+    "registered_operations",
 ]

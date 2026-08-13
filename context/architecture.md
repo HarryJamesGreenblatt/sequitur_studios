@@ -52,7 +52,7 @@ a production is represented, driven, and stored, decided in
 | Department / role | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
 | Editor | cut, continuity assembly, pacing, transitions | **Grammar of the Edit** (Ch. 1–8, abridged) + **Directing** Ch. 30–34 *(abridged, `0017`)* + Grammar of the Shot Ch. 5 | **sequence / edit layer** (`edit.py` model + `cutter.py` executor) | grounded; code in progress |
-| Colorist / DIT | grade, look | **Color Correction Handbook** (Van Hurkman) *([abridged, 10 ch, `0020`](../artifacts/color%20correction%20handbook/INDEX.md))* + Grammar of the Shot (Ch. 4 color) + **Directing** Ch. 36 (grade/finishing) *(abridged, `0017`)* | color layer · a future `Colorist` role + *transform*-flavor **grade renderer** | grounded (`0020`); role planned |
+| Colorist / DIT | grade, look | **Color Correction Handbook** (Van Hurkman) *([abridged, 10 ch, `0020`](../artifacts/color%20correction%20handbook/INDEX.md))* + Grammar of the Shot (Ch. 4 color) + **Directing** Ch. 36 (grade/finishing) *(abridged, `0017`)* | `crew/colorist.py` role + `grade.py` reified model + `grader.py` *transform* (ffmpeg) | **implemented (`0022`)** |
 | Sound editor / mixer · Composer | sound design, score, mix | Grammar of the Edit Ch. 3 + **Rose** *(abridged)* + **Directing** Ch. 35–36 *(abridged, `0017`)* + **toaster-strudel MCP** (score) | `SpeechRenderer` (VO/ADR) · `Composer`→toaster-strudel · `SoundDesigner`/`ReRecordingMixer` — planned (`0009`) | planned |
 
 ### Delivery — *ship*
@@ -177,12 +177,15 @@ not yet built.
   + medium-keyed registry** is now **built** ([`render.py`](../sequitur/render.py),
   `0021`): a `Medium` enum (video/still/voice/film), a `RenderResult(raw, ref)` pair,
   a `runtime_checkable` `Renderer` protocol, and a lazy `renderer_for(medium)` registry.
-  The four backends were retrofitted onto it — `Studio` (video), `ImageStudio` (still),
-  `SpeechRenderer` (voice), and `Cutter` (film, a *transform* renderer) — so a role can
-  now *hold* a renderer by medium instead of the CLI hard-wiring `Studio`. `Composer`→
-  Strudel and a non-generative `SoundAnalyst` (audio MIR) are the next backends to
-  register; the coming **Colorist grade** renderer plugs a `GRADE` medium into the same
-  registry.
+  The four producers were retrofitted onto it — `Studio` (video), `ImageStudio` (still),
+  `SpeechRenderer` (voice), and `Cutter` (film, a *reducer*: n clips → one film) — so a
+  role can now *hold* a renderer by medium instead of the CLI hard-wiring `Studio`. A
+  **second plane** (`0022`) holds **operators** (`Transform`) — medium-preserving
+  decorators over a producer's output (1 media in → 1 out), keyed by an `Operation` verb
+  rather than an output `Medium`, because a colour grade *preserves* its input's medium
+  and so can't be keyed by artifact kind. Its first member is the **`Grader`**
+  (`Operation.GRADE`), built with the Colorist (`0022`). `Composer`→Strudel and a
+  non-generative `SoundAnalyst` (audio MIR) are the next backends to register.
 
 - **Secrets via Key Vault.** Backend API keys are never stored in plaintext — they
   live in Azure Key Vault and are fetched at runtime via

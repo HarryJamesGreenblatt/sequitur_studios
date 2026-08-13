@@ -37,6 +37,7 @@ class Department(Enum):
     GRIP = "grip"
     EDITORIAL = "editorial"
     SOUND = "sound"
+    COLOR = "color"
     DIRECTION = "direction"
 
 

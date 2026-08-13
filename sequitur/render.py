@@ -17,9 +17,13 @@ Every renderer:
   URL once outputs live in a blob / SharePoint store — storyline 0005).
 
 A medium-keyed registry lets a role *hold* a renderer **by medium** instead of the
-caller hard-wiring a concrete class — the seam the coming Colorist / grade renderer
-plugs into. Factories are lazy, so importing the package never constructs an API
-client or requires credentials.
+caller hard-wiring a concrete class. Producers (0 media in -> 1 out) live on that
+plane, keyed by the :class:`Medium` they create. A second plane holds **operators**
+(:class:`Transform`) — medium-preserving decorators over a producer's output (1
+media in -> 1 out), keyed by :class:`Operation` — because a transform like a colour
+grade preserves its input's medium and so cannot be keyed by an output artifact
+kind (storyline 0022). Factories are lazy on both planes, so importing the package
+never constructs an API client or requires credentials.
 """
 
 from __future__ import annotations
@@ -30,12 +34,24 @@ from typing import Callable, NamedTuple, Protocol, runtime_checkable
 
 
 class Medium(Enum):
-    """The kind of artifact a renderer produces — the registry key."""
+    """The kind of artifact a renderer produces — the producer-registry key."""
 
     VIDEO = "video"  # Studio — Gemini Omni Flash
     STILL = "still"  # ImageStudio — Azure Foundry gpt-image
     VOICE = "voice"  # SpeechRenderer — Azure AI Speech
-    FILM = "film"  # Cutter — an assembled edit (a transform renderer)
+    FILM = "film"  # Cutter — an assembled edit (a reducer: n clips -> one film)
+
+
+class Operation(Enum):
+    """A medium-preserving transform over an existing artifact — the operator key.
+
+    Distinct from :class:`Medium`, which names what a *producer* creates. An
+    operation is a *verb*: it decorates a producer's output (1 media in -> 1 out,
+    same medium), so it is keyed by what it *does*, not by an artifact kind
+    (storyline 0022).
+    """
+
+    GRADE = "grade"  # Grader — a colour grade over a rendered clip or still
 
 
 class RenderResult(NamedTuple):
@@ -52,7 +68,7 @@ class RenderResult(NamedTuple):
 
 @runtime_checkable
 class Renderer(Protocol):
-    """The execution-plane contract: a decision in, a media artifact out."""
+    """The producer contract: a decision in, a new media artifact out (0 media in)."""
 
     medium: Medium
 
@@ -61,16 +77,36 @@ class Renderer(Protocol):
     ) -> RenderResult: ...
 
 
+@runtime_checkable
+class Transform(Protocol):
+    """The operator contract: an existing artifact + a decision -> the same medium.
+
+    Unlike a :class:`Renderer` (0 media in -> 1 out, keyed by the :class:`Medium`
+    it *produces*), a Transform consumes one already-rendered ``artifact`` and
+    returns an artifact of the *same* medium — a Decorator over a producer's output
+    (Nystrom's decorated-service refinement of the Service Locator; storyline 0022).
+    Taking the input media as an explicit argument makes the 1-media dependency
+    visible in the signature rather than hiding it inside the decision.
+    """
+
+    operation: Operation
+
+    def apply(
+        self, artifact, decision, *, out_path: str | Path | None = None
+    ) -> RenderResult: ...
+
+
 _FACTORIES: dict[Medium, Callable[[], Renderer]] = {}
+_OPERATORS: dict[Operation, Callable[[], Transform]] = {}
 
 
 def register(medium: Medium, factory: Callable[[], Renderer]) -> None:
-    """Bind a ``medium`` to a zero-arg ``factory`` that builds its renderer."""
+    """Bind a ``medium`` to a zero-arg ``factory`` that builds its producer."""
     _FACTORIES[medium] = factory
 
 
 def renderer_for(medium: Medium) -> Renderer:
-    """Build the renderer registered for ``medium``.
+    """Build the producer registered for ``medium``.
 
     Construction is deferred to call time, so a role can ask for a renderer by
     medium and only pay the API-client / credential cost when it actually renders.
@@ -85,8 +121,29 @@ def renderer_for(medium: Medium) -> Renderer:
 
 
 def registered_media() -> tuple[Medium, ...]:
-    """The media that currently have a renderer registered."""
+    """The media that currently have a producer registered."""
     return tuple(_FACTORIES)
+
+
+def register_operator(operation: Operation, factory: Callable[[], Transform]) -> None:
+    """Bind an ``operation`` to a zero-arg ``factory`` that builds its transform."""
+    _OPERATORS[operation] = factory
+
+
+def operator_for(operation: Operation) -> Transform:
+    """Build the transform registered for ``operation`` (lazily, like producers)."""
+    try:
+        factory = _OPERATORS[operation]
+    except KeyError:
+        raise LookupError(
+            f"No transform registered for operation {operation.value!r}."
+        ) from None
+    return factory()
+
+
+def registered_operations() -> tuple[Operation, ...]:
+    """The operations that currently have a transform registered."""
+    return tuple(_OPERATORS)
 
 
 def _register_defaults() -> None:
@@ -113,10 +170,16 @@ def _register_defaults() -> None:
 
         return Cutter()
 
+    def grade() -> Transform:
+        from .grader import Grader
+
+        return Grader()
+
     register(Medium.VIDEO, video)
     register(Medium.STILL, still)
     register(Medium.VOICE, voice)
     register(Medium.FILM, film)
+    register_operator(Operation.GRADE, grade)
 
 
 _register_defaults()

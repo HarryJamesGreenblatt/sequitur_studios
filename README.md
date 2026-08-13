@@ -29,8 +29,8 @@ Video*, Eric R. Williams' *The Screenwriter's Taxonomy*, Rabiger & Hurbis-Cherri
 *Directing: Film Techniques and Aesthetics* (a Director-centric spine across every
 phase), Paez & Jew's *Professional Storyboarding* (previsualization — a storyboard
 panel *is* a pre-rendered shot), and Alexis Van Hurkman's *Color Correction Handbook*
-(the grade — grounding a future Colorist). The remaining work is largely **code** —
-building out the crew engine's other phases and roles. The full map lives in
+(the grade — grounding the **Colorist**, now seated). The remaining work is largely
+**code** — building out the crew engine's other phases and roles. The full map lives in
 [`context/architecture.md`](context/architecture.md).
 
 ## Setup
@@ -159,13 +159,15 @@ sequitur/      the studio code
   studio.py    video render() / edit() over the Gemini Omni Interactions API
   image.py     still-image render() over Azure Foundry gpt-image
   speech.py    text-to-speech render() over Azure AI Speech (dry 48kHz/16-bit/mono)
-  render.py    the renderer seam — Renderer protocol · Medium · renderer_for registry
+  render.py    the renderer seam — Renderer/Transform protocols · Medium/Operation · registries
   edit.py      post/editorial EDL + assembly model (Clip/Beat/Scene/Act/Sequence)
   cutter.py    MoviePy executor for the edit model
+  grade.py     reified colour-grade model (Grade = a Command stack of ops) + look registry
+  grader.py    ffmpeg transform that applies a Grade to a rendered clip or still
   config.py    .env pointers + Key Vault secret fetch (DefaultAzureCredential)
 scripts/
   generate.py  CLI renderer (--image for stills, --dry-run to preview the prompt)
-tests/         behaviour-guard tests (test_prompt · test_edit · test_engine · test_render)
+tests/         behaviour-guard tests (test_prompt · test_edit · test_engine · test_render · test_grade)
 artifacts/     grounding library — one folder per source (see INDEX.md)
   grammar of the shot/     production — cinematography (encoded under crew/)
   grammar of the edit/     post — editorial (grounds edit.py + the Editor)
@@ -200,8 +202,12 @@ work is **code**.
   grounded in the abridged *Directing* chapters (the **B** in the A→B seam).
 - **Sound & score** — `SpeechRenderer` (Azure Speech) is **built**; next are the
   `Composer`/`SoundAnalyst` roles over the
-  [toaster-strudel](https://github.com/HarryJamesGreenblatt/toaster-strudel) MCP seam,
-  and a formal `Renderer` protocol now that a third backend exists.
+  [toaster-strudel](https://github.com/HarryJamesGreenblatt/toaster-strudel) MCP seam.
+  The formal `Renderer` protocol is now **built** (`0021`), with a second **operator**
+  plane for medium-preserving transforms (`0022`).
+- **Colour grade** — the **Colorist** is **built** (`0022`): a reified `Grade` (a Command
+  stack), the `Grader` ffmpeg transform, and a production **look registry**. Next are the
+  HSL/shape secondaries and a scope-reader `validate()` / broadcast-safe gate.
 - **The casting/actors dimension** — a new layer *Directing* Ch. 18–20 grounds but no
   code models yet: a `Casting` role + a playable-intent performance concept wired to
   the image (character keyframes) and voice backends.
