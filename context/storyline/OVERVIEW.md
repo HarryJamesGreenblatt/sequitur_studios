@@ -193,15 +193,27 @@ into a film-literate prompt.
   is an **open preset library** (no completeness claim) and a **production look registry**
   (`register_look`) lets a production name its own `Grade`. Guard test `tests/test_grade.py`
   (8); all 25 smoke tests green.
+- [`0023-the-assemble-phase-and-the-grade.md`](0023-the-assemble-phase-and-the-grade.md)
+  — two advances in one: **(1)** made the crew engine **phase-aware** so the
+  `Colorist`/`Editor` actually participate — `Brief` gained `shots` (the coverage), the
+  `Editor`/`Colorist` gained assemble-phase heuristics (cut structure + base grade), and
+  a new **`Director.assemble`** / **`Engine.assemble`** reconcile them into a **graded
+  edit `Sequence`** (each `Clip` now carries a `grade`; the default crew is the
+  phase-filtered `full_crew`) — advancing the `0014` thread; and **(2)** replaced the
+  grade executor's placeholder ffmpeg `eq`/`colorbalance` filters (`0022`) with the
+  industry-standard **3D-LUT** path — a new [`lut.py`](../../sequitur/lut.py) bakes the
+  grade's primaries (ASC CDL + Rec. 709 saturation) into a spec-correct `.cube` via
+  **colour-science**, and the `Grader` applies it with ffmpeg **`lut3d`**. Contained
+  executor swap (the `Grade`/registry untouched). Guard tests (`test_engine` 5, a
+  LUT-bake test in `test_grade`); all 26 green + verified end-to-end.
 
 ## Current state (keep fresh)
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
-  `speech`, `edit`, `cutter`, `grade`, `grader`, `render`, `config`) + CLI
+  `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `config`) + CLI
   `scripts/generate.py` + tests
   (`tests/test_prompt.py` · `test_edit.py` · `test_engine.py` · `test_render.py` ·
-  `test_grade.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a
-  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
+  `test_grade.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
   (`crew/camera.py`), `Gaffer` (`crew/lighting.py`), `KeyGrip` (`crew/grip.py`) — each
   *owning* its slice of the grammar enums (the old flat `grammar.py`, un-flattened),
   plus the assemble-phase `Editor` (`crew/editorial.py`) and `Colorist`
@@ -217,7 +229,10 @@ into a film-literate prompt.
   ([`render.py`](../../sequitur/render.py), `0021`); a **second registry plane** (`0022`)
   holds **operators** (`Transform`, keyed by `Operation`) — the first being the
   **`Grader`** color grade ([`grader.py`](../../sequitur/grader.py)) driven by the
-  Colorist's reified **`Grade`** model ([`grade.py`](../../sequitur/grade.py)). `--image`
+  Colorist's reified **`Grade`** model ([`grade.py`](../../sequitur/grade.py)); the
+  `Grader` bakes the grade's primaries into a `.cube` LUT via colour-science
+  ([`lut.py`](../../sequitur/lut.py)) and applies it with ffmpeg `lut3d` (`0023`).
+  `--image`
   on the CLI selects the still path. The
   post layer is [`edit.py`](../../sequitur/edit.py) (the editorial EDL model + its
   `timeline()`/`validate()`, the analogue of `shot.py`) with its vocabulary owned by
@@ -283,10 +298,12 @@ into a film-literate prompt.
 - **Build the crew engine — phase A (`0008`)** — **in progress:** vocabulary re-seated
   under `crew/` — `Cinematographer`/`Gaffer`/`KeyGrip` (`0012`) and `Editor` (`0013`);
   **behaviour** added (`0014`) — `Judgment`/`HeuristicJudgment`, `Brief`/`Contribution`,
-  `Director`, and a dumb `Engine` that assembles a shoot-phase `Shot`. Next:
-  assemble-phase behaviour (Editor over clips → `Sequence`, phase-aware Director),
-  then bind a **local-folder Production** (`0005` provider #1) in place of the bare
-  `Brief`, then `PersonaJudgment` (**B**) and PM-board wiring.
+  `Director`, and a dumb `Engine` that assembles a shoot-phase `Shot`. **Assemble-phase
+  behaviour built (`0023`):** `Engine.assemble` + a phase-aware `Director.assemble`
+  reconcile the `Editor` (cut) and `Colorist` (base grade) into a graded edit `Sequence`.
+  Next: bind a **local-folder Production** (`0005` provider #1) in place of the bare
+  `Brief`, a real cut-decision heuristic (Ch. 5 motivators) + per-shot grade matching
+  (Ch. 9), then `PersonaJudgment` (**B**) and PM-board wiring.
 - **Build the sound layer (`0009`)** — `SpeechRenderer` **built** (`0011`: Azure
   Speech on the existing `hjg-m8jtp7uy-eastus2` account, no new resource / no
   deployment; dry 48 kHz/16-bit/mono, validated live). The `Renderer` protocol is now
@@ -320,15 +337,18 @@ into a film-literate prompt.
   a second **operator** plane (`Transform` / `operator_for`, keyed by `Operation`) for
   medium-preserving transforms. Still to do: let a **role hold its renderer** through the
   registry instead of the CLI hard-wiring `Studio`.
-- **Build the `Colorist` + grade renderer (`0019`)** — **DONE** (`0022`): the `Colorist`
+- **Build the `Colorist` + grade renderer (`0019`)** — **DONE** (`0022`–`0023`): the `Colorist`
   role owns the grade vocabulary (`Look`/`TonalRange`/`Cast`), the reified `Grade` model
   ([`grade.py`](../../sequitur/grade.py)) is a plan-serializable Command stack, and the
-  `Grader` ([`grader.py`](../../sequitur/grader.py)) is the medium-preserving ffmpeg
-  transform. Next: **HSL/shape secondaries** (Ch. 5–6), a **scope-reader `validate()`**/
-  broadcast-safe gate (Ch. 2/10, a *reader*-flavor transform), and Ch. 9 **shot matching**
-  across a `Sequence`. The renderer audit also queued a **sound-mix renderer** (Re-Recording
-  Mixer, anticipated in `speech.py`) and a non-generative **production-design
-  reference/lookbook** reader.
+  `Grader` ([`grader.py`](../../sequitur/grader.py)) is the medium-preserving transform —
+  now the **true-to-form 3D-LUT path** (`0023`): grade primaries baked to a spec-correct
+  `.cube` via colour-science ([`lut.py`](../../sequitur/lut.py)), applied with ffmpeg
+  `lut3d` (replacing the `0022` `eq`/`colorbalance` placeholder). Next: **HSL/shape
+  secondaries** (Ch. 5–6, as *masked passes* around the primary LUT), a **scope-reader
+  `validate()`**/broadcast-safe gate (Ch. 2/10, a *reader*-flavor transform), and Ch. 9
+  **shot matching** across a `Sequence`. The renderer audit also queued a **sound-mix
+  renderer** (Re-Recording Mixer, anticipated in `speech.py`) and a non-generative
+  **production-design reference/lookbook** reader.
 - **Sequence layer** — the planned multi-shot planner (180°/30°, matching/reverse,
   eye-line, screen direction). Ch. 5's reference is effectively its spec; build it
   once the editorial grounding lands.

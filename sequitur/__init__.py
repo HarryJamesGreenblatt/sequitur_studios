@@ -21,6 +21,7 @@ Public surface:
     Brief, Contribution             a role's decision context and its proposed slice
     Judgment, HeuristicJudgment     the swappable reasoning strategy (heuristic A)
     Director, Engine, shoot_crew    reconcile the crew · dispatch a phase · default crew
+    assemble_crew, full_crew        the post crew (Editor+Colorist) · the whole crew
     Transition, EditReason,
     EditCategory                    the grammar of the edit (owned by the Editor)
     Clip, Edit, Beat, Scene,
@@ -49,6 +50,8 @@ from .crew import (
     Judgment,
     Phase,
     Role,
+    assemble_crew,
+    full_crew,
     shoot_crew,
 )
 from .crew.camera import (
@@ -140,6 +143,8 @@ __all__ = [
     "Director",
     "Engine",
     "shoot_crew",
+    "assemble_crew",
+    "full_crew",
     "Transition",
     "EditReason",
     "EditCategory",

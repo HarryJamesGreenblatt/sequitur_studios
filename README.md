@@ -163,7 +163,8 @@ sequitur/      the studio code
   edit.py      post/editorial EDL + assembly model (Clip/Beat/Scene/Act/Sequence)
   cutter.py    MoviePy executor for the edit model
   grade.py     reified colour-grade model (Grade = a Command stack of ops) + look registry
-  grader.py    ffmpeg transform that applies a Grade to a rendered clip or still
+  lut.py       bakes a grade's primaries (ASC CDL) into a .cube LUT via colour-science
+  grader.py    transform that applies a Grade to a clip/still (colour-science .cube -> ffmpeg lut3d)
   config.py    .env pointers + Key Vault secret fetch (DefaultAzureCredential)
 scripts/
   generate.py  CLI renderer (--image for stills, --dry-run to preview the prompt)
@@ -205,9 +206,11 @@ work is **code**.
   [toaster-strudel](https://github.com/HarryJamesGreenblatt/toaster-strudel) MCP seam.
   The formal `Renderer` protocol is now **built** (`0021`), with a second **operator**
   plane for medium-preserving transforms (`0022`).
-- **Colour grade** — the **Colorist** is **built** (`0022`): a reified `Grade` (a Command
-  stack), the `Grader` ffmpeg transform, and a production **look registry**. Next are the
-  HSL/shape secondaries and a scope-reader `validate()` / broadcast-safe gate.
+- **Colour grade** — the **Colorist** is **built** (`0022`–`0023`): a reified `Grade` (a
+  Command stack) and a production **look registry**, executed true-to-form — the `Grader`
+  bakes the grade's primaries (ASC CDL) into a `.cube` LUT via **colour-science** and
+  applies it with ffmpeg `lut3d`. Next are the HSL/shape secondaries (as masked passes)
+  and a scope-reader `validate()` / broadcast-safe gate.
 - **The casting/actors dimension** — a new layer *Directing* Ch. 18–20 grounds but no
   code models yet: a `Casting` role + a playable-intent performance concept wired to
   the image (character keyframes) and voice backends.

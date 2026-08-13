@@ -52,7 +52,7 @@ a production is represented, driven, and stored, decided in
 | Department / role | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
 | Editor | cut, continuity assembly, pacing, transitions | **Grammar of the Edit** (Ch. 1–8, abridged) + **Directing** Ch. 30–34 *(abridged, `0017`)* + Grammar of the Shot Ch. 5 | **sequence / edit layer** (`edit.py` model + `cutter.py` executor) | grounded; code in progress |
-| Colorist / DIT | grade, look | **Color Correction Handbook** (Van Hurkman) *([abridged, 10 ch, `0020`](../artifacts/color%20correction%20handbook/INDEX.md))* + Grammar of the Shot (Ch. 4 color) + **Directing** Ch. 36 (grade/finishing) *(abridged, `0017`)* | `crew/colorist.py` role + `grade.py` reified model + `grader.py` *transform* (ffmpeg) | **implemented (`0022`)** |
+| Colorist / DIT | grade, look | **Color Correction Handbook** (Van Hurkman) *([abridged, 10 ch, `0020`](../artifacts/color%20correction%20handbook/INDEX.md))* + Grammar of the Shot (Ch. 4 color) + **Directing** Ch. 36 (grade/finishing) *(abridged, `0017`)* | `crew/colorist.py` role + `grade.py` reified model + `lut.py` (ASC CDL → `.cube`) + `grader.py` *transform* (ffmpeg `lut3d`) | **implemented (`0022`–`0023`)** |
 | Sound editor / mixer · Composer | sound design, score, mix | Grammar of the Edit Ch. 3 + **Rose** *(abridged)* + **Directing** Ch. 35–36 *(abridged, `0017`)* + **toaster-strudel MCP** (score) | `SpeechRenderer` (VO/ADR) · `Composer`→toaster-strudel · `SoundDesigner`/`ReRecordingMixer` — planned (`0009`) | planned |
 
 ### Delivery — *ship*
@@ -184,7 +184,10 @@ not yet built.
   decorators over a producer's output (1 media in → 1 out), keyed by an `Operation` verb
   rather than an output `Medium`, because a colour grade *preserves* its input's medium
   and so can't be keyed by artifact kind. Its first member is the **`Grader`**
-  (`Operation.GRADE`), built with the Colorist (`0022`). `Composer`→Strudel and a
+  (`Operation.GRADE`), built with the Colorist (`0022`) and made true-to-form in `0023`:
+  it bakes the grade's primaries into a spec-correct `.cube` LUT via colour-science
+  (`lut.py`, ASC CDL + Rec. 709 saturation) and applies it with ffmpeg `lut3d` (replacing
+  the `0022` `eq`/`colorbalance` placeholder). `Composer`→Strudel and a
   non-generative `SoundAnalyst` (audio MIR) are the next backends to register.
 
 - **Secrets via Key Vault.** Backend API keys are never stored in plaintext — they
@@ -325,8 +328,11 @@ flowchart TB
   re-seated under an `Editor` role (`0013`), and the **behaviour** layer built
   (`0014`) — a swappable `Judgment` (`HeuristicJudgment` = deterministic A), a
   `Brief`/`Contribution` pair, a `Director` reconciler, and a dumb `Engine` that
-  assembles a shoot-phase `Shot`. Next: assemble-phase behaviour (Editor → `Sequence`)
-  and binding a local-folder Production in place of the bare `Brief`.
+  assembles a shoot-phase `Shot`. **Assemble-phase behaviour built (`0023`):**
+  `Engine.assemble` + a phase-aware `Director.assemble` reconcile the `Editor` (cut) and
+  `Colorist` (base grade) into a graded edit `Sequence`. Next: binding a local-folder
+  Production in place of the bare `Brief`, a real cut-decision heuristic, and per-shot
+  grade matching.
 - **Build the post layer (`edit.py`)** — *Grammar of the Edit* is now grounded
   (`0007`); `edit.py` holds the EDL/grammar model and `cutter.py` the MoviePy
   executor. Build out the cut-decision engine (Ch. 5's six motivators) over a

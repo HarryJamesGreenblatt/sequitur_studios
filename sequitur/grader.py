@@ -1,4 +1,4 @@
-"""The Grader — executes a grade into a graded clip with ffmpeg.
+"""The Grader — executes a grade into a graded clip via a 3D LUT + ffmpeg.
 
 Colour counterpart to :class:`sequitur.cutter.Cutter`: the grade grammar in
 :mod:`sequitur.grade` *decides* the colour operations; the Grader *executes* them
@@ -7,31 +7,31 @@ it consumes one already-rendered clip or still and returns the *same* medium,
 decorating a producer's output rather than generating from scratch — so re-grading
 never re-invokes the (expensive, non-deterministic) generative backend.
 
-Like the Cutter, the model layer (:mod:`sequitur.grade`) stays free of any render
-dependency; ffmpeg lives only here and is resolved lazily. The stack -> filtergraph
-compilation (:meth:`Grader.filtergraph`) is a pure function, so it is unit-testable
-without invoking ffmpeg.
+Execution is the industry-standard **3D-LUT** path (storyline 0024): the grade's
+primaries are baked into a spec-correct ``.cube`` by :mod:`sequitur.lut`
+(colour-science, so the ASC CDL maths and the LUT format are not hand-cooked), then
+ffmpeg's ``lut3d`` applies it. The bake (:func:`sequitur.lut.bake`) is a pure
+function, unit-testable without an ffmpeg binary; only the fast application shells
+out.
 """
 
 from __future__ import annotations
 
+import re
+import subprocess
 import time
 from pathlib import Path
 
 from .config import OUTPUT_DIR
-from .crew.colorist import TonalRange
-from .grade import ColorBalance, Contrast, Grade, Saturation
+from .grade import Grade
 from .render import Operation, RenderResult
-
-#: ffmpeg ``colorbalance`` per-zone suffix for each tonal range.
-_ZONE = {TonalRange.SHADOWS: "s", TonalRange.MIDTONES: "m", TonalRange.HIGHLIGHTS: "h"}
 
 
 class Grader:
-    """Apply a :class:`~sequitur.grade.Grade` to a rendered artifact via ffmpeg.
+    """Apply a :class:`~sequitur.grade.Grade` to a rendered artifact via a 3D LUT.
 
-    apply() -> compile the reified op stack into an ffmpeg filtergraph and run it
-    over the input, writing a graded artifact of the same medium (extension).
+    apply() -> bake the grade's primaries into a ``.cube`` (colour-science) and apply
+    it with ffmpeg's ``lut3d``, writing a graded artifact of the same medium.
     """
 
     operation = Operation.GRADE
@@ -58,55 +58,33 @@ class Grader:
         out = Path(out_path) if out_path else OUTPUT_DIR / f"graded_{int(time.time())}{src.suffix}"
         out.parent.mkdir(parents=True, exist_ok=True)
 
-        # Lazy import so the model layer and --dry-run never require ffmpeg.
-        import subprocess
+        # An identity grade is a copy — no needless re-encode.
+        if grade.is_identity:
+            import shutil
 
+            shutil.copyfile(src, out)
+            return RenderResult(None, out)
+
+        # Author the LUT (colour-science) beside the output for provenance, then
+        # apply it with ffmpeg. Run ffmpeg in the LUT's directory and reference it by
+        # a sanitised bare filename, sidestepping filtergraph path-escaping (Windows
+        # drive colons / spaces break `-vf lut3d=file=...`).
         from imageio_ffmpeg import get_ffmpeg_exe
 
-        cmd = [get_ffmpeg_exe(), "-y", "-i", str(src)]
-        graph = self.filtergraph(grade)
-        if graph:
-            cmd += ["-vf", graph]
-        cmd.append(str(out))
+        from .lut import write_cube
 
-        proc = subprocess.run(cmd, capture_output=True, text=True)
+        cube = out.parent / f"{re.sub(r'[^A-Za-z0-9_.-]', '_', out.stem)}.cube"
+        write_cube(grade, cube)
+        cmd = [
+            get_ffmpeg_exe(),
+            "-y",
+            "-i",
+            str(src.resolve()),
+            "-vf",
+            f"lut3d=file={cube.name}",
+            str(out.resolve()),
+        ]
+        proc = subprocess.run(cmd, cwd=str(cube.parent), capture_output=True, text=True)
         if proc.returncode != 0:
             raise RuntimeError(f"ffmpeg failed to apply the grade:\n{proc.stderr}")
         return RenderResult(proc, out)
-
-    @staticmethod
-    def filtergraph(grade: Grade) -> str:
-        """Compile a grade's ordered op stack into an ffmpeg ``-vf`` filter chain.
-
-        Contrast maps to ``eq`` (lift->brightness, gamma->gamma, gain->contrast — a
-        documented approximation of true lift/gamma/gain); colour balance maps
-        exactly onto ``colorbalance`` per-zone RGB; saturation onto ``eq``. Ops that
-        are neutral contribute nothing, so an identity grade compiles to ``""``.
-        """
-        filters: list[str] = []
-        for op in grade.ops:
-            if isinstance(op, Contrast):
-                parts = []
-                if op.lift:
-                    parts.append(f"brightness={op.lift:g}")
-                if op.gamma != 1.0:
-                    parts.append(f"gamma={op.gamma:g}")
-                if op.gain != 1.0:
-                    parts.append(f"contrast={op.gain:g}")
-                if parts:
-                    filters.append("eq=" + ":".join(parts))
-            elif isinstance(op, ColorBalance):
-                z = _ZONE[op.range]
-                parts = []
-                if op.r:
-                    parts.append(f"r{z}={op.r:g}")
-                if op.g:
-                    parts.append(f"g{z}={op.g:g}")
-                if op.b:
-                    parts.append(f"b{z}={op.b:g}")
-                if parts:
-                    filters.append("colorbalance=" + ":".join(parts))
-            elif isinstance(op, Saturation):
-                if op.amount != 1.0:
-                    filters.append(f"eq=saturation={op.amount:g}")
-        return ",".join(filters)

@@ -16,6 +16,7 @@ from .director import Director
 from .role import Phase, Role
 
 if TYPE_CHECKING:
+    from ..edit import Sequence
     from ..shot import Shot
     from .role import Brief
 
@@ -29,11 +30,24 @@ def shoot_crew() -> list[Role]:
     return [Cinematographer(), Gaffer(), KeyGrip()]
 
 
+def assemble_crew() -> list[Role]:
+    """The post crew: Editor (cut) and Colorist (grade)."""
+    from .colorist import Colorist
+    from .editorial import Editor
+
+    return [Editor(), Colorist()]
+
+
+def full_crew() -> list[Role]:
+    """The whole crew across phases — the Engine's default mount."""
+    return shoot_crew() + assemble_crew()
+
+
 class Engine:
     """Mounts a crew and runs the active phase's roles, then reconciles."""
 
     def __init__(self, crew: list[Role] | None = None, director: Director | None = None) -> None:
-        self.crew = list(crew) if crew is not None else shoot_crew()
+        self.crew = list(crew) if crew is not None else full_crew()
         self.director = director or Director()
 
     def run(self, phase: Phase, brief: Brief) -> Shot:
@@ -41,3 +55,9 @@ class Engine:
         active = [r for r in self.crew if getattr(r, "phase", None) == phase]
         contributions = [role.propose(brief) for role in active]
         return self.director.reconcile(brief, contributions)
+
+    def assemble(self, brief: Brief) -> Sequence:
+        """Dispatch the assemble-phase crew and reconcile a graded edit Sequence."""
+        active = [r for r in self.crew if getattr(r, "phase", None) == Phase.ASSEMBLE]
+        contributions = [role.propose(brief) for role in active]
+        return self.director.assemble(brief, contributions)

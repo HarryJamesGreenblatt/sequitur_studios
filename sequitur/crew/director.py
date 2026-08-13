@@ -16,6 +16,7 @@ from ..shot import Shot
 from .role import Department, Role
 
 if TYPE_CHECKING:
+    from ..edit import Sequence
     from .role import Brief, Contribution
 
 
@@ -39,3 +40,34 @@ class Director(Role):
             aspect_ratio=brief.aspect_ratio,
             **fields,
         )
+
+    def assemble(self, brief: Brief, contributions: list[Contribution]) -> Sequence:
+        """Reconcile the assemble crew into a graded edit :class:`~sequitur.edit.Sequence`.
+
+        The Editor contributes the cut structure (``cut``), the Colorist a base
+        ``grade``; the Director lays the coverage into one scene, attaching a copy of
+        the base grade to each clip (the anchor look — per-shot matching, Ch. 9, is a
+        later refinement).
+        """
+        from ..edit import Act, Beat, Clip, Edit, Scene, Sequence
+        from ..grade import Grade
+        from .editorial import EditReason, Transition
+
+        fields: dict = {}
+        for contribution in contributions:
+            for key, value in contribution.fields.items():
+                if value is not None:
+                    fields[key] = value
+        cut = fields.get("cut", [])
+        base = fields.get("grade")
+
+        scene = Scene()
+        for i, shot in enumerate(brief.shots):
+            transition, reason = (
+                cut[i] if i < len(cut) else (Transition.CUT, EditReason.INFORMATION)
+            )
+            grade = Grade(ops=list(base.ops), name=base.name) if base is not None else None
+            scene.beats.append(
+                Beat(Clip(shot, grade=grade), Edit(transition=transition, reason=reason))
+            )
+        return Sequence(acts=[Act(scenes=[scene])], aspect_ratio=brief.aspect_ratio)

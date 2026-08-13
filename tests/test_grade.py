@@ -64,19 +64,27 @@ def test_grade_round_trips_through_a_plain_dict() -> None:
     assert restored.ops == grade.ops  # reified ops survive serialisation
 
 
-def test_filtergraph_compiles_the_stack_to_ffmpeg_filters() -> None:
-    grade = Grade(
-        ops=[
-            Contrast(lift=0.02, gamma=0.9, gain=1.1),
-            ColorBalance(TonalRange.HIGHLIGHTS, r=0.15, b=-0.06),
-            Saturation(1.2),
-        ]
-    )
-    graph = Grader.filtergraph(grade)
-    assert "eq=brightness=0.02:gamma=0.9:contrast=1.1" in graph
-    assert "colorbalance=rh=0.15:bh=-0.06" in graph
-    assert "eq=saturation=1.2" in graph
-    assert Grader.filtergraph(Grade()) == ""  # an identity grade compiles to nothing
+def test_grade_bakes_to_a_primary_lut() -> None:
+    import numpy as np
+    from colour.io import LUT3D
+
+    from sequitur.lut import bake
+
+    # An identity grade bakes to the identity lattice.
+    assert np.allclose(bake(Grade(), size=5).table, LUT3D.linear_table(5))
+
+    # A CDL contrast + saturation grade transforms nodes but pins black and white.
+    lut = bake(Grade(ops=[Contrast(lift=-0.04, gamma=0.9, gain=1.15), Saturation(0.35)]), size=17)
+    assert lut.size == 17
+    assert np.allclose(lut.table[0, 0, 0], 0.0)  # crushed black stays on the floor
+    assert np.allclose(lut.table[-1, -1, -1], 1.0)  # white pinned
+
+    # Full desaturation collapses a coloured node to equal (grey) channels.
+    node = (4, 1, 1)
+    saturated = bake(Grade(ops=[Saturation(1.0)]), size=9).table[node]
+    greyed = bake(Grade(ops=[Saturation(0.0)]), size=9).table[node]
+    assert not np.allclose(saturated[0], saturated[1])
+    assert np.allclose(greyed[0], greyed[1]) and np.allclose(greyed[1], greyed[2])
 
 
 def test_operator_plane_registers_the_grader() -> None:

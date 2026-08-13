@@ -21,9 +21,13 @@ data-plane renderer.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from .crew.editorial import EditCategory, EditReason, Transition
 from .shot import Shot
+
+if TYPE_CHECKING:
+    from .grade import Grade
 
 
 @dataclass
@@ -41,6 +45,8 @@ class Clip:
     head_handle: float = 0.0
     tail_handle: float = 0.0
     source: str | None = None
+    #: The colour-grade decision for this clip (attached in the assemble phase).
+    grade: "Grade | None" = None
 
 
 @dataclass

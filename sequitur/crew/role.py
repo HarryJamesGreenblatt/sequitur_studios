@@ -17,6 +17,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
+    from ..shot import Shot
     from .judgment import Judgment
 
 
@@ -55,6 +56,8 @@ class Brief:
     mood: str | None = None
     audio: str | None = None
     aspect_ratio: str = "16:9"
+    #: The coverage to assemble — populated for the assemble phase, empty for shoot.
+    shots: list["Shot"] = field(default_factory=list)
 
 
 @dataclass

@@ -19,8 +19,11 @@ from sequitur import (  # noqa: E402
     Engine,
     HeuristicJudgment,
     LightScheme,
+    Look,
     Phase,
+    Shot,
     ShotSize,
+    Transition,
     build_prompt,
     shoot_crew,
 )
@@ -72,6 +75,24 @@ def test_judgment_is_swappable() -> None:
 
     dp = Cinematographer(judgment=SilentJudgment())
     assert dp.propose(Brief(scene="x")).fields == {}
+
+
+def test_engine_assembles_a_graded_sequence() -> None:
+    brief = Brief(
+        scene="",
+        shots=[Shot(scene="a"), Shot(scene="b"), Shot(scene="c")],
+        hints={"look": Look.TEAL_ORANGE},
+    )
+    seq = Engine().assemble(brief)
+    tl = seq.timeline()
+    assert len(tl) == 3
+    # Editor: opens on a fade in, then straight cuts.
+    assert tl[0].edit_in.transition is Transition.FADE_IN
+    assert all(e.edit_in.transition is Transition.CUT for e in tl[1:])
+    # Colorist: every clip carries the base grade (the sequence's look).
+    assert all(e.clip.grade is not None and e.clip.grade.name == "teal_orange" for e in tl)
+    # The grade is a copy per clip, not a shared instance.
+    assert tl[0].clip.grade is not tl[1].clip.grade
 
 
 if __name__ == "__main__":

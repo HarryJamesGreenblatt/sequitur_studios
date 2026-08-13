@@ -61,6 +61,11 @@ pixels it transforms.
    non-deterministic) generative backend**. `filtergraph()` is a pure function, so
    it's unit-testable without an ffmpeg binary.
 
+   > **Superseded by [`0023`](0023-the-assemble-phase-and-the-grade.md).** The `eq`/`colorbalance`
+   > filtergraph was a non-standard placeholder; the `Grader` now bakes the grade's
+   > primaries into a spec-correct `.cube` LUT (ASC CDL, via colour-science) and applies
+   > it with ffmpeg `lut3d`. `filtergraph()` is gone; the seam and `Grade` model are unchanged.
+
 4. **`Look` is an open preset library, not a closed taxonomy.** Creative looks are
    unbounded, so `Look` makes **no completeness claim** — it's the color analogue of
    the taxonomy's open-tag `Microgenre` (`0016`). The *comprehensive* vocabulary is

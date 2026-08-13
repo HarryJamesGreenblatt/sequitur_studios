@@ -14,8 +14,12 @@ shots -> scenes -> acts EDL, plus its `timeline()`/`validate()` logic) lives in
 from __future__ import annotations
 
 from enum import Enum
+from typing import TYPE_CHECKING, Any
 
 from .role import Department, Phase, Role
+
+if TYPE_CHECKING:
+    from .role import Brief
 
 
 class Transition(Enum):
@@ -84,3 +88,11 @@ class Editor(Role):
     department = Department.EDITORIAL
     phase = Phase.ASSEMBLE
     vocabulary = (Transition, EditReason, EditCategory)
+
+    def heuristic(self, brief: Brief) -> dict[str, Any]:
+        # A straight-cut assembly across the coverage, opening on a fade in (Ch. 6/8).
+        specs = [
+            (Transition.FADE_IN, None) if i == 0 else (Transition.CUT, EditReason.INFORMATION)
+            for i in range(len(brief.shots))
+        ]
+        return {"cut": specs}

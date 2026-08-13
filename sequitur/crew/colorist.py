@@ -102,7 +102,8 @@ class Colorist(Role):
     vocabulary = (Look, TonalRange, Cast)
 
     def heuristic(self, brief: Brief) -> dict[str, Any]:
-        return {"look": brief.hints.get("look", Look.NEUTRAL)}
+        # The assemble-phase contribution is the base grade for the sequence's look.
+        return {"grade": self.grade(brief.hints.get("look", Look.NEUTRAL))}
 
     def grade(self, look: Look | str | None = None, *, source: str | None = None) -> Grade:
         """Compile a :class:`Look` preset — or a production's registered look name —
