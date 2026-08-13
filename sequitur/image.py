@@ -16,6 +16,7 @@ import time
 from pathlib import Path
 
 from .config import OUTPUT_DIR, AzureImageConfig, get_azure_image_config
+from .render import Medium, RenderResult
 from .shot import Shot
 from .prompt import build_image_prompt
 
@@ -32,6 +33,8 @@ class ImageStudio:
 
     render() -> generate a still from a prompt or a Shot; returns (result, path).
     """
+
+    medium = Medium.STILL
 
     def __init__(self, config: AzureImageConfig | None = None) -> None:
         # Imported lazily so --dry-run and the video path need no Azure deps.
@@ -85,7 +88,7 @@ class ImageStudio:
             size=size,
             n=1,
         )
-        return result, self._save(result, out_path)
+        return RenderResult(result, self._save(result, out_path))
 
     # -- internals ---------------------------------------------------------
 

@@ -159,12 +159,13 @@ sequitur/      the studio code
   studio.py    video render() / edit() over the Gemini Omni Interactions API
   image.py     still-image render() over Azure Foundry gpt-image
   speech.py    text-to-speech render() over Azure AI Speech (dry 48kHz/16-bit/mono)
+  render.py    the renderer seam — Renderer protocol · Medium · renderer_for registry
   edit.py      post/editorial EDL + assembly model (Clip/Beat/Scene/Act/Sequence)
   cutter.py    MoviePy executor for the edit model
   config.py    .env pointers + Key Vault secret fetch (DefaultAzureCredential)
 scripts/
   generate.py  CLI renderer (--image for stills, --dry-run to preview the prompt)
-tests/         behaviour-guard tests (test_prompt · test_edit · test_engine)
+tests/         behaviour-guard tests (test_prompt · test_edit · test_engine · test_render)
 artifacts/     grounding library — one folder per source (see INDEX.md)
   grammar of the shot/     production — cinematography (encoded under crew/)
   grammar of the edit/     post — editorial (grounds edit.py + the Editor)

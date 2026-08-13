@@ -173,11 +173,16 @@ not yet built.
   [`build_image_prompt`](../sequitur/prompt.py) is [`build_prompt`](../sequitur/prompt.py)
   minus the video-only faces (motion, speed, `single_scene`, audio). The seam should
   also admit **non-generative data APIs** (licensing, colour/reference lookups) for
-  departments whose deliverable isn't a model output. A formal `Renderer` protocol +
-  medium-keyed registry is deferred until a *third* backend justifies it — the
-  **sound layer** (`0009`) is that trigger: `SpeechRenderer` (Azure Speech) and
-  `Composer`→Strudel are backends #3–#4, plus a non-generative `SoundAnalyst` (audio
-  MIR) sensor.
+  departments whose deliverable isn't a model output. The formal **`Renderer` protocol
+  + medium-keyed registry** is now **built** ([`render.py`](../sequitur/render.py),
+  `0021`): a `Medium` enum (video/still/voice/film), a `RenderResult(raw, ref)` pair,
+  a `runtime_checkable` `Renderer` protocol, and a lazy `renderer_for(medium)` registry.
+  The four backends were retrofitted onto it — `Studio` (video), `ImageStudio` (still),
+  `SpeechRenderer` (voice), and `Cutter` (film, a *transform* renderer) — so a role can
+  now *hold* a renderer by medium instead of the CLI hard-wiring `Studio`. `Composer`→
+  Strudel and a non-generative `SoundAnalyst` (audio MIR) are the next backends to
+  register; the coming **Colorist grade** renderer plugs a `GRADE` medium into the same
+  registry.
 
 - **Secrets via Key Vault.** Backend API keys are never stored in plaintext — they
   live in Azure Key Vault and are fetched at runtime via
@@ -333,6 +338,7 @@ flowchart TB
   [`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md).
 - **Build the sound layer (`0009`)** — `SpeechRenderer` first (Azure Speech on the
   existing `hjg-m8jtp7uy-eastus2` AIServices account, no new resource; standard/HD
-  neural voices are call-and-go, no deployment; CNV deferred). Then formalize the
-  `Renderer` protocol, ground the sound roles from the **abridged Rose** (`0010`), and wire
-  **toaster-strudel** as sequitur's first MCP client (`Composer`/`SoundAnalyst`).
+  neural voices are call-and-go, no deployment; CNV deferred). The
+  `Renderer` protocol is now **formalized** (`0021`); still to do: ground the sound
+  roles from the **abridged Rose** (`0010`), and wire **toaster-strudel** as sequitur's
+  first MCP client (`Composer`/`SoundAnalyst`).

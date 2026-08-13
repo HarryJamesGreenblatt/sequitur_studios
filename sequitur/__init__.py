@@ -25,6 +25,9 @@ Public surface:
     Clip, Edit, Beat, Scene,
     Act, Sequence, TimelineEntry    the shots -> scenes -> acts assembly model
     Cutter                          executes an edit Sequence into a film (MoviePy)
+    Renderer, Medium, RenderResult  the execution-plane seam (decision -> media artifact)
+    renderer_for, register,
+    registered_media                the medium-keyed renderer registry
 """
 
 from .crew import (
@@ -71,6 +74,14 @@ from .edit import (
 )
 from .cutter import Cutter
 from .prompt import build_image_prompt, build_prompt
+from .render import (
+    Medium,
+    RenderResult,
+    Renderer,
+    register,
+    registered_media,
+    renderer_for,
+)
 from .speech import SpeechRenderer
 from .studio import Studio
 
@@ -119,4 +130,10 @@ __all__ = [
     "Sequence",
     "TimelineEntry",
     "Cutter",
+    "Renderer",
+    "Medium",
+    "RenderResult",
+    "renderer_for",
+    "register",
+    "registered_media",
 ]

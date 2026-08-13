@@ -16,22 +16,25 @@ from pathlib import Path
 
 from .config import OUTPUT_DIR
 from .edit import Sequence, Transition
+from .render import Medium, RenderResult
 
 
 class Cutter:
     """Assemble a :class:`~sequitur.edit.Sequence`'s coverage into one film.
 
     render() -> stitch each clip's rendered ``source`` at its timeline position,
-    applying the edit's transitions; returns the saved path.
+    applying the edit's transitions; returns a RenderResult (film, path).
     """
+
+    medium = Medium.FILM
 
     def render(
         self,
         sequence: Sequence,
-        out_path: str | Path | None = None,
         *,
+        out_path: str | Path | None = None,
         fps: int = 24,
-    ) -> Path:
+    ) -> RenderResult:
         """Render the sequence to an .mp4. Raises if the edit is not renderable."""
         errors = [i for i in sequence.validate() if i.startswith("error")]
         if errors:
@@ -66,7 +69,7 @@ class Cutter:
         path = Path(out_path) if out_path else OUTPUT_DIR / f"film_{int(time.time())}.mp4"
         path.parent.mkdir(parents=True, exist_ok=True)
         film.write_videofile(str(path), fps=fps)
-        return path
+        return RenderResult(film, path)
 
     @staticmethod
     def _transition_effects(transition: Transition, duration: float, vfx):

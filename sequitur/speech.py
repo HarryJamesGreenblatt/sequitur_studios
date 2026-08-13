@@ -26,6 +26,7 @@ import time
 from pathlib import Path
 
 from .config import AzureSpeechConfig, get_azure_speech_config
+from .render import Medium, RenderResult
 
 _AAD_SCOPE = "https://cognitiveservices.azure.com/.default"
 
@@ -36,6 +37,8 @@ class SpeechRenderer:
     render() -> synthesize a line of text (or SSML) to a dry, unprocessed WAV;
     returns (result, path).
     """
+
+    medium = Medium.VOICE
 
     def __init__(self, config: AzureSpeechConfig | None = None) -> None:
         # Imported lazily so the video/image paths and --dry-run need no Speech dep.
@@ -91,7 +94,7 @@ class SpeechRenderer:
             )
         if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
             raise RuntimeError(f"Speech synthesis did not complete: {result.reason}")
-        return result, path
+        return RenderResult(result, path)
 
     # -- internals ---------------------------------------------------------
 

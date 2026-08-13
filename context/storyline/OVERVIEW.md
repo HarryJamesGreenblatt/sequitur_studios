@@ -170,6 +170,16 @@ into a film-literate prompt.
   color analogue of the Editor's continuity check across a `Sequence`. Logged the
   **`ColorTemperature` two-seat overlap** (Gaffer capture ↔ Colorist grade). Scoped to
   grading only; production-design concepts stay separate. No code.
+- [`0021-formalizing-the-renderer-seam.md`](0021-formalizing-the-renderer-seam.md)
+  — **built** `0019`'s **step 2**: formalized the renderer seam `0006` deferred. New
+  [`render.py`](../../sequitur/render.py) — a `Medium` enum (video/still/voice/film), a
+  `RenderResult(raw, ref)` pair, a `runtime_checkable` **`Renderer` protocol**, and a
+  lazy **medium-keyed registry** (`renderer_for(medium)`). Retrofitted all four backends
+  (`Studio`/`ImageStudio`/`SpeechRenderer`/`Cutter`) onto it — each declares its `medium`
+  and returns `RenderResult` — so a role can *hold* a renderer by medium instead of the
+  CLI hard-wiring `Studio`. Non-breaking (`RenderResult` is a tuple; legacy unpacking
+  survives). Guard test `tests/test_render.py` (6); all 17 smoke tests green. The coming
+  Colorist grade renderer plugs a `GRADE` medium into the same registry (`0019` step 3).
 
 ## Current state (keep fresh)
 
@@ -186,13 +196,16 @@ into a film-literate prompt.
   backends over one grammar:** [`Studio`](../../sequitur/studio.py) = video (Gemini
   Omni Flash), [`ImageStudio`](../../sequitur/image.py) = still image (Azure Foundry
   `gpt-image-1`), and [`SpeechRenderer`](../../sequitur/speech.py) = voice (Azure AI
-  Speech, built `0011`); `--image` on the CLI selects the still path. The
+  Speech, built `0011`) — all four backends (those three + the `Cutter` edit executor)
+  now sit behind a formal **`Renderer` protocol + medium-keyed registry**
+  ([`render.py`](../../sequitur/render.py), `0021`); `--image` on the CLI selects the still path. The
   post layer is [`edit.py`](../../sequitur/edit.py) (the editorial EDL model + its
   `timeline()`/`validate()`, the analogue of `shot.py`) with its vocabulary owned by
   the **`Editor`** role (`crew/editorial.py`, `0013`) +
   [`cutter.py`](../../sequitur/cutter.py) (MoviePy executor) — note `movie.py` was
   renamed to `edit.py` to avoid the `moviepy` collision. `--dry-run` composes prompts
-  with no API call. Interpreter is a project `.venv` (Python 3.12); tests in `tests/`.
+  with no API call. Interpreter is a project `.venv` (Python 3.12); tests in `tests/`
+  (`test_prompt` · `test_edit` · `test_engine` · `test_render`).
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
   `artifacts/INDEX.md`. **Seven abridged sources** now — spanning every department the
   architecture models: *Grammar of the Shot* (production/cinematography,

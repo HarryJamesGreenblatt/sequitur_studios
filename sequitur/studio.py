@@ -12,6 +12,7 @@ from pathlib import Path
 from google import genai
 
 from .config import OUTPUT_DIR, get_api_key
+from .render import Medium, RenderResult
 from .shot import Shot
 from .prompt import build_prompt
 
@@ -25,6 +26,8 @@ class Studio:
     edit()    -> conversationally revise a previous clip (Omni is stateful)
     """
 
+    medium = Medium.VIDEO
+
     def __init__(self, model: str = MODEL) -> None:
         self.client = genai.Client(api_key=get_api_key())
         self.model = model
@@ -36,7 +39,7 @@ class Studio:
         aspect_ratio: str | None = None,
         out_path: str | Path | None = None,
     ):
-        """Generate a video clip. Returns (interaction, saved_path).
+        """Generate a video clip. Returns a RenderResult (interaction, saved_path).
 
         The returned interaction id can be passed to :meth:`edit`.
         """
@@ -56,7 +59,7 @@ class Studio:
                 "delivery": "uri",  # avoids the 4MB inline payload cap
             },
         )
-        return interaction, self._save(interaction, out_path)
+        return RenderResult(interaction, self._save(interaction, out_path))
 
     def edit(
         self,
@@ -68,7 +71,7 @@ class Studio:
         """Revise a previous clip with a natural-language instruction.
 
         Keep instructions simple; add "Keep everything else the same." to hold
-        continuity. Returns (interaction, saved_path).
+        continuity. Returns a RenderResult (interaction, saved_path).
         """
         interaction = self.client.interactions.create(
             model=self.model,
@@ -76,7 +79,7 @@ class Studio:
             input=instruction,
             response_format={"type": "video", "delivery": "uri"},
         )
-        return interaction, self._save(interaction, out_path)
+        return RenderResult(interaction, self._save(interaction, out_path))
 
     # -- internals ---------------------------------------------------------
 
