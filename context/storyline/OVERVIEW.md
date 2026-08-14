@@ -253,12 +253,18 @@ into a film-literate prompt.
   Protocol (a `TYPE_CHECKING`-only import), so the engine stays backend-agnostic (local-folder
   ↔ ADO), the same swappability the `Renderer` seam gives the execution plane. Verified offline
   (guard test, 32 green) and live against the board.
+- [`0028-the-production-cli.md`](0028-the-production-cli.md)
+  — **built** [`scripts/produce.py`](../../scripts/produce.py), a thin CLI over
+  `Engine.run_production`: run a production **board-to-board** from the shell and print the
+  assembled timeline. Defaults to the configured ADO board; `--local <path>` runs offline
+  against a local-folder production; `--no-write` previews (assemble + print, no write-back).
+  Closes the `0027` board-to-board-CLI thread; validated offline and live.
 
 ## Current state (keep fresh)
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
-  `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLI
-  `scripts/generate.py` + tests
+  `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLIs
+  `scripts/generate.py` (render a shot) · `scripts/produce.py` (run a production board-to-board) + tests
   (`tests/test_prompt.py` · `test_edit.py` · `test_engine.py` · `test_render.py` ·
   `test_grade.py` · `test_production.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
   (`crew/camera.py`), `Gaffer` (`crew/lighting.py`), `KeyGrip` (`crew/grip.py`) — each
