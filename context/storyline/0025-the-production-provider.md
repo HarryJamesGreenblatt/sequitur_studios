@@ -112,3 +112,100 @@
 - **`OutputStore` (the bytes side of `0005`)** — a Graph-backed store for the rendered
   media, the companion seam to this decision-plane provider; and **app-only auth** for
   unattended/CI use (interactive `az login` covers local today).
+
+---
+
+## Addendum — operationalizing the board (same session)
+
+With the provider code committed, we drove the actual board as a *user* would and hit
+three real gaps — none in the code, all in the ADO board's configuration. Fixing them
+turned the board from "work items exist" into "each crew has a working Kanban bucket."
+
+### What happened
+
+- **Finished the board prerequisites `0024` deferred.** Added the two Shot fields —
+  **`Mood`** (text) and **`Look`** (a picklist of the seven presets, custom allowed) — and
+  scaffolded an example **Act → Scene → Beat → Shot** tree as the provider's first read
+  target. (Gotcha: the Fields *Add* endpoint only *attaches* an existing org-level field, so
+  each must be created org-wide first; and `az boards work-item create` silently drops a
+  picklist value at create time — set `Look` with a follow-up `update`.)
+
+- **The board showed nothing.** Root cause: the default team was scoped to the *exact* root
+  area with **child areas excluded**, so every work item (all in department sub-areas) was
+  filtered out. Set the team's area to include children → the master board now shows the
+  whole production.
+
+- **Made "departments as buckets" real — per-department teams.** ADO **cannot pivot a
+  board's columns onto Area Path** (columns are workflow *States*, full stop), so the
+  Planner "buckets as columns" idea isn't available on one board. The native ADO equivalent
+  is **Team + Area Path**: created **seven department teams** (Direction, Camera, Lighting,
+  Grip, Editorial, Color, Sound), each scoped to its existing department Area Path, and kept
+  the default **`… Team`** as the **all-departments master board** (the Producer's overview).
+  Each crew now opens *its own* board and sees *its own* work — the `0008` "crew picks up its
+  own bucket" idea as an actual UI surface. It is **buckets-as-boards** (switch teams), not
+  buckets-as-columns (side by side) — the one thing ADO's Kanban won't do.
+
+- **Gave the leaf a board — the backlog-level cascade.** The department boards were still
+  empty because **Shot sat on the Task backlog tier, which ADO denies a Kanban board**
+  (tasks live only on the sprint taskboard / as checklists). Since the crews work *at the
+  Shot level*, that tier must be a first-class board. Fixed it structurally by moving the
+  whole hierarchy **up one level**: **Shot → Requirement** (now boarded), Beat → Epic,
+  Scene → the custom portfolio, Act → a **new top portfolio level**; then renamed the levels
+  **Shots / Beats / Scenes / Acts**. Every narrative level now has a Kanban board, and each
+  department team shows its shots as draggable cards.
+
+- **Surfaced the right boards on each team.** New teams default the *custom* portfolio levels
+  (Acts, Scenes) to **hidden**, so a department initially offered only **Beats / Shots** — and
+  perversely, the levels a team actually owned (Direction's Acts/Scenes) were the hidden ones.
+  Enabled all four levels (`backlogVisibilities`) on all eight teams, so every board switcher
+  now offers Shots / Beats / Scenes / Acts.
+
+- **Clarified why the boards look sparse.** With one small example tree (5 items) and the
+  narrative levels owned by *different* departments — Act/Scene in **Direction**, Beat in
+  **Editorial**, the two Shots in **Camera** — each team is populated only at the level(s) it
+  owns and empty elsewhere. That is inherent, not a bug: the narrative spine (Acts/Scenes/
+  Beats) lives with Direction/Editorial, while the **Shots** board is the one that matters for
+  the shoot/post crews, and the master team is the only view populated at every level. Fuller
+  boards are a matter of more sample data, not more configuration.
+
+1. **Department = Team + Area Path, not board columns.** This is the ADO-native realization
+   of the `0024` "department is an axis orthogonal to state" decision. Making department a
+   *state* (to fake Planner columns) was rejected — it would destroy the workflow axis, the
+   very "Planner smushes two axes" trap `0024` avoided.
+
+2. **Keep the default team as the master board.** It can't be cleanly deleted (it anchors the
+   project default dashboard and the project-wide security/notification group), and it earns
+   its keep as the all-departments overview. Not a gremlin — the Producer's whole-production
+   view above the seven crew buckets.
+
+3. **The working tier deserves a board — move Shot to the Requirement level.** A structural
+   fix, not a settings tweak: the tier the crews actually operate in (Shot) should be
+   boarded, so the hierarchy shifts up one level rather than leaving the leaf on the boardless
+   task tier. (The Basic Task type was already disabled, so the vacated task tier is empty.)
+
+### Resulting state
+
+- **8 teams / 8 boards:** a master **all-departments team** (the project's default team) +
+  seven department teams, each scoped to its Area Path. Backlog levels are now
+  **Acts → Scenes → Beats → Shots**, all four with working Kanban boards (all four enabled on
+  every team); `Shot` lives on the Requirement tier. The example tree's two shots appear on
+  the Camera team's **Shots** board; Direction's Act/Scene on its Acts/Scenes boards.
+- This was **ADO process/infrastructure surgery — no `sequitur/` code changed** and nothing
+  to commit; concrete identifiers stay in the gitignored `.env` / local notes. The provider
+  code from the main entry is unaffected (it queries `Shot` work items by type, independent of
+  which backlog tier they sit on).
+
+### Board REST gotchas (for the next agent)
+
+- REST **team creation does not spawn a duplicate Area Path** (the portal does); the new
+  team's area starts empty and must be pointed at the existing department area.
+- REST-created teams start with **no backlog iteration** → the board shows *TF400509
+  "Configuration required"* until `backlogIteration` is set to the project root iteration.
+- A work-item type can reference **only one backlog behavior** (`VS403194`) → to move a level,
+  **remove the old behavior before adding the new**.
+- Creating a portfolio level: `POST …/behaviors` with `inherits` as a **string** ref name.
+  Renaming a level uses **PUT** (not PATCH). Boards get **no** Kanban view for the **Task**
+  tier — the reason the whole cascade was necessary.
+- New teams default the **custom** portfolio levels to **hidden** (`backlogVisibilities`) —
+  enable them per team (PATCH team settings) or a department only offers the built-in
+  Epic/Requirement boards.

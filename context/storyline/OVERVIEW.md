@@ -313,7 +313,11 @@ into a film-literate prompt.
   process, Act→Scene→Beat→Shot hierarchy, departments as Area Paths, driven via the ADO
   MCP); the `ProductionProvider` *code* seam over it is **now built** (`0025`:
   [`production.py`](../../sequitur/production.py) — `read_brief` / `write_sequence`, a live
-  `AzureDevOpsProduction` backend + a `LocalFolderProduction` test double). Output bytes live
+  `AzureDevOpsProduction` backend + a `LocalFolderProduction` test double). The board is also
+  **operationalized** (`0025` addendum): the four narrative levels are **Acts → Scenes → Beats → Shots**
+  (Shot moved up to the Requirement tier so the crew's working leaf has a Kanban board), and
+  each of the seven departments is a **Team + Area Path** with its own board (the bucket), under
+  a master all-departments team. Output bytes live
   in the **Sequitur Solutions** tenant's **SharePoint via Microsoft Graph** (Azure Blob
   deferred).
 
@@ -324,7 +328,10 @@ into a film-literate prompt.
   `read_brief()` (board tree → `Brief`) / `write_sequence()` (graded `Sequence` → work
   items), a live **`AzureDevOpsProduction`** backend (ADO REST via `DefaultAzureCredential`,
   stdlib `urllib`, no new dep) and a **`LocalFolderProduction`** test double. The board's
-  `Mood`/`Look` Shot fields and an example Act→Scene→Beat→Shot tree are in place. Still to do:
+  `Mood`/`Look` Shot fields and an example Act→Scene→Beat→Shot tree are in place, and the
+  board is **operationalized** (`0025` addendum: per-department **Team + Area Path** boards
+  under a master team; the narrative levels cascaded to **Acts→Scenes→Beats→Shots** so the
+  Shot leaf has a Kanban board). Still to do:
   **bind the provider into `Engine`** (read a `Brief` from a provider instead of the caller
   passing one), a **scene-scoped** WIQL tree read (the v1 read is flat/positional), **per-shot
   grade matching** so the write stops flattening distinct looks, writing work-item **State**
