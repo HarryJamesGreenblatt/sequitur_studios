@@ -153,3 +153,44 @@ def get_azure_speech_config() -> AzureSpeechConfig:
         key=key,
         resource_id=os.environ.get("AZURE_SPEECH_RESOURCE_ID"),
     )
+
+
+# The public, first-party Azure DevOps AAD application id — the token *audience*
+# for the ADO REST API. It is the same for every organisation (a documented
+# constant, not a tenant secret), so it is a safe default in code.
+ADO_RESOURCE_ID = "499b84ac-1321-427f-aa17-267ca6975798"
+
+
+@dataclass(frozen=True)
+class AzureDevOpsConfig:
+    """Settings for the production board backend (Azure DevOps).
+
+    All non-secret: the board is authorised by the caller's Entra identity
+    (``DefaultAzureCredential``), so there is no key. ``org_url`` and ``project``
+    are tenant-specific infrastructure names and live only in ``.env`` (never in
+    shipped code); ``resource_id`` is the public ADO app constant.
+    """
+
+    org_url: str
+    project: str
+    resource_id: str = ADO_RESOURCE_ID
+
+
+def get_ado_config() -> AzureDevOpsConfig:
+    """Return the production-board settings from ``.env``, or fail loudly.
+
+    Needs only two non-secret pointers: ``ADO_ORG_URL`` (e.g.
+    ``https://dev.azure.com/<org>``) and ``ADO_PROJECT`` (the Production instance).
+    """
+    org_url = os.environ.get("ADO_ORG_URL")
+    project = os.environ.get("ADO_PROJECT")
+    if not org_url or not project:
+        raise RuntimeError(
+            "No production board configured. Set ADO_ORG_URL "
+            "(https://dev.azure.com/<org>) and ADO_PROJECT in .env."
+        )
+    return AzureDevOpsConfig(
+        org_url=org_url.rstrip("/"),
+        project=project,
+        resource_id=os.environ.get("ADO_RESOURCE_ID", ADO_RESOURCE_ID),
+    )

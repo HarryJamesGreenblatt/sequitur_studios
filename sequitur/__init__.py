@@ -32,6 +32,9 @@ Public surface:
     registered_looks                a production's own named looks (Grade templates)
     Cutter                          executes an edit Sequence into a film (MoviePy)
     Grader                          executes a Grade over a rendered clip (ffmpeg)
+    ProductionProvider              the production seam (board tree <-> Brief / Sequence)
+    AzureDevOpsProduction,
+    LocalFolderProduction           the live board backend · the local test double
     Renderer, Medium, RenderResult  the producer seam (decision -> new media artifact)
     Transform, Operation            the operator seam (artifact + decision -> same medium)
     renderer_for, register,
@@ -88,6 +91,11 @@ from .edit import (
 from .grade import ColorBalance, Contrast, Grade, GradeOp, Saturation, named_look, register_look, registered_looks
 from .cutter import Cutter
 from .grader import Grader
+from .production import (
+    AzureDevOpsProduction,
+    LocalFolderProduction,
+    ProductionProvider,
+)
 from .prompt import build_image_prompt, build_prompt
 from .render import (
     Medium,
@@ -165,6 +173,9 @@ __all__ = [
     "registered_looks",
     "Cutter",
     "Grader",
+    "ProductionProvider",
+    "AzureDevOpsProduction",
+    "LocalFolderProduction",
     "Renderer",
     "Transform",
     "Medium",

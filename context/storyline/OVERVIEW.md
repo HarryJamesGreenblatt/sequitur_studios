@@ -221,14 +221,27 @@ into a film-literate prompt.
   DevOps MCP** (the toaster-strudel MCP-client pattern); process customization is
   REST + portal (the backlog-level *behaviors* REST surface is too thin, per first-party
   docs). Concrete infra identifiers stay in gitignored local notes.
+- [`0025-the-production-provider.md`](0025-the-production-provider.md)
+  — **built** the `ProductionProvider` seam — the `0005` → `0008` → `0024` payoff. Finished
+  the two board prerequisites (`Mood`/`Look` fields on Shot; a scaffolded
+  Act → Scene → Beat → Shot example tree), then wrote
+  [`production.py`](../../sequitur/production.py): a `runtime_checkable`
+  **`ProductionProvider`** protocol (`read_brief` / `write_sequence`) with two backends —
+  **`AzureDevOpsProduction`** (the live board over ADO REST via `DefaultAzureCredential`,
+  **no new dependency** — stdlib `urllib`) and **`LocalFolderProduction`** (a JSON test
+  double, the `0005` "local folder"). The board's narrative tree now reads into a `Brief`
+  the crew `Engine` assembles, and the graded `Sequence` writes back. The mirror of the
+  `Renderer` protocol (`0021`) for the *decision* plane — but with **no registry** (the
+  caller picks a backend; unlike a role holding a renderer by medium). Guard test
+  `tests/test_production.py` (5, an offline round-trip through the real engine); all 31 green.
 
 ## Current state (keep fresh)
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
-  `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `config`) + CLI
+  `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLI
   `scripts/generate.py` + tests
   (`tests/test_prompt.py` · `test_edit.py` · `test_engine.py` · `test_render.py` ·
-  `test_grade.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
+  `test_grade.py` · `test_production.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
   (`crew/camera.py`), `Gaffer` (`crew/lighting.py`), `KeyGrip` (`crew/grip.py`) — each
   *owning* its slice of the grammar enums (the old flat `grammar.py`, un-flattened),
   plus the assemble-phase `Editor` (`crew/editorial.py`) and `Colorist`
@@ -298,22 +311,25 @@ into a film-literate prompt.
   through a `ProductionProvider` seam and writing via an `OutputStore` seam. The
   **production board is now backed by Azure DevOps** (`0024`: a custom Basic-derived
   process, Act→Scene→Beat→Shot hierarchy, departments as Area Paths, driven via the ADO
-  MCP); the `ProductionProvider` *code* seam over it is the next build. Output bytes live
+  MCP); the `ProductionProvider` *code* seam over it is **now built** (`0025`:
+  [`production.py`](../../sequitur/production.py) — `read_brief` / `write_sequence`, a live
+  `AzureDevOpsProduction` backend + a `LocalFolderProduction` test double). Output bytes live
   in the **Sequitur Solutions** tenant's **SharePoint via Microsoft Graph** (Azure Blob
   deferred).
 
 ## Open threads (keep fresh)
 
-- **Build the provider seams (`0005`)** — `ProductionProvider` +
-  `OutputStore` interfaces. The **production-store platform is now chosen and stood up**
-  (`0024`): **Azure DevOps** backs the Production board — a custom Basic-derived process
-  modelling **Act → Scene → Beat → Shot** as a 4-level work-item hierarchy, crew
-  departments as **Area Paths**, one project = one Production. Next: build
-  `ProductionProvider.read_brief()` (board tree → `Brief`) / `write_sequence()` (graded
-  `Sequence` → work items) against it via `DefaultAzureCredential`, with a **local-folder**
-  implementation as the test double; then a Graph-backed `OutputStore` (Entra app,
-  least-privilege, scoped to one SharePoint library) for output bytes. Still pending on
-  the board: the `Mood`/`Look` fields on Shot, and a scaffolded example tree.
+- **Build the provider seams (`0005`)** — `ProductionProvider` **built** (`0025`):
+  [`production.py`](../../sequitur/production.py) — a `runtime_checkable` protocol with
+  `read_brief()` (board tree → `Brief`) / `write_sequence()` (graded `Sequence` → work
+  items), a live **`AzureDevOpsProduction`** backend (ADO REST via `DefaultAzureCredential`,
+  stdlib `urllib`, no new dep) and a **`LocalFolderProduction`** test double. The board's
+  `Mood`/`Look` Shot fields and an example Act→Scene→Beat→Shot tree are in place. Still to do:
+  **bind the provider into `Engine`** (read a `Brief` from a provider instead of the caller
+  passing one), a **scene-scoped** WIQL tree read (the v1 read is flat/positional), **per-shot
+  grade matching** so the write stops flattening distinct looks, writing work-item **State**
+  (not just `Look`), and the phase axis. Then a Graph-backed **`OutputStore`** (Entra app,
+  least-privilege, scoped to one SharePoint library) for output bytes.
 - **Acquire *Grammar of the Edit*** — **DONE** (`0007`): 8 chapters abridged into
   `artifacts/grammar of the edit/reference/`. Next is building the post layer it
   grounds.
