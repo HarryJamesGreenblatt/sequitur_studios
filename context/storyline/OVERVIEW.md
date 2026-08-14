@@ -234,6 +234,17 @@ into a film-literate prompt.
   `Renderer` protocol (`0021`) for the *decision* plane — but with **no registry** (the
   caller picks a backend; unlike a role holding a renderer by medium). Guard test
   `tests/test_production.py` (5, an offline round-trip through the real engine); all 31 green.
+- [`0026-the-production-template.md`](0026-the-production-template.md)
+  — **built** a one-command **board provisioner**
+  ([`scripts/provision_production.py`](../../scripts/provision_production.py)) that stands up a
+  new production to "where we are now" — the infrastructure sibling of the `ProductionProvider`
+  (that seam *reads/writes* an existing board; this *stands one up*). The inherited **process**
+  was already the org-level template for the board's *structure* (WITs, fields, the Shot-board
+  cascade); this closes the **per-project** gap the `0025` session did by hand — area paths,
+  a **team per department**, and each team's iteration + backlog-level visibilities — into one
+  **idempotent** script (`DefaultAzureCredential` + stdlib `urllib`, non-secret pointers from
+  `.env`). Detect-then-act with a **`--dry-run`** (validated against the live project, no
+  changes) and an opt-in **`--with-example`** demo tree; the default is a clean, empty board.
 
 ## Current state (keep fresh)
 
@@ -317,7 +328,10 @@ into a film-literate prompt.
   **operationalized** (`0025` addendum): the four narrative levels are **Acts → Scenes → Beats → Shots**
   (Shot moved up to the Requirement tier so the crew's working leaf has a Kanban board), and
   each of the seven departments is a **Team + Area Path** with its own board (the bucket), under
-  a master all-departments team. Output bytes live
+  a master all-departments team. A new production stands up to this state with one command
+  (`0026`: [`scripts/provision_production.py`](../../scripts/provision_production.py) —
+  idempotent, `--dry-run`/`--with-example`); the inherited process is the org-level template for
+  the board's structure. Output bytes live
   in the **Sequitur Solutions** tenant's **SharePoint via Microsoft Graph** (Azure Blob
   deferred).
 
