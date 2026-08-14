@@ -245,6 +245,14 @@ into a film-literate prompt.
   **idempotent** script (`DefaultAzureCredential` + stdlib `urllib`, non-secret pointers from
   `.env`). Detect-then-act with a **`--dry-run`** (validated against the live project, no
   changes) and an opt-in **`--with-example`** demo tree; the default is a clean, empty board.
+- [`0027-board-to-board.md`](0027-board-to-board.md)
+  — **built** the board-to-board binding — closed the top `0025` thread. `Engine` gained
+  **`run_production(provider, *, scene=None)`**: read a `Brief` from a
+  `ProductionProvider`, let the crew assemble a graded `Sequence`, and write it back — one
+  call, board in → board out. The `provider` is reached only through the `runtime_checkable`
+  Protocol (a `TYPE_CHECKING`-only import), so the engine stays backend-agnostic (local-folder
+  ↔ ADO), the same swappability the `Renderer` seam gives the execution plane. Verified offline
+  (guard test, 32 green) and live against the board.
 
 ## Current state (keep fresh)
 
@@ -315,7 +323,7 @@ into a film-literate prompt.
   ([`LICENSE`](../../LICENSE)).
 - **Doc naming convention:** `README.md` (repo root only) · `INDEX.md` (catalogs)
   · `OVERVIEW.md` (guides, like this file).
-- **Production model (decided `0005`; board built `0024`, provider code pending):** the
+- **Production model (decided `0005`; board built `0024`, provider bound `0027`):** the
   engine is singular and evolves here; a *production* is external **content** (not a repo
   fork), modeled as a plan whose buckets = layers, each holding seeds/history *in* the
   plan and guidance/output *by reference*. The engine is a **driver client** reading
@@ -345,9 +353,10 @@ into a film-literate prompt.
   `Mood`/`Look` Shot fields and an example Act→Scene→Beat→Shot tree are in place, and the
   board is **operationalized** (`0025` addendum: per-department **Team + Area Path** boards
   under a master team; the narrative levels cascaded to **Acts→Scenes→Beats→Shots** so the
-  Shot leaf has a Kanban board). Still to do:
-  **bind the provider into `Engine`** (read a `Brief` from a provider instead of the caller
-  passing one), a **scene-scoped** WIQL tree read (the v1 read is flat/positional), **per-shot
+  Shot leaf has a Kanban board), and a new production stands up to this state with one command
+  (`0026`). The engine is now **bound to the board** (`0027`): `Engine.run_production(provider)`
+  runs a production board-to-board (read a `Brief` → assemble → write the `Sequence` back). Still
+  to do: a **scene-scoped** WIQL tree read (the v1 read is flat/positional), **per-shot
   grade matching** so the write stops flattening distinct looks, writing work-item **State**
   (not just `Look`), and the phase axis. Then a Graph-backed **`OutputStore`** (Entra app,
   least-privilege, scoped to one SharePoint library) for output bytes.

@@ -3,9 +3,10 @@
 The engine holds no film logic. It filters the crew by the active :class:`Phase`,
 collects each role's :class:`Contribution`, and hands them to the
 :class:`~sequitur.crew.director.Director` to reconcile. Behaviour lives in the
-roles; reconciliation in the Director; the engine only routes. (The per-instance
-*Production* that will bind role state to this driver — storyline 0005 — is not
-wired yet; ``run`` takes a :class:`Brief` directly for now.)
+roles; reconciliation in the Director; the engine only routes. It can take a
+:class:`Brief` directly, or read one from — and write the result back to — a
+:class:`~sequitur.production.ProductionProvider` (the production board), which is
+the per-instance *Production* binding storyline 0005 anticipated (0025 / 0026).
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ from .role import Phase, Role
 
 if TYPE_CHECKING:
     from ..edit import Sequence
+    from ..production import ProductionProvider
     from ..shot import Shot
     from .role import Brief
 
@@ -61,3 +63,19 @@ class Engine:
         active = [r for r in self.crew if getattr(r, "phase", None) == Phase.ASSEMBLE]
         contributions = [role.propose(brief) for role in active]
         return self.director.assemble(brief, contributions)
+
+    def run_production(self, provider: ProductionProvider, *, scene: str | None = None) -> Sequence:
+        """Run a production **board-to-board**: read a Brief, assemble, write it back.
+
+        Binds the assemble phase to a
+        :class:`~sequitur.production.ProductionProvider` (storyline 0025 / 0026): the
+        crew reads its coverage from the production board, assembles a graded edit
+        :class:`~sequitur.edit.Sequence`, and records the result back onto the board.
+        The provider is duck-typed (a ``runtime_checkable`` Protocol), so the engine
+        needs no import of the concrete backend — the same swappability the
+        :class:`~sequitur.render.Renderer` seam gives the execution plane.
+        """
+        brief = provider.read_brief(scene=scene)
+        sequence = self.assemble(brief)
+        provider.write_sequence(sequence)
+        return sequence

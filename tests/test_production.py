@@ -100,6 +100,22 @@ def test_write_appends_when_sequence_is_longer_than_the_board() -> None:
     assert all(s["look"] == "Noir" for s in written["shots"])
 
 
+def test_engine_runs_a_production_board_to_board() -> None:
+    # The Engine reads the Brief from the provider, assembles, and writes back — in one call.
+    with tempfile.TemporaryDirectory() as d:
+        path = Path(d) / "p.json"
+        _fixture(path)
+        provider = LocalFolderProduction(path)
+
+        sequence = Engine().run_production(provider)
+
+        written = json.loads(path.read_text(encoding="utf-8"))
+    # A graded edit came back, and its look was recorded onto every board shot.
+    assert len(sequence.timeline()) == 2
+    assert all(entry.clip.grade is not None for entry in sequence.timeline())
+    assert [s["look"] for s in written["shots"]] == ["Cool", "Cool"]
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for t in tests:
