@@ -259,6 +259,14 @@ into a film-literate prompt.
   assembled timeline. Defaults to the configured ADO board; `--local <path>` runs offline
   against a local-folder production; `--no-write` previews (assemble + print, no write-back).
   Closes the `0027` board-to-board-CLI thread; validated offline and live.
+- [`0029-proof-of-output.md`](0029-proof-of-output.md)
+  — **verification** (no `sequitur/` code): stopped describing and *produced*. Rendered a real
+  **still** (`gpt-image-1`, a 2.0 MB grammar-legible PNG) and — for the **first time ever** — a
+  real **video** (**Gemini Omni**, a 2.1 MB `ftyp isom` MP4; the odd-format Gemini key
+  authenticated on its first live call). All four renderers now produce real bytes (still, video,
+  voice `0011`, board-to-board assemble `0027`). Repurposed the un-deletable **Test** work-item
+  types as the board's **QC / acceptance layer** — a Test Plan "Output Verification" with a passing,
+  evidence-backed Test Case per renderer. Verdict: **not spinning yarn**.
 
 ## Current state (keep fresh)
 
@@ -329,6 +337,11 @@ into a film-literate prompt.
   ([`LICENSE`](../../LICENSE)).
 - **Doc naming convention:** `README.md` (repo root only) · `INDEX.md` (catalogs)
   · `OVERVIEW.md` (guides, like this file).
+- **Output verified (`0029`):** all four render backends produce real bytes — still
+  (`gpt-image-1` PNG), **video (Gemini Omni MP4 — headline premise, proven on the first live
+  call)**, voice (Azure Speech WAV, `0011`), and a board-to-board assembled `Sequence` (`0027`).
+  The board's **Test** types are the QC layer (a "Output Verification" Test Plan, one passing case
+  per renderer).
 - **Production model (decided `0005`; board built `0024`, provider bound `0027`):** the
   engine is singular and evolves here; a *production* is external **content** (not a repo
   fork), modeled as a plan whose buckets = layers, each holding seeds/history *in* the
