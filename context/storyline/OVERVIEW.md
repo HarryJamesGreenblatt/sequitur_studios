@@ -262,7 +262,7 @@ into a film-literate prompt.
 - [`0029-proof-of-output.md`](0029-proof-of-output.md)
   — **verification** (no `sequitur/` code): stopped describing and *produced*. Rendered a real
   **still** (`gpt-image-1`, a 2.0 MB grammar-legible PNG) and — for the **first time ever** — a
-  real **video** (**Gemini Omni**, a 2.1 MB `ftyp isom` MP4; the odd-format Gemini key
+  real **video** (**Gemini Omni**, a 2.1 MB `ftyp isom` MP4; the Key-Vault-held Gemini key
   authenticated on its first live call). All four renderers now produce real bytes (still, video,
   voice `0011`, board-to-board assemble `0027`). Repurposed the un-deletable **Test** work-item
   types as the board's **QC / acceptance layer** — a Test Plan "Output Verification" with a passing,

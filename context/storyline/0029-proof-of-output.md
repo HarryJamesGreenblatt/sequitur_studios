@@ -16,10 +16,10 @@
   decision plane and the execution plane work *together*, not just in the abstract.
 
 - **Rendered the first-ever video — the headline premise.** The studio's whole reason for
-  being is **Gemini Omni Flash**, and it had *never been run*: the Gemini key has an odd format
-  (`AQ.A…`, not the classic `AIzaSy…`) and had never made a live call. This session fired it —
-  a motion shot (MCU / slow dolly-in / shallow DoF / low-key / cool) through `Studio` — and it
-  **authenticated and returned a valid 2.1 MB MP4** (`ftyp isom`). The marquee feature is real.
+  being is **Gemini Omni Flash**, and it had *never been run* — the video path had never made a
+  single live call. This session fired it — a motion shot (MCU / slow dolly-in / shallow DoF /
+  low-key / cool) through `Studio`, with the API key fetched at runtime from **Key Vault** — and
+  it **authenticated and returned a valid 2.1 MB MP4** (`ftyp isom`). The marquee feature is real.
 
 - **Repurposed the Test types as QC.** The `Test Case` / `Test Plan` / `Test Suite` work-item
   types couldn't be disabled (`VS402805`) and had read as clutter. They are, in fact, the
