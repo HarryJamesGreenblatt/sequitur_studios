@@ -366,6 +366,14 @@ into a film-literate prompt.
   resolver; guard test `tests/test_output.py` (6); **live-verified** through the real OneDrive
   root; suite **45 green**. The `0036` dailies model's data plane now exists — next is the
   deliverable + gate ritual that links a stored `ref` onto the board.
+- [`0039-render-then-persist.md`](0039-render-then-persist.md)
+  — **code:** wired the execute-hook to the output store, closing **decision → pixels →
+  durable**. `Director.execute` gained an optional `store` (+ owning `production`, a `phase`):
+  it renders to a scratch path as before, then files that artifact through `OutputStore.put`
+  and returns a `RenderResult` whose `ref` is the **durable** location (render-only behaviour
+  unchanged when no store is passed; a store without a production raises). The dailies model's
+  render→persist step; tests in `tests/test_engine.py` (now 8, offline); suite **47 green**.
+  Next: the deliverable + gate ritual that consumes the durable ref.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `config`) + CLIs

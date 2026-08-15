@@ -7,6 +7,7 @@ Asserts against the *public* package surface (``sequitur``). Run directly
 from __future__ import annotations
 
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -21,6 +22,7 @@ from sequitur import (  # noqa: E402
     HeuristicJudgment,
     ImageStudio,
     LightScheme,
+    LocalFolderOutputStore,
     Look,
     Medium,
     Phase,
@@ -121,6 +123,61 @@ def test_director_execute_hook_renders_a_greenlit_shot() -> None:
         assert result.ref == "out.png"
     finally:
         register(Medium.STILL, ImageStudio)  # restore the default factory
+
+
+def test_execute_files_the_render_into_the_output_store() -> None:
+    class FakeStudio:
+        medium = Medium.STILL
+
+        def render(self, shot, *, out_path=None):
+            Path(out_path).write_bytes(b"daily-bytes")
+            return RenderResult("fake-native", Path(out_path))
+
+    register(Medium.STILL, lambda: FakeStudio())
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            scratch = Path(d) / "scratch.png"
+            store = LocalFolderOutputStore(Path(d) / "store")
+            shot = Engine().run(Phase.SHOOT, Brief(scene="a lighthouse in a storm"))
+            result = Director().execute(
+                shot,
+                medium=Medium.STILL,
+                out_path=scratch,
+                store=store,
+                production="HeistNoir",
+                phase="shoot",
+                name="shot_001.png",
+            )
+            # The ref is now the DURABLE store location, and the bytes made it there.
+            assert Path(result.ref) == Path(d) / "store" / "HeistNoir" / "shoot" / "shot_001.png"
+            assert Path(result.ref).read_bytes() == b"daily-bytes"
+    finally:
+        register(Medium.STILL, ImageStudio)
+
+
+def test_execute_with_a_store_requires_a_production() -> None:
+    class FakeStudio:
+        medium = Medium.STILL
+
+        def render(self, shot, *, out_path=None):
+            Path(out_path).write_bytes(b"x")
+            return RenderResult("fake-native", Path(out_path))
+
+    register(Medium.STILL, lambda: FakeStudio())
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            store = LocalFolderOutputStore(d)
+            shot = Engine().run(Phase.SHOOT, Brief(scene="a"))
+            try:
+                Director().execute(
+                    shot, medium=Medium.STILL, out_path=Path(d) / "s.png", store=store
+                )
+            except ValueError:
+                pass
+            else:  # pragma: no cover - the assertion is the failure signal
+                raise AssertionError("a store without a production should raise")
+    finally:
+        register(Medium.STILL, ImageStudio)
 
 
 if __name__ == "__main__":

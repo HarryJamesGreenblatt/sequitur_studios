@@ -13,13 +13,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ..render import Medium, renderer_for
+from ..render import Medium, RenderResult, renderer_for
 from ..shot import Shot
 from .role import Department, Role
 
 if TYPE_CHECKING:
     from ..edit import Sequence
-    from ..render import RenderResult
+    from ..output import OutputStore
     from .role import Brief, Contribution
 
 
@@ -50,8 +50,12 @@ class Director(Role):
         *,
         medium: Medium = Medium.VIDEO,
         out_path: str | Path | None = None,
+        store: OutputStore | None = None,
+        production: str | None = None,
+        phase: str = "shoot",
+        name: str | None = None,
     ) -> RenderResult:
-        """Close decision -> pixels: render a greenlit :class:`Shot`.
+        """Close decision -> pixels (-> durable): render a greenlit :class:`Shot`.
 
         Reconciling chooses the shot; this hook *executes* it. It resolves the
         producer for ``medium`` from the renderer registry (storyline 0021) and hands
@@ -60,8 +64,19 @@ class Director(Role):
         (``gpt-image``) are the media that render a Shot; the default is video, the
         studio's headline medium. The Director stays backend-agnostic — it holds a
         renderer *by medium*, never a concrete class.
+
+        A renderer writes to a *scratch* path. Pass a ``store`` (with the owning
+        ``production``) to also file that artifact durably under ``phase`` and return
+        a :class:`~sequitur.render.RenderResult` whose ``ref`` is the durable location
+        (storyline 0038) — the dailies model's render -> persist step, ready for a gate.
         """
-        return renderer_for(medium).render(shot, out_path=out_path)
+        result = renderer_for(medium).render(shot, out_path=out_path)
+        if store is None:
+            return result
+        if not production:
+            raise ValueError("Storing a render requires the owning production.")
+        ref = store.put(result.ref, production=production, layer=phase, name=name)
+        return RenderResult(raw=result.raw, ref=ref)
 
     def assemble(self, brief: Brief, contributions: list[Contribution]) -> Sequence:
         """Reconcile the assemble crew into a graded edit :class:`~sequitur.edit.Sequence`.
