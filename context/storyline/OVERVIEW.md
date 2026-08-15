@@ -278,6 +278,17 @@ into a film-literate prompt.
   (orthogonal — never a work-item parent above Act; iteration is the only axis with a board
   experience). A load-bearing leading **digit** pins ADO's alphabetical dateless-`current` pick
   onto Pre-Production (emoji is decoration). Baked into the provisioner template and run live.
+- [`0031-the-director-seat.md`](0031-the-director-seat.md)
+  — **agent-customization:** answered *what executes the direction* — the conversational agent
+  takes the **Director** seat and the crew become **dispatchable subagents** (`.github/agents/`),
+  the **PersonaJudgment (B)** tier beside `sequitur/`'s deterministic **HeuristicJudgment (A)**.
+  Built `director.agent.md` (grounded in Directing — interprets the brief, dispatches the crew,
+  reconciles their disjoint slices into a `Shot`, reports back for greenlight) + `cinematographer.agent.md`
+  (DP — grounded in Grammar of the Shot, returns a typed `Contribution`). **Proved live** (a
+  lighthouse brief → a valid, vocabulary-bound camera Contribution → a reconciled `Shot`). Settled
+  the grounding style as **persona-bound** (free judgment, output constrained to the code's closed
+  enums; subagents not wired into the Python). Every `crew/<role>.py` gets a `<role>.agent.md` twin.
+  No `sequitur/` code changed.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLIs
