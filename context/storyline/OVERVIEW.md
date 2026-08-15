@@ -267,8 +267,17 @@ into a film-literate prompt.
   voice `0011`, board-to-board assemble `0027`). Repurposed the un-deletable **Test** work-item
   types as the board's **QC / acceptance layer** — a Test Plan "Output Verification" with a passing,
   evidence-backed Test Case per renderer. Verdict: **not spinning yarn**.
-
-## Current state (keep fresh)
+- [`0030-the-phase-axis.md`](0030-the-phase-axis.md)
+  — **board design + infrastructure:** closed the phase axis `0024` deferred. Reframed
+  Act→Scene→Beat→Shot as a **multi-department** decomposition (each level's granularity =
+  one department's atom, but every level is worked by several — Beat is the **rhythm** level
+  co-owned by Editor + Composer, so *sound aligns to Beat*), which dissolves the Beat/Shot
+  conflation. Gave the three **production phases** a board-native home: **named, dateless
+  iterations** (`1 🎬 Pre-Production` / `2 🎥 Production` / `3 ✂️ Post-Production`) with every
+  team subscribed, so each crew gets a Pre/Prod/Post switcher. Phase is the **iteration** axis
+  (orthogonal — never a work-item parent above Act; iteration is the only axis with a board
+  experience). A load-bearing leading **digit** pins ADO's alphabetical dateless-`current` pick
+  onto Pre-Production (emoji is decoration). Baked into the provisioner template and run live.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLIs
@@ -358,7 +367,9 @@ into a film-literate prompt.
   a master all-departments team. A new production stands up to this state with one command
   (`0026`: [`scripts/provision_production.py`](../../scripts/provision_production.py) —
   idempotent, `--dry-run`/`--with-example`); the inherited process is the org-level template for
-  the board's structure. Output bytes live
+  the board's structure. The **phase axis** is now on the board too (`0030`): three **named,
+  dateless iterations** (Pre/Prod/Post) that every team subscribes to — a per-crew Pre/Prod/Post
+  switcher — provisioned as part of the baseline template. Output bytes live
   in the **Sequitur Solutions** tenant's **SharePoint via Microsoft Graph** (Azure Blob
   deferred).
 
@@ -377,8 +388,11 @@ into a film-literate prompt.
   runs a production board-to-board (read a `Brief` → assemble → write the `Sequence` back). Still
   to do: a **scene-scoped** WIQL tree read (the v1 read is flat/positional), **per-shot
   grade matching** so the write stops flattening distinct looks, writing work-item **State**
-  (not just `Look`), and the phase axis. Then a Graph-backed **`OutputStore`** (Entra app,
-  least-privilege, scoped to one SharePoint library) for output bytes.
+  (not just `Look`), and the **provider-side phase seam** (`0030` put the phase axis on the board
+  as named Pre/Prod/Post iterations; still to build the `Phase → iteration` map, phase-scoped
+  reads, and an `advance(shot, to=…)` verb, plus modelling non-camera deliverables — e.g. the
+  upstream production-design reference frame — as their own phased items). Then a Graph-backed
+  **`OutputStore`** (Entra app, least-privilege, scoped to one SharePoint library) for output bytes.
 - **Acquire *Grammar of the Edit*** — **DONE** (`0007`): 8 chapters abridged into
   `artifacts/grammar of the edit/reference/`. Next is building the post layer it
   grounds.

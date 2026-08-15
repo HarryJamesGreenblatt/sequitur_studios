@@ -12,7 +12,14 @@ idempotently:
 * the default team set to include child areas (so its board shows the whole tree);
 * a **team per department**, each scoped to its Area Path (the per-crew bucket);
 * each team's **backlog iteration** (else the board errors ``TF400509``) and
-  **backlog-level visibilities** (else the custom Acts/Scenes levels stay hidden).
+  **backlog-level visibilities** (else the custom Acts/Scenes levels stay hidden);
+* the three **phase iterations** -- ``1 🎬 Pre-Production``, ``2 🎥 Production``,
+  ``3 ✂️ Post-Production`` -- demonstrably-named (dateless) sprints that realise the
+  phase axis, with every team subscribed to all three so each crew gets a Pre/Prod/Post
+  switcher over its bucket. The leading digit forces ADO's alphabetical "current" pick
+  onto Pre-Production (the emoji is decoration). These are the board side of the code's
+  :class:`~sequitur.crew.role.Phase` (``plan``/``shoot``/``assemble``); the provider
+  seam maps between them.
 
 This is the infrastructure sibling of :class:`sequitur.production.AzureDevOpsProduction`
 (that seam *reads/writes* an existing board; this script *stands one up*). It reproduces
@@ -51,6 +58,20 @@ API = "api-version=7.1"
 #: departments; note the lighting department's board name is "Lighting" (the code's
 #: ``Department.ELECTRIC`` — Appendix D — surfaces as "Lighting" on the board).
 DEPARTMENTS = ["Direction", "Camera", "Lighting", "Grip", "Editorial", "Color", "Sound"]
+
+#: The three production phases, as named (dateless) iteration nodes. This is the board
+#: side of the code's ``Phase`` enum (``plan`` -> Pre-Production, ``shoot`` -> Production,
+#: ``assemble`` -> Post-Production); delivery is out of scope. Every team subscribes to
+#: all three, so the Sprints switcher reads the phase names rather than "Sprint 1/2/3".
+#: The leading digit is load-bearing, not cosmetic: with no dates, ADO marks the
+#: *alphabetically-first* iteration "current", so the number forces sort order and pins a
+#: fresh production to open on Pre-Production (verified empirically). The emoji is pure
+#: decoration -- it sorts high (well above ASCII), so it can't carry the ordering itself.
+PHASES = [
+    "1 \U0001F3AC Pre-Production",   # clapperboard
+    "2 \U0001F3A5 Production",       # movie camera
+    "3 \u2702\uFE0F Post-Production",  # scissors
+]
 
 
 class Ado:
@@ -224,6 +245,53 @@ class Provisioner:
                 self.ado("PATCH", f"{_q(self.project)}/{_q(team)}/_apis/work/teamsettings?{API}",
                          {"backlogIteration": root_iter, "defaultIteration": root_iter, "backlogVisibilities": visibilities})
 
+    # -- phase iterations (the named Pre/Prod/Post sprints) ----------------
+
+    def ensure_iterations(self) -> dict[str, str]:
+        """Create the three named phase iterations; return ``{name: identifier}``.
+
+        Idempotent and non-destructive: existing nodes are reused and the project's
+        default ``Sprint N`` iterations are left untouched (department teams start with
+        no subscriptions, so their switcher shows only the phases regardless).
+        """
+        existing: dict[str, str] = {}
+        try:
+            root = self.ado("GET", f"{_q(self.project)}/_apis/wit/classificationnodes/iterations?{API}&$depth=1")
+            existing = {c["name"]: c["identifier"] for c in root.get("children", [])}
+        except RuntimeError:
+            pass  # project may not exist yet (dry-run)
+        phase_ids: dict[str, str] = {}
+        for phase in PHASES:
+            if phase in existing:
+                self.log("exists", f"iteration '{phase}'")
+                phase_ids[phase] = existing[phase]
+            else:
+                self.log("create", f"iteration '{phase}' (dateless)")
+                if not self.dry:
+                    node = self.ado("POST", f"{_q(self.project)}/_apis/wit/classificationnodes/iterations?{API}", {"name": phase})
+                    phase_ids[phase] = node["identifier"]
+        return phase_ids
+
+    def subscribe_teams_to_phases(self, phase_ids: dict[str, str]) -> None:
+        """Subscribe every team to the three phase iterations (the Sprints switcher)."""
+        teams = [f"{self.project} Team", *DEPARTMENTS]
+        for team in teams:
+            current: set[str] = set()
+            if not self.dry:
+                try:
+                    subs = self.ado("GET", f"{_q(self.project)}/{_q(team)}/_apis/work/teamsettings/iterations?{API}").get("value", [])
+                    current = {s["id"] for s in subs}
+                except RuntimeError:
+                    pass
+            for phase in PHASES:
+                ident = phase_ids.get(phase)
+                if not self.dry and ident in current:
+                    self.log("exists", f"team '{team}' subscribed to '{phase}'")
+                    continue
+                self.log("sub", f"team '{team}' -> iteration '{phase}'")
+                if not self.dry and ident:
+                    self.ado("POST", f"{_q(self.project)}/{_q(team)}/_apis/work/teamsettings/iterations?{API}", {"id": ident})
+
     # -- optional example tree --------------------------------------------
 
     def create_example(self) -> None:
@@ -263,6 +331,7 @@ class Provisioner:
         self.default_team_includes_children()
         self.ensure_teams()
         self.configure_team_settings()
+        self.subscribe_teams_to_phases(self.ensure_iterations())
         if with_example:
             self.create_example()
         print("Done." if not self.dry else "Dry run complete (no changes made).")
