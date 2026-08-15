@@ -14,7 +14,8 @@ The studio has two halves, both taking shape:
   a dumb `Engine` dispatches a phase. Each role delegates its reasoning to a swappable
   `Judgment` (a deterministic **heuristic** today, an LLM **persona** or a **human**
   tomorrow), so any one seat can be upgraded — or hand-driven — on its own. The
-  human is the **Producer** (brief, greenlight, approve); the agent crew executes.
+  human is the **Producer**, who reviews each phase at a **gate** (approve or revise);
+  the agent crew executes.
 - **A grammar that renders anywhere.** One model-agnostic grammar drives **three
   swappable backends**: **video** (Gemini Omni Flash), **still image** (Azure Foundry
   `gpt-image-1` — the Production Designer's look-dev deliverable), and **voice**
@@ -29,8 +30,13 @@ Video*, Eric R. Williams' *The Screenwriter's Taxonomy*, Rabiger & Hurbis-Cherri
 *Directing: Film Techniques and Aesthetics* (a Director-centric spine across every
 phase), Paez & Jew's *Professional Storyboarding* (previsualization — a storyboard
 panel *is* a pre-rendered shot), and Alexis Van Hurkman's *Color Correction Handbook*
-(the grade — grounding the **Colorist**, now seated). The remaining work is largely
-**code** — building out the crew engine's other phases and roles. The full map lives in
+(the grade — grounding the **Colorist**, now seated). The studio is evolving toward the
+**dailies model** — an interactive, phase-gated pipeline where each phase emits a
+Producer-reviewable **deliverable** (treatment + poster → storyboard → dailies → cut) and
+the human approves or revises that phase before spend flows on. Its data plane is built (a
+durable **output store**, a render→persist hook, and a **deliverable + gate** model); the
+remaining work is largely **code** — the two plan-phase producers and the crew engine's
+other roles. The full map lives in
 [`context/architecture.md`](context/architecture.md).
 
 ## Setup

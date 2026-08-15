@@ -30,6 +30,15 @@ deterministic **code** ([`sequitur/`](../sequitur/), tier A) and persona **agent
 ([`.github/agents/`](../.github/agents/), tier B), with the **conversational agent as
 the Director** (`0031`).
 
+**The experience is pivoting to the *dailies model* (`0036`).** Rather than one batch
+`run_production` pass that commits to the whole film at once, the studio is becoming
+**interactive and phase-gated**: each phase emits a **Producer-reviewable deliverable**
+(a treatment + poster → storyboard → dailies → cut), and the human **approves or revises
+that phase** before spend flows downstream. The data plane this needs is now built — a
+durable **`OutputStore`** (`0038`), a render→persist hook (`0039`), and the **deliverable
++ gate** model (`0040`) — so the runtime section below describes a pipeline of gated
+deliverables, not a single pass.
+
 ## The craft layers, by phase
 
 ### Pre-production — *plan*
@@ -142,8 +151,10 @@ The tables above are the **craft dimension**: the layers of *what* the studio ca
 compose. Orthogonal to them is the **runtime dimension** — how an actual production
 is represented, driven, and stored. Decided in
 [`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md); the
-`ProductionProvider` seam and its Azure DevOps board are now **built** (`0024`–`0028`),
-with a Graph-backed `OutputStore` the remaining piece.
+`ProductionProvider` seam and its Azure DevOps board (`0024`–`0028`) **and** the
+`OutputStore` data plane (`0038`) are now **built** — a Graph/SharePoint `OutputStore`
+backend and the board's **verdict-write** (linking a deliverable's `ref` + moving phase
+State) are the remaining pieces.
 
 - **Engine vs. instance.** `sequitur_studios` is a singular, evolving **engine**
   (`sequitur/` + [`artifacts/`](../artifacts/INDEX.md)). A *production* — a specific
@@ -171,10 +182,16 @@ with a Graph-backed `OutputStore` the remaining piece.
     process, Act→Scene→Beat→Shot hierarchy, departments as Area Paths + Teams, phases as
     named iterations. The engine runs it **board-to-board** (`Engine.run_production`,
     `0027`) with a CLI ([`scripts/produce.py`](../scripts/produce.py), `0028`).
-  - `OutputStore` — `put(production, layer, artifact) → ref`. Output **bytes** live
-    in the **Sequitur Solutions** tenant's **SharePoint, via Microsoft Graph**
-    (least-privilege Entra app; Azure Blob deferred). `ref` is a share URL
-    registered back into the plan.
+  - `OutputStore` — **built (`0038`)**: a `runtime_checkable` protocol
+    (`put(artifact, *, production, layer, name) → ref`; `artifact` = raw bytes or a
+    rendered path) with a **`LocalFolderOutputStore`** backend. Its root
+    (`OUTPUT_STORE_ROOT`) points at a **OneDrive-synced** folder in the Sequitur
+    Solutions tenant, so this one disk backend already buys SharePoint/OneDrive
+    durability — no API code, no new dependency. `ref` is a local `Path` today; a
+    `GraphOutputStore` (share-URL refs via Microsoft Graph) swaps in behind the same
+    protocol later (Azure Blob still deferred). `Director.execute(…, store=…)` files a
+    render durably in one call (`0039`), and the **`Gate`** submits any phase's artifact
+    to it (see *the dailies model* below).
 
 - **Renderer seam** — the *backend* dimension, decided and first-built in
   [`storyline/0006`](storyline/0006-renderer-seam-and-image-backend.md). The
@@ -218,6 +235,35 @@ with a Graph-backed `OutputStore` the remaining piece.
   sequitur becomes its client for the `Composer`/`SoundAnalyst` roles — keeping the
   AGPL-3.0 Strudel engine at arm's length behind toaster-strudel's MIT MCP layer.
 
+### The dailies model — phase-gated deliverables (`0036`–`0040`)
+
+The runtime experience is evolving from a single batch `run_production` pass into an
+**interactive, phase-gated pipeline** (`0036`): each phase emits a **deliverable** the
+Producer reviews at a **gate**, and *revise re-runs that phase only*, not the film. The
+pieces are built bottom-up:
+
+- **Data plane — `OutputStore` (`0038`).** Produced bytes → a durable `ref`, filed under
+  `production / phase / name`; the OneDrive-synced root makes the local backend durable
+  today (see the seam above).
+- **Render → persist (`0039`).** `Director.execute(shot, …, store=…, production=…)`
+  renders to a scratch path, then files it via the store and returns a `RenderResult`
+  whose `ref` is the durable location — the shoot phase's dailies, addressable and
+  comparable across revisions.
+- **The gate (`0040`) — [`sequitur/gate.py`](../sequitur/gate.py).** A `Gate` binds a
+  production to an `OutputStore` and `submit`s any artifact (a shot render, a poster, an
+  encoded treatment), returning an immutable **`Deliverable`** (`production` · `Phase` ·
+  durable `ref` · `GateStatus` = pending / approved / revise). `approve()` /
+  `revise(notes)` are version-producing transitions — a deliverable's life is a chain, so
+  "revise → re-run → new version" is native. The gate persists the *artifact*; the
+  *verdict* becoming a board State-write is the next step.
+
+The **Producer's authority evolves** from a single greenlight into a **per-phase gate**
+(still the human/HITL seat); the **phase axis** (named ADO iterations, `0030`) becomes the
+pipeline's stages; and the **conversational Director** presents each deliverable and
+captures the verdict in chat. The first slice is **plan → {treatment + poster} → gate**,
+now down to building the two plan producers (a Screenwriter *treatment* output and a
+Production Designer seat).
+
 ## The crew engine — roles as behavior, the Production as container
 
 Decided in [`storyline/0008`](storyline/0008-the-crew-engine.md); makes the
@@ -239,7 +285,9 @@ top of this doc stops being a description and becomes objects.
   See *The two Judgment tiers* below.
 - **Three authority tiers.**
   - **Producer = HITL (the user)** — owns *what/whether* (brief, greenlight,
-    approval). This is the code analogue the Producer row lacked: **the human seat.**
+    approval), now as a **per-phase gate** (`0036`): approve or revise each phase's
+    deliverable before spend flows on. This is the code analogue the Producer row
+    lacked: **the human seat.**
   - **Director = agent** — owns *how*; reconciles the crew. Two faces (`0031`): the
     **conversational agent** *is* the acting Director (it dispatches the crew subagents
     and reconciles their disjoint slices), while the code `Director`
@@ -419,8 +467,11 @@ flowchart TB
   `runtime_checkable` protocol (`read_brief` / `write_sequence`) with live
   `AzureDevOpsProduction` + `LocalFolderProduction` backends, run board-to-board by
   `Engine.run_production` (`0027`) + [`scripts/produce.py`](../scripts/produce.py)
-  (`0028`). Remaining: a Graph-backed **`OutputStore`** for output bytes, scene-scoped
-  reads, per-shot grade matching, and State writes. See
+  (`0028`). The **`OutputStore`** is now **built** (`0038`, `LocalFolderOutputStore` over
+  a OneDrive-synced root), wired to the render→persist hook (`0039`) and the **gate**
+  (`0040`); remaining: a Graph-backed `OutputStore` backend, the board **verdict/State
+  write** (link a deliverable `ref` + advance phase), scene-scoped reads, and per-shot
+  grade matching. See
   [`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md).
 - **Production-store platform — RESOLVED: Azure DevOps (`0024`).** GitHub Projects v2
   vs. ADO settled on **ADO** for its native 4-level hierarchy (Act→Scene→Beat→Shot);
