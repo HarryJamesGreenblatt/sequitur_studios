@@ -177,11 +177,45 @@ class AzureDevOpsProduction:
         "Custom.Look",
     )
 
-    def __init__(self, config=None, credential=None) -> None:
+    def __init__(self, config=None, credential=None, *, project=None) -> None:
         from .config import get_ado_config
 
-        self.config = config or get_ado_config()
+        # ``project`` selects the Production (one ADO project = one Production);
+        # None falls back to the ADO_PROJECT default in .env (see get_ado_config).
+        self.config = config or get_ado_config(project=project)
         self._credential = credential
+
+    @classmethod
+    def list_productions(cls, *, org_url=None, credential=None) -> list[str]:
+        """List the org's **productions** — one ADO project is one Production.
+
+        The enumerate step for the multi-production world: it needs *no* project
+        selected (that is what it is for). Reads ``ADO_ORG_URL`` from ``.env`` unless
+        given, authenticates with the caller's Entra identity, and returns the
+        project names sorted — the ``.env`` ``ADO_PROJECT`` is only the default pick.
+        """
+        import os as _os
+
+        from .config import ADO_RESOURCE_ID
+
+        org_url = (org_url or _os.environ.get("ADO_ORG_URL") or "").rstrip("/")
+        if not org_url:
+            raise RuntimeError(
+                "No ADO_ORG_URL configured. Set it in .env "
+                "(https://dev.azure.com/<org>) or pass org_url."
+            )
+        if credential is None:
+            from azure.identity import DefaultAzureCredential
+
+            credential = DefaultAzureCredential()
+        token = credential.get_token(f"{ADO_RESOURCE_ID}/.default").token
+        req = urllib.request.Request(
+            f"{org_url}/_apis/projects?api-version=7.1",
+            headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
+        )
+        with urllib.request.urlopen(req) as resp:
+            result = json.loads(resp.read().decode("utf-8"))
+        return sorted(p["name"] for p in result.get("value", []))
 
     # -- transport ---------------------------------------------------------
 

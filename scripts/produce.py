@@ -11,6 +11,11 @@ Run against the configured Azure DevOps board::
 
     python scripts/produce.py
 
+Select a specific production (one ADO project = one Production), or list them::
+
+    python scripts/produce.py --production HeistNoir
+    python scripts/produce.py --list-productions
+
 Against a local-folder production (a JSON file), no network::
 
     python scripts/produce.py --local production.json
@@ -37,20 +42,22 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         description="Run a production board-to-board: read a Brief, assemble a graded edit, write it back."
     )
     p.add_argument("--local", metavar="PATH", help="Use a local-folder production (JSON) instead of the ADO board.")
+    p.add_argument("--production", metavar="NAME", help="Select the ADO production (project) to run; defaults to ADO_PROJECT in .env.")
+    p.add_argument("--list-productions", action="store_true", help="List the org's productions (ADO projects) and exit.")
     p.add_argument("--scene", help="Scene label for the assembled Brief.")
     p.add_argument("--no-write", action="store_true", help="Assemble and print, but do not write the Sequence back.")
     return p.parse_args(argv)
 
 
 def _provider(args: argparse.Namespace):
-    """Build the production backend — a local folder, or the configured ADO board."""
+    """Build the production backend — a local folder, or the selected ADO board."""
     if args.local:
         from sequitur import LocalFolderProduction
 
         return LocalFolderProduction(args.local)
     from sequitur import AzureDevOpsProduction  # imported late so --local needs no creds
 
-    return AzureDevOpsProduction()
+    return AzureDevOpsProduction(project=args.production)
 
 
 def _print_sequence(sequence) -> None:
@@ -68,6 +75,14 @@ def _print_sequence(sequence) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+
+    if args.list_productions:
+        from sequitur import AzureDevOpsProduction
+
+        for name in AzureDevOpsProduction.list_productions():
+            print(name)
+        return 0
+
     provider = _provider(args)
     engine = Engine()
 

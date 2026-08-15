@@ -116,6 +116,33 @@ def test_engine_runs_a_production_board_to_board() -> None:
     assert [s["look"] for s in written["shots"]] == ["Cool", "Cool"]
 
 
+def test_ado_production_is_parameterized_by_project() -> None:
+    # One ADO project = one Production. The project is a parameter (explicit ->
+    # env default); constructing the provider builds config but hits no network.
+    import os
+
+    from sequitur.config import get_ado_config
+
+    saved = {k: os.environ.get(k) for k in ("ADO_ORG_URL", "ADO_PROJECT")}
+    try:
+        os.environ["ADO_ORG_URL"] = "https://dev.azure.com/testorg"
+        os.environ["ADO_PROJECT"] = "DefaultProduction"
+        # Absent an argument, the .env pointer is the default active production.
+        assert get_ado_config().project == "DefaultProduction"
+        assert AzureDevOpsProduction().config.project == "DefaultProduction"
+        # An explicit project overrides the default — the multi-production selector.
+        assert get_ado_config(project="HeistNoir").project == "HeistNoir"
+        assert AzureDevOpsProduction(project="HeistNoir").config.project == "HeistNoir"
+        # The org stays the studio-wide constant regardless of the production.
+        assert AzureDevOpsProduction(project="HeistNoir").config.org_url == "https://dev.azure.com/testorg"
+    finally:
+        for k, v in saved.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for t in tests:

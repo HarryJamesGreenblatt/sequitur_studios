@@ -166,9 +166,12 @@ class AzureDevOpsConfig:
     """Settings for the production board backend (Azure DevOps).
 
     All non-secret: the board is authorised by the caller's Entra identity
-    (``DefaultAzureCredential``), so there is no key. ``org_url`` and ``project``
-    are tenant-specific infrastructure names and live only in ``.env`` (never in
-    shipped code); ``resource_id`` is the public ADO app constant.
+    (``DefaultAzureCredential``), so there is no key. ``org_url`` is the studio
+    **org** (a studio-wide constant); ``project`` is the selected **Production**
+    instance (one ADO project = one Production) — per-production, defaulting to the
+    ``ADO_PROJECT`` pointer in ``.env``. Both are tenant-specific infrastructure
+    names and live only in ``.env`` (never in shipped code); ``resource_id`` is the
+    public ADO app constant.
     """
 
     org_url: str
@@ -176,18 +179,21 @@ class AzureDevOpsConfig:
     resource_id: str = ADO_RESOURCE_ID
 
 
-def get_ado_config() -> AzureDevOpsConfig:
-    """Return the production-board settings from ``.env``, or fail loudly.
+def get_ado_config(project: str | None = None) -> AzureDevOpsConfig:
+    """Return the production-board settings, or fail loudly.
 
-    Needs only two non-secret pointers: ``ADO_ORG_URL`` (e.g.
-    ``https://dev.azure.com/<org>``) and ``ADO_PROJECT`` (the Production instance).
+    ``project`` selects which **Production** to work on (one ADO project = one
+    Production instance); when omitted it falls back to the ``ADO_PROJECT`` pointer
+    in ``.env`` — the *default active production*. ``ADO_ORG_URL`` (the studio org)
+    is a studio-wide constant, not per-production, and always comes from ``.env``.
     """
     org_url = os.environ.get("ADO_ORG_URL")
-    project = os.environ.get("ADO_PROJECT")
+    project = project or os.environ.get("ADO_PROJECT")
     if not org_url or not project:
         raise RuntimeError(
             "No production board configured. Set ADO_ORG_URL "
-            "(https://dev.azure.com/<org>) and ADO_PROJECT in .env."
+            "(https://dev.azure.com/<org>) and ADO_PROJECT in .env, "
+            "or pass an explicit project."
         )
     return AzureDevOpsConfig(
         org_url=org_url.rstrip("/"),

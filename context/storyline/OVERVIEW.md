@@ -346,6 +346,14 @@ into a film-literate prompt.
   batch/CI path. New pieces on the critical path: the **`OutputStore`** (`0005`, finally), a
   **deliverable+gate ritual**, a **Screenwriter treatment** (Directing Ch. 3–11), a **Production
   Designer seat + key-art source**. First slice: **plan → {treatment + poster} → gate**.
+- [`0037-the-production-parameterized.md`](0037-the-production-parameterized.md)
+  — **code:** made the **Production** a first-class parameter (one ADO project = one Production).
+  `ADO_PROJECT` was a fixed value; now the project is an **argument** (explicit › `.env` default)
+  threaded `config.get_ado_config(project=…)` → `AzureDevOpsProduction(project=…)` →
+  `scripts/produce.py --production NAME`, plus `AzureDevOpsProduction.list_productions()` /
+  `produce.py --list-productions` to enumerate the org's productions (live-verified). `ADO_ORG_URL`
+  and the process template stay studio-wide constants. The prerequisite for the multi-production
+  dailies world (`0036`); guard test added, suite **39 green**, single-production default unchanged.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLIs
