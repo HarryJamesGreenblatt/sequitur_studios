@@ -12,6 +12,9 @@ artifacts/**/source/
 
 # Generated media
 output/
+# Storage Plane: a directory junction into "OneDrive - Sequitur Solutions" (the
+# output store). Never commit — git must not traverse into OneDrive.
+output-store/
 *.mp4
 *.mov
 *.png
