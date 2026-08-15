@@ -33,6 +33,7 @@ class Phase(Enum):
 class Department(Enum):
     """A crew department — the group a role belongs to (Appendix D)."""
 
+    STORY = "story"
     CAMERA = "camera"
     ELECTRIC = "electric"
     GRIP = "grip"

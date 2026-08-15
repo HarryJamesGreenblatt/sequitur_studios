@@ -55,6 +55,7 @@ from .crew import (
     Role,
     assemble_crew,
     full_crew,
+    plan_crew,
     shoot_crew,
 )
 from .crew.camera import (
@@ -70,6 +71,23 @@ from .crew.camera import (
 from .crew.editorial import EditCategory, EditReason, Editor, Transition
 from .crew.colorist import Cast, Colorist, Look, TonalRange
 from .crew.grip import CameraMovement, KeyGrip, MotionSpeed
+from .crew.screenwriting import (
+    Audience,
+    DialogueMode,
+    FilmmakingStyle,
+    FourthWall,
+    Focus,
+    Linearity,
+    Macrogenre,
+    MovieType,
+    Pathway,
+    Performer,
+    Scope,
+    Screenwriter,
+    Stance,
+    Supergenre,
+    Voice,
+)
 from .crew.lighting import (
     ColorTemperature,
     Gaffer,
@@ -151,8 +169,24 @@ __all__ = [
     "Director",
     "Engine",
     "shoot_crew",
+    "plan_crew",
     "assemble_crew",
     "full_crew",
+    "Screenwriter",
+    "MovieType",
+    "Supergenre",
+    "Macrogenre",
+    "Voice",
+    "Linearity",
+    "FilmmakingStyle",
+    "Audience",
+    "Performer",
+    "DialogueMode",
+    "FourthWall",
+    "Pathway",
+    "Scope",
+    "Focus",
+    "Stance",
     "Transition",
     "EditReason",
     "EditCategory",

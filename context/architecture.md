@@ -37,7 +37,7 @@ the Director** (`0031`).
 | Department / role (App. D) | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
 | Producer | financing, scheduling, logistics | **Directing** Ch. 25 (line producing) · Ch. 37 (delivery) *(abridged, `0017`)* | **HITL — the human seat** (works the Production/PM board) | decided (`0008`) |
-| Screenwriter | script, structure | **The Screenwriter's Taxonomy** (genre/voice/pathway/POV) *([abridged, 8 ch, `0016`](../artifacts/the%20screenwriter's%20taxonomy/INDEX.md))* + **Directing** Ch. 3–8 *(abridged, `0017`)* | `Screenwriter` role · typed genre vocabulary (`crew/screenwriting.py`) | grounded; role planned |
+| Screenwriter | script, structure | **The Screenwriter's Taxonomy** (genre/voice/pathway/POV) *([abridged, 8 ch, `0016`](../artifacts/the%20screenwriter's%20taxonomy/INDEX.md))* + **Directing** Ch. 3–8 *(abridged, `0017`)* | `Screenwriter` role · typed genre vocabulary (`crew/screenwriting.py`) | **role built — vocab (`0035`)** |
 | Director | interpret script → shot selection | **Directing** Ch. 7–11, 17 (aesthetics, POV, style) *(abridged, `0017`)* + Grammar of the Shot Ch. 1 | `Director` role (crew reconciler, `0014`) | partial (`Director`) |
 | Casting · Actors | casting, performance | **Directing** Ch. 18–20 *(abridged, `0017`)* — **a new dimension** the architecture did not model | *(unmodeled — future role)* | new (`0015`) |
 | Production Designer | sets, costume, color concepts | **Directing** Ch. 23 (visual design) *(abridged, `0017`)* + *(dedicated production-design source still open)* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |

@@ -15,7 +15,7 @@ dispatches them.
 from __future__ import annotations
 
 from .director import Director
-from .engine import Engine, assemble_crew, full_crew, shoot_crew
+from .engine import Engine, assemble_crew, full_crew, plan_crew, shoot_crew
 from .judgment import HeuristicJudgment, Judgment
 from .role import Brief, Contribution, Department, Phase, Role
 
@@ -30,6 +30,7 @@ __all__ = [
     "Director",
     "Engine",
     "shoot_crew",
+    "plan_crew",
     "assemble_crew",
     "full_crew",
 ]

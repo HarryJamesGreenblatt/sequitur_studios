@@ -32,6 +32,19 @@ def shoot_crew() -> list[Role]:
     return [Cinematographer(), Gaffer(), KeyGrip()]
 
 
+def plan_crew() -> list[Role]:
+    """The plan-phase crew: the Screenwriter (the story descriptor).
+
+    Not part of :func:`full_crew` yet — the Screenwriter's :class:`Contribution` is a
+    *story descriptor*, not a :class:`~sequitur.shot.Shot`, so it needs a plan-phase
+    reconcile (a later pass) before the :class:`Engine` can dispatch it like the shoot
+    and assemble crews.
+    """
+    from .screenwriting import Screenwriter
+
+    return [Screenwriter()]
+
+
 def assemble_crew() -> list[Role]:
     """The post crew: Editor (cut) and Colorist (grade)."""
     from .colorist import Colorist

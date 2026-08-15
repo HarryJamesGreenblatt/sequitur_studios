@@ -321,16 +321,27 @@ into a film-literate prompt.
   disjoint fields that reconcile exactly as `Director.assemble` does. Every `crew/<role>.py` with
   enums now has its `<role>.agent.md` twin; the **plan seats wait on their code twin**
   (`crew/screenwriting.py` + a storyboard role aren't built). No `sequitur/` code changed.
+- [`0035-the-screenwriter-seat.md`](0035-the-screenwriter-seat.md)
+  — **code:** built [`sequitur/crew/screenwriting.py`](../../sequitur/crew/screenwriting.py) —
+  the **plan-phase** `Screenwriter` (new `Department.STORY`) over *The Screenwriter's Taxonomy*
+  as a **layered descriptor vector**: `MovieType` + closed 11-value `Supergenre` (Ch. 2), a
+  curated 50-value `Macrogenre` + open microgenre `str` tag (Ch. 3), a `Voice` **struct** of six
+  axes (Ch. 5), the closed 20-value `Pathway` (Ch. 6), and POV as three enums `Scope`×`Focus`×
+  `Stance` (Ch. 7). Vocabulary + a neutral-descriptor heuristic — the plan analogue of `0012`'s
+  camera re-seating, grounded from the abridged source. Kept **out of `full_crew()`** (a story
+  descriptor isn't `Shot`-reconcilable — a plan-phase reconcile is a later pass); added
+  `plan_crew()`. Guard test `tests/test_screenwriting.py` (5); suite **38 green**.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLIs
   `scripts/generate.py` (render a shot) · `scripts/produce.py` (run a production board-to-board) + tests
   (`tests/test_prompt.py` · `test_edit.py` · `test_engine.py` · `test_render.py` ·
-  `test_grade.py` · `test_production.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
+  `test_grade.py` · `test_production.py` · `test_screenwriting.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
   (`crew/camera.py`), `Gaffer` (`crew/lighting.py`), `KeyGrip` (`crew/grip.py`) — each
   *owning* its slice of the grammar enums (the old flat `grammar.py`, un-flattened),
   plus the assemble-phase `Editor` (`crew/editorial.py`) and `Colorist`
-  (`crew/colorist.py`, `0022`). Roles now have **behaviour**
+  (`crew/colorist.py`, `0022`) and the plan-phase `Screenwriter` (`crew/screenwriting.py`,
+  `0035`, vocabulary-only). Roles now have **behaviour**
   (`0014`): a swappable `Judgment` (`HeuristicJudgment` = deterministic A), and
   `Engine().run(Phase.SHOOT, Brief(...))` dispatches the crew — each proposes a
   `Contribution`, the `Director` reconciles them into a complete `Shot`. **Three render
