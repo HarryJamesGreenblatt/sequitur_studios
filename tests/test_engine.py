@@ -16,15 +16,20 @@ from sequitur import (  # noqa: E402
     CameraAngle,
     CameraMovement,
     Cinematographer,
+    Director,
     Engine,
     HeuristicJudgment,
+    ImageStudio,
     LightScheme,
     Look,
+    Medium,
     Phase,
+    RenderResult,
     Shot,
     ShotSize,
     Transition,
     build_prompt,
+    register,
     shoot_crew,
 )
 
@@ -93,6 +98,29 @@ def test_engine_assembles_a_graded_sequence() -> None:
     assert all(e.clip.grade is not None and e.clip.grade.name == "teal_orange" for e in tl)
     # The grade is a copy per clip, not a shared instance.
     assert tl[0].clip.grade is not tl[1].clip.grade
+
+
+def test_director_execute_hook_renders_a_greenlit_shot() -> None:
+    captured: dict = {}
+
+    class FakeStudio:
+        medium = Medium.STILL
+
+        def render(self, shot, *, out_path=None):
+            captured["shot"] = shot
+            captured["out_path"] = out_path
+            return RenderResult("fake-native", "out.png")
+
+    register(Medium.STILL, lambda: FakeStudio())  # a producer needing no credentials
+    try:
+        shot = Engine().run(Phase.SHOOT, Brief(scene="a lighthouse in a storm"))
+        result = Director().execute(shot, medium=Medium.STILL, out_path="out.png")
+        # The greenlit Shot flowed decision -> execution untouched.
+        assert captured["shot"] is shot
+        assert captured["out_path"] == "out.png"
+        assert result.ref == "out.png"
+    finally:
+        register(Medium.STILL, ImageStudio)  # restore the default factory
 
 
 if __name__ == "__main__":

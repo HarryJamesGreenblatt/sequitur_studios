@@ -10,13 +10,16 @@ slices of the shot, the merge is conflict-free.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
+from ..render import Medium, renderer_for
 from ..shot import Shot
 from .role import Department, Role
 
 if TYPE_CHECKING:
     from ..edit import Sequence
+    from ..render import RenderResult
     from .role import Brief, Contribution
 
 
@@ -40,6 +43,25 @@ class Director(Role):
             aspect_ratio=brief.aspect_ratio,
             **fields,
         )
+
+    def execute(
+        self,
+        shot: Shot,
+        *,
+        medium: Medium = Medium.VIDEO,
+        out_path: str | Path | None = None,
+    ) -> RenderResult:
+        """Close decision -> pixels: render a greenlit :class:`Shot`.
+
+        Reconciling chooses the shot; this hook *executes* it. It resolves the
+        producer for ``medium`` from the renderer registry (storyline 0021) and hands
+        it the Shot, which the backend composes through
+        :func:`~sequitur.prompt.build_prompt`. Video (Gemini Omni) and still
+        (``gpt-image``) are the media that render a Shot; the default is video, the
+        studio's headline medium. The Director stays backend-agnostic — it holds a
+        renderer *by medium*, never a concrete class.
+        """
+        return renderer_for(medium).render(shot, out_path=out_path)
 
     def assemble(self, brief: Brief, contributions: list[Contribution]) -> Sequence:
         """Reconcile the assemble crew into a graded edit :class:`~sequitur.edit.Sequence`.

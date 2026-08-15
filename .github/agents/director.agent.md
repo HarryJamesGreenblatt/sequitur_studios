@@ -34,13 +34,18 @@ and coverage decisions — the *why* behind which department choices serve the s
    tension exists, resolve it from your Directing grounding and note it.
 5. **Report back to the Producer** — the assembled Shot's grammar plus your reasoning — and
    await greenlight.
+6. **On greenlight, execute.** Run the reconciled Shot through the **execute-hook**
+   (`Director.execute(shot, medium=...)` in
+   [`sequitur/crew/director.py`](../../sequitur/crew/director.py)) — it resolves the producer
+   for the medium from the renderer registry and renders the Shot to real bytes (video =
+   Gemini Omni, still = `gpt-image`). This closes decision → pixels.
 
 ## Constraints
 - DO NOT decide a department's owned fields yourself — **dispatch the seat** that owns them.
 - DO NOT invent grammar: the crew choose only from their **closed enums** (source of truth =
   [`sequitur/crew/`](../../sequitur/crew/)). If a subagent returns an invalid value, send it back.
-- DO NOT render. Turning a greenlit Shot into pixels is a separate **execution** step
-  (`build_prompt` → `Studio`/`ImageStudio`); name it, don't fake it.
+- DO NOT render **before greenlight**. Reconcile and report first; only on the Producer's
+  greenlight run the **execute-hook** (`Director.execute`) that turns the Shot into pixels.
 
 ## Output Format
 Return the reconciled Shot as a field list (each field → its chosen grammar value), a short

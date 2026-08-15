@@ -291,6 +291,17 @@ into a film-literate prompt.
   No `sequitur/` code changed. **Follow-up:** added `gaffer` (electric) + `keygrip` (grip) so the
   Director can dispatch a **full shoot crew** (camera/electric/grip) — all three proven live on a
   shared brief, reconciling into one conflict-free `Shot`.
+- [`0032-the-execute-hook.md`](0032-the-execute-hook.md)
+  — **built** the `0031` "wire execution" thread: gave the `Director` an **execute-hook** —
+  `Director.execute(shot, *, medium=Medium.VIDEO, out_path=None)` resolves the producer for the
+  medium from the renderer registry (`0021`) and renders a greenlit `Shot` to **real bytes**
+  (video = Gemini Omni, still = `gpt-image`), closing **decision → pixels** in-process. The hook
+  lives on the Director (the Engine stays the dumb dispatcher), goes through the `Medium`-keyed
+  registry (backend-agnostic, no import cycle), and reuses existing seams — one method, no new
+  export, no new dependency. Guard test (`tests/test_engine.py` now 6; suite 33 green) proves the
+  greenlit Shot reaches the producer untouched; the Director agent's "don't render" constraint
+  became "don't render *before greenlight*" (on greenlight it runs the hook). The B (persona) and
+  A (code) tiers now share one decision → pixels path.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLIs
@@ -415,7 +426,9 @@ into a film-literate prompt.
   `Director`, and a dumb `Engine` that assembles a shoot-phase `Shot`. **Assemble-phase
   behaviour built (`0023`):** `Engine.assemble` + a phase-aware `Director.assemble`
   reconcile the `Editor` (cut) and `Colorist` (base grade) into a graded edit `Sequence`.
-  Next: bind a **local-folder Production** (`0005` provider #1) in place of the bare
+  **Execution wired (`0032`):** `Director.execute` renders a greenlit `Shot` through the
+  renderer registry to real bytes — decision → pixels closed in-process. Next: bind a
+  **local-folder Production** (`0005` provider #1) in place of the bare
   `Brief`, a real cut-decision heuristic (Ch. 5 motivators) + per-shot grade matching
   (Ch. 9), then `PersonaJudgment` (**B**) and PM-board wiring.
 - **Build the sound layer (`0009`)** — `SpeechRenderer` **built** (`0011`: Azure
