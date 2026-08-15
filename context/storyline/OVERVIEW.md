@@ -419,6 +419,26 @@ into a film-literate prompt.
   → abridged**; the INDEX now links each chapter. Library = **8 sources, all abridged**; the still-
   raw **Art Direction Handbook** (Rizzo) is the last source gap.
 
+- [`0044-staging-the-art-direction-handbook.md`](0044-staging-the-art-direction-handbook.md)
+  — **staged** Michael Rizzo's **_The Art Direction Handbook for Film & Television_** (2e), the
+  **last outstanding source gap** (no code): converted the Producer's **8 `.docx` chapters** to
+  verbatim `source/` (`pandoc -t gfm --wrap=none --extract-media`, `CH-NN.md`), gated (`source/` +
+  `extraction/` gitignored), and mapped each chapter to the **Production Designer** seat in a source
+  `INDEX.md`. Fought the **misnamed-OLE2 defect** across three re-extractions — a legacy `.doc`
+  payload (magic `D0 CF 11 E0`) behind a `.docx` name that pandoc can't read; the bad chapter *moved*
+  (CH-04, then CH-03) until a clean re-extract produced eight valid OOXML files. The book is an
+  O'Reilly export (bold-linked chapter titles, `<img>` tags kept / media bytes stripped).
+- [`0045-abridging-the-art-direction-handbook.md`](0045-abridging-the-art-direction-handbook.md)
+  — the **dedicated abridgement session** `0044` deferred (no code): transformed all **8** verbatim
+  chapters into **8 session-ready `reference/` chapters** via **three parallel subagents** by arc
+  (remit & department 1/2 · design core 3/4/7 · physical/historical/logistics 5/6/8). Each ends in a
+  **Studio application** grounding the *planned* **Production Designer** seat over
+  [`ImageStudio`](../../sequitur/image.py); all cross-links verified to resolve (8/8). **Closes the
+  last source gap — nine sources, all abridged.** Catalog + architecture (Production Designer cell) +
+  INDEX flipped **staged → abridged**. A follow-on hygiene pass scrubbed real Azure infra identifiers
+  (account name, resource group) from the shipped docs, keeping the KV secret *names* as functional
+  `config.py` defaults.
+
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
   `scripts/generate.py` (render a shot) · `scripts/produce.py` (run a production board-to-board) + tests
@@ -453,7 +473,7 @@ into a film-literate prompt.
   with no API call. Interpreter is a project `.venv` (Python 3.12); tests in `tests/`
   (`test_prompt` · `test_edit` · `test_engine` · `test_render` · `test_grade`).
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
-  `artifacts/INDEX.md`. **Eight abridged sources** now — spanning every department the
+  `artifacts/INDEX.md`. **Nine abridged sources** now — spanning every department the
   architecture models: *Grammar of the Shot* (production/cinematography,
   encoded under `crew/`), *Grammar of the Edit* (post/editorial, 8 abridged chapters +
   INDEX, grounding [`edit.py`](../../sequitur/edit.py)), *Producing Great Sound* (Rose —
@@ -468,7 +488,9 @@ into a film-literate prompt.
   the Story* (Glebas — visual storytelling / the story→image bridge, the storytelling
   half, **10 abridged chapters** + INDEX, `0043`; supplements the **Director** +
   **Screenwriter**, no new `crew/` module — `directing the story/` ≠ Rabiger's
-  `directing/`). Each source
+  `directing/`), and *The Art Direction Handbook* (Rizzo — production design, grounding the
+  planned **Production Designer** seat over [`ImageStudio`](../../sequitur/image.py), **8 abridged
+  chapters** + INDEX, `0045`; closed the last source gap). Each source
   holds the raw book (`extraction/` .docx, `source/` .md — gitignored) and the
   abridged, session-ready `reference/` with a per-source `INDEX.md` (chapter → code
   map). Each abridged chapter ends with a "Studio application" section.
