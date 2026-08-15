@@ -374,12 +374,21 @@ into a film-literate prompt.
   unchanged when no store is passed; a store without a production raises). The dailies model's
   render→persist step; tests in `tests/test_engine.py` (now 8, offline); suite **47 green**.
   Next: the deliverable + gate ritual that consumes the durable ref.
+- [`0040-the-gate.md`](0040-the-gate.md)
+  — **code:** built the **deliverable + gate** model, the dailies model's review checkpoint
+  (`0036`). `sequitur/gate.py`: an immutable `Deliverable` (production · `Phase` · durable `ref`
+  · `GateStatus` pending/approved/revise) with `approve` / `revise` transitions returning new
+  versions, and a `Gate` that binds a production to an `OutputStore` and `submit`s an artifact —
+  filing it durably under `<production>/<phase>/` and returning a **pending** deliverable ready to
+  present. Persists the artifact, not (yet) the verdict — the board State-write is next. One gate
+  serves every phase (bytes or a produced path). `tests/test_gate.py` (4, offline); suite **51
+  green**. The plan → {treatment + poster} → gate slice is now down to building the two producers.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
-  `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `config`) + CLIs
+  `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
   `scripts/generate.py` (render a shot) · `scripts/produce.py` (run a production board-to-board) + tests
   (`tests/test_prompt.py` · `test_edit.py` · `test_engine.py` · `test_render.py` ·
-  `test_grade.py` · `test_production.py` · `test_output.py` · `test_screenwriting.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
+  `test_grade.py` · `test_production.py` · `test_output.py` · `test_gate.py` · `test_screenwriting.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
   (`crew/camera.py`), `Gaffer` (`crew/lighting.py`), `KeyGrip` (`crew/grip.py`) — each
   *owning* its slice of the grammar enums (the old flat `grammar.py`, un-flattened),
   plus the assemble-phase `Editor` (`crew/editorial.py`) and `Colorist`

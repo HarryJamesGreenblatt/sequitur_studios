@@ -37,6 +37,7 @@ Public surface:
     LocalFolderProduction           the live board backend · the local test double
     OutputStore                     the output-store seam (produced bytes -> a durable ref)
     LocalFolderOutputStore          a directory-backed output store (OneDrive-synced root)
+    Gate, Deliverable, GateStatus   a phase's Producer-reviewable deliverable and its verdict
     Renderer, Medium, RenderResult  the producer seam (decision -> new media artifact)
     Transform, Operation            the operator seam (artifact + decision -> same medium)
     renderer_for, register,
@@ -117,6 +118,7 @@ from .production import (
     ProductionProvider,
 )
 from .output import LocalFolderOutputStore, OutputStore
+from .gate import Deliverable, Gate, GateStatus
 from .prompt import build_image_prompt, build_prompt
 from .render import (
     Medium,
@@ -215,6 +217,9 @@ __all__ = [
     "LocalFolderProduction",
     "OutputStore",
     "LocalFolderOutputStore",
+    "Gate",
+    "Deliverable",
+    "GateStatus",
     "Renderer",
     "Transform",
     "Medium",
