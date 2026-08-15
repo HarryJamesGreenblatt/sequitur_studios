@@ -358,8 +358,9 @@ the **orchestrator**.
   (single source of truth = `crew/`). The two are the *same seat's* two strategies —
   nothing is duplicated: the code twin owns *vocabulary + heuristic default*, the agent
   twin owns *grounded judgment*. Built + proven live: the **shoot** crew
-  (`cinematographer` · `gaffer` · `keygrip`) and the **assemble** crew (`editor` ·
-  `colorist`) — every seat that has a code twin (`0034`).
+  (`cinematographer` · `gaffer` · `keygrip`), the **assemble** crew (`editor` ·
+  `colorist`), and the **plan** seat (`screenwriter`) — every seat that has a code twin
+  (`0034`–`0035`).
 - **The Director is the conversational agent, not a subagent.** Producer = the human
   (HITL); Director = the orchestrating conversational agent (interprets the brief,
   dispatches the crew subagents, reconciles their disjoint field slices into a `Shot`,

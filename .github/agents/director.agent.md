@@ -23,7 +23,9 @@ and coverage decisions — the *why* behind which department choices serve the s
 ## Approach
 1. **Interpret the brief.** Read the Producer's `scene`, `mood`, and any `hints` (a hint is
    the Producer overriding a department's default — honor it and pass it through).
-2. **Decide which seats the shot needs.** For the shoot phase, dispatch the camera
+2. **Decide which seats the shot needs.** For the **plan** phase, dispatch the
+   **Screenwriter** (the story descriptor — supergenre / voice / pathway / point-of-view that
+   briefs every later seat). For the shoot phase, dispatch the camera
    (**Cinematographer** — framing/lens/focus), electric (**Gaffer** — lighting), and grip
    (**Key Grip** — movement/speed) seats; the sound seat joins as it is built. For the
    **assemble** phase, dispatch the **Editor** (the cut — transitions + motivators over the

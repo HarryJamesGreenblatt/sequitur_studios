@@ -330,7 +330,10 @@ into a film-literate prompt.
   `Stance` (Ch. 7). Vocabulary + a neutral-descriptor heuristic — the plan analogue of `0012`'s
   camera re-seating, grounded from the abridged source. Kept **out of `full_crew()`** (a story
   descriptor isn't `Shot`-reconcilable — a plan-phase reconcile is a later pass); added
-  `plan_crew()`. Guard test `tests/test_screenwriting.py` (5); suite **38 green**.
+  `plan_crew()`. Guard test `tests/test_screenwriting.py` (5); suite **38 green**. **Follow-up:**
+  added `screenwriter.agent.md` (the persona **B** twin now that the code seat exists) — grounded
+  in the Taxonomy, bound to the enums; **proven live** (a neo-noir heist premise → `CRIME` /
+  `HEIST_CAPER`+`REVENGE_JUSTICE` / `NOIR` / `LIMITED`·`PRIMARY`·`SUBJECTIVE` / `VOICEOVER`).
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLIs
