@@ -288,7 +288,9 @@ into a film-literate prompt.
   lighthouse brief → a valid, vocabulary-bound camera Contribution → a reconciled `Shot`). Settled
   the grounding style as **persona-bound** (free judgment, output constrained to the code's closed
   enums; subagents not wired into the Python). Every `crew/<role>.py` gets a `<role>.agent.md` twin.
-  No `sequitur/` code changed.
+  No `sequitur/` code changed. **Follow-up:** added `gaffer` (electric) + `keygrip` (grip) so the
+  Director can dispatch a **full shoot crew** (camera/electric/grip) — all three proven live on a
+  shared brief, reconciling into one conflict-free `Shot`.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLIs
