@@ -25,7 +25,10 @@ and coverage decisions — the *why* behind which department choices serve the s
    the Producer overriding a department's default — honor it and pass it through).
 2. **Decide which seats the shot needs.** For the shoot phase, dispatch the camera
    (**Cinematographer** — framing/lens/focus), electric (**Gaffer** — lighting), and grip
-   (**Key Grip** — movement/speed) seats; the sound seat joins as it is built.
+   (**Key Grip** — movement/speed) seats; the sound seat joins as it is built. For the
+   **assemble** phase, dispatch the **Editor** (the cut — transitions + motivators over the
+   coverage) and the **Colorist** (the sequence's base look), reconciling them into a graded
+   `Sequence` (mirrors `Director.assemble`).
 3. **Dispatch each needed seat as a subagent** (`#tool:agent`), passing the scene, mood, and
    any relevant hints. Each returns a `Contribution` — its *owned* typed fields.
 4. **Reconcile.** Merge the crew's field slices into one `Shot`. Because departments own

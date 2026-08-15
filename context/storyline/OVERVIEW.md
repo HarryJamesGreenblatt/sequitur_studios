@@ -311,6 +311,16 @@ into a film-literate prompt.
   agent = the Director; `Director.execute` closes decision → pixels). De-staled the phase-table
   status, the runtime section (`ProductionProvider` + ADO board **built** `0024`–`0028`,
   platform **resolved**), and the open decisions. No `sequitur/` code changed.
+- [`0034-the-assemble-crew.md`](0034-the-assemble-crew.md)
+  — **agent-customization:** expanded the persona (B) tier from the shoot crew to the
+  **assemble crew** — `editor.agent.md` (the cut — grounded in Grammar of the Edit, owns
+  `Transition`/`EditReason`/`EditCategory`) and `colorist.agent.md` (the look — grounded in the
+  Color Correction Handbook, owns `Look`/`Cast`/`TonalRange`, choosing a `look` the code compiles
+  into a `Grade`). **Proved both live** on one assemble brief (a graveside vigil): the Editor
+  returned a valid fade-in-then-cuts sequence with named motivators, the Colorist `look: COOL` —
+  disjoint fields that reconcile exactly as `Director.assemble` does. Every `crew/<role>.py` with
+  enums now has its `<role>.agent.md` twin; the **plan seats wait on their code twin**
+  (`crew/screenwriting.py` + a storyboard role aren't built). No `sequitur/` code changed.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLIs
