@@ -35,6 +35,8 @@ Public surface:
     ProductionProvider              the production seam (board tree <-> Brief / Sequence)
     AzureDevOpsProduction,
     LocalFolderProduction           the live board backend · the local test double
+    OutputStore                     the output-store seam (produced bytes -> a durable ref)
+    LocalFolderOutputStore          a directory-backed output store (OneDrive-synced root)
     Renderer, Medium, RenderResult  the producer seam (decision -> new media artifact)
     Transform, Operation            the operator seam (artifact + decision -> same medium)
     renderer_for, register,
@@ -114,6 +116,7 @@ from .production import (
     LocalFolderProduction,
     ProductionProvider,
 )
+from .output import LocalFolderOutputStore, OutputStore
 from .prompt import build_image_prompt, build_prompt
 from .render import (
     Medium,
@@ -210,6 +213,8 @@ __all__ = [
     "ProductionProvider",
     "AzureDevOpsProduction",
     "LocalFolderProduction",
+    "OutputStore",
+    "LocalFolderOutputStore",
     "Renderer",
     "Transform",
     "Medium",

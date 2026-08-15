@@ -200,3 +200,20 @@ def get_ado_config(project: str | None = None) -> AzureDevOpsConfig:
         project=project,
         resource_id=os.environ.get("ADO_RESOURCE_ID", ADO_RESOURCE_ID),
     )
+
+
+def get_output_store_root() -> Path:
+    """Return the durable output-store root, or fail loudly.
+
+    ``OUTPUT_STORE_ROOT`` (in ``.env``) points at a OneDrive-synced folder in the
+    tenant, so artifacts filed there inherit SharePoint/OneDrive durability for free
+    (storyline 0005). It is tenant-specific infrastructure — it lives only in
+    ``.env``, never in shipped code.
+    """
+    root = os.environ.get("OUTPUT_STORE_ROOT")
+    if not root:
+        raise RuntimeError(
+            "No output store configured. Set OUTPUT_STORE_ROOT in .env to a "
+            "durable folder (e.g. a OneDrive-synced path) for rendered artifacts."
+        )
+    return Path(root)

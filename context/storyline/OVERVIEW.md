@@ -354,12 +354,24 @@ into a film-literate prompt.
   `produce.py --list-productions` to enumerate the org's productions (live-verified). `ADO_ORG_URL`
   and the process template stay studio-wide constants. The prerequisite for the multi-production
   dailies world (`0036`); guard test added, suite **39 green**, single-production default unchanged.
+- [`0038-the-output-store.md`](0038-the-output-store.md)
+  — **code:** built the long-deferred **`OutputStore`** seam (`0005`) — the studio's **data
+  plane**, the sibling of the `Renderer` (execution) and `ProductionProvider` (control) seams.
+  A `runtime_checkable` `OutputStore` Protocol (`put(artifact, *, production, layer, name) ->
+  Path | str`; `artifact` = raw bytes **or** a rendered path) + one `LocalFolderOutputStore`
+  backend that files at `<root>/<production>/<layer>/<name>`. With `OUTPUT_STORE_ROOT` pointed
+  at the OneDrive-synced folder, this one disk backend is already the **durability bridge** — no
+  API code, no new dependency (just `shutil`/`pathlib`); a `GraphOutputStore` (SharePoint
+  share-URL refs) swaps in behind the same protocol later. `config.get_output_store_root()`
+  resolver; guard test `tests/test_output.py` (6); **live-verified** through the real OneDrive
+  root; suite **45 green**. The `0036` dailies model's data plane now exists — next is the
+  deliverable + gate ritual that links a stored `ref` onto the board.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
-  `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLIs
+  `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `config`) + CLIs
   `scripts/generate.py` (render a shot) · `scripts/produce.py` (run a production board-to-board) + tests
   (`tests/test_prompt.py` · `test_edit.py` · `test_engine.py` · `test_render.py` ·
-  `test_grade.py` · `test_production.py` · `test_screenwriting.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
+  `test_grade.py` · `test_production.py` · `test_output.py` · `test_screenwriting.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
   (`crew/camera.py`), `Gaffer` (`crew/lighting.py`), `KeyGrip` (`crew/grip.py`) — each
   *owning* its slice of the grammar enums (the old flat `grammar.py`, un-flattened),
   plus the assemble-phase `Editor` (`crew/editorial.py`) and `Colorist`
