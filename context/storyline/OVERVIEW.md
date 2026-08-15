@@ -302,6 +302,15 @@ into a film-literate prompt.
   greenlit Shot reaches the producer untouched; the Director agent's "don't render" constraint
   became "don't render *before greenlight*" (on greenlight it runs the hook). The B (persona) and
   A (code) tiers now share one decision → pixels path.
+- [`0033-architecture-reconciled.md`](0033-architecture-reconciled.md)
+  — **docs:** brought [`context/architecture.md`](../architecture.md) up to the pivot. The doc
+  still opened with "one department in one phase," framed post as "the next layer," and called
+  the runtime model "not yet built." Added a first-class section — **The two Judgment tiers:
+  `sequitur/` (A) and `.github/agents/` (B)** — with a diagram, naming the `0031`–`0032` pivot
+  (`sequitur/` = A tier + schema + execution + seams; the agents = B tier; the conversational
+  agent = the Director; `Director.execute` closes decision → pixels). De-staled the phase-table
+  status, the runtime section (`ProductionProvider` + ADO board **built** `0024`–`0028`,
+  platform **resolved**), and the open decisions. No `sequitur/` code changed.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLIs
@@ -352,14 +361,16 @@ into a film-literate prompt.
   abridged, session-ready `reference/` with a per-source `INDEX.md` (chapter → code
   map). Each abridged chapter ends with a "Studio application" section.
 - **Architecture:** `context/architecture.md` maps phase → department (Appendix D)
-  → grounding source → code layer. Implemented today: camera/grip/electric in the
-  production phase, the assemble-phase **`Colorist`** (`0022`), plus the **renderer seam**
-  — producers (video + image + voice + film) and a second **operator** plane whose first
-  member is the color **`Grader`**. **Direction
-  (decided `0008`, unbuilt):** a **crew engine** makes roles first-class — `Role` +
-  swappable `Judgment` (heuristic A / persona B / human), **Producer = HITL**,
-  **Director = agent role**, and the **Production (PM board) as the dumb container**.
-  Editorial/post is the next layer to build out.
+  → grounding source → code layer, plus **the pivot** (`0031`, reconciled into the doc
+  `0033`): the crew engine's swappable `Judgment` has **two concrete tiers** —
+  deterministic **code** (`sequitur/`, A = schema + execution + seams) and persona
+  **agents** (`.github/agents/`, B), with the **conversational agent as the Director**.
+  Built today: the **shoot** crew (camera/grip/electric) and the **assemble** crew
+  (Editor + `Colorist`, `0022`–`0023`) both decide via the crew engine; the **renderer
+  seam** (producers video/image/voice/film + a second **operator** plane whose first
+  member is the color **`Grader`**); `Director.execute` closes **decision → pixels**
+  (`0032`); and a live **Azure DevOps** production board the engine runs board-to-board.
+  Remaining seats: plan-phase (Screenwriter / Storyboard Artist) + the sound department.
 - **Secrets:** both backend API keys live in **Azure Key Vault**, fetched at runtime
   via `DefaultAzureCredential`; `.env` holds only non-secret pointers (vault name,
   endpoint, deployment). Never reintroduce plaintext keys.

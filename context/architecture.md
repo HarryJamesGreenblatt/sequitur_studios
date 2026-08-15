@@ -13,15 +13,22 @@ The design principle that ties it together:
 > **code layer** (in `sequitur/`). A user can step into a role and the workflow
 > hands them that role's grounded vocabulary and tooling.
 
-Today the studio implements **one department in one phase** — the camera
-department during production (the DP's grammar of the shot). Everything else is
-scaffolded here as the intended architecture, so subsequent work has a frame to
-grow into.
+Today the studio spans **two phases in code**: the *shoot* crew
+(Cinematographer / Gaffer / Key Grip) composes a fully-grounded **shot**, and the
+*assemble* crew (Editor + Colorist) reconciles a graded edit **sequence** — both
+driven by a real **crew engine** (`Role` + swappable `Judgment`), bound to a live
+**Azure DevOps** production board, and rendering **real bytes** across four media
+(video, still, voice, film). The remaining seats (the plan-phase Screenwriter /
+Storyboard Artist, the sound department) are grounded and scaffolded here.
 
-This doc maps **two orthogonal dimensions**: the **craft layers** (immediately
-below — *what* the studio composes) and the **runtime model** (further down — *how*
-a production is represented, driven, and stored, decided in
-[`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md)).
+This doc maps **three dimensions**: the **craft layers** (immediately below — *what*
+the studio composes), the **runtime model** (further down — *how* a production is
+represented, driven, and stored, decided in
+[`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md)),
+and — the recent **pivot** — the **two Judgment tiers** that decide a layer:
+deterministic **code** ([`sequitur/`](../sequitur/), tier A) and persona **agents**
+([`.github/agents/`](../.github/agents/), tier B), with the **conversational agent as
+the Director** (`0031`).
 
 ## The craft layers, by phase
 
@@ -37,7 +44,7 @@ a production is represented, driven, and stored, decided in
 | Storyboard Artist · Previs | previsualize the script → a shot-by-shot visual plan | **Professional Storyboarding** (Paez & Jew) *([abridged, 10 ch, `0018`](../artifacts/professional%20storyboarding/INDEX.md))* + Grammar of the Shot Ch. 1–3 | **reference keyframes** (`ImageStudio`) a video shot conditions on · a future `StoryboardArtist` role | grounded (`0018`); role planned |
 | Assistant Director | schedule, coverage, shot list | **Directing** Ch. 24–26 *(abridged, `0017`)* + Grammar of the Shot Ch. 1 | shot list / coverage | planned |
 
-### Production — *shoot*  ← **implemented today**
+### Production — *shoot*  ← **implemented (crew engine, `0012`–`0014`)**
 
 | Department / role | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
@@ -47,7 +54,7 @@ a production is represented, driven, and stored, decided in
 | Sound Mixer · Boom Operator | production sound (diegetic capture) | Grammar of the Edit Ch. 3 + **Rose, *Producing Great Sound*** *([abridged, 18 ch](../artifacts/producing%20great%20sound%20for%20film%20and%20video/INDEX.md))* | `SpeechRenderer` (Azure Speech) + `SoundMixer` role — planned (`0009`) | partial |
 | Script Supervisor · DIT | continuity notes, data, on-set color | Grammar of the Shot (Ch. 5) | feeds the edit layer | planned |
 
-### Post-production — *assemble*  ← **the next architectural layer**
+### Post-production — *assemble*  ← **now implemented (`0022`–`0023`)**
 
 | Department / role | Responsibility | Grounding | Code layer | Status |
 |---|---|---|---|---|
@@ -74,7 +81,10 @@ a production is represented, driven, and stored, decided in
   and screen direction; see
   [Ch. 5](../artifacts/grammar%20of%20the%20shot/reference/ch05-shooting-for-editing.md))
   can now be built on real grounding. The post-layer model (`edit.py`) + its MoviePy
-  executor (`cutter.py`) are scaffolded; the cut-decision engine is designed in [`storyline/0007`](storyline/0007-grounding-the-edit-layer.md) but not yet built.
+  executor (`cutter.py`) are **built**, and the **assemble crew now runs** (`0023`):
+  `Engine.assemble` + `Director.assemble` reconcile the `Editor`'s cut and the
+  `Colorist`'s grade into a graded edit `Sequence` (the cut-decision heuristic is still a
+  first pass — Ch. 5's six motivators are the next refinement).
 - **Sound, story, and the director's craft are now sourced — and the whole grounding
   library is abridged.** **Sound is designed** (`0009`): a multi-phase department
   grounded by Grammar of the Edit Ch. 3 + **Rose, *Producing Great Sound*** *(abridged,
@@ -131,8 +141,9 @@ a production is represented, driven, and stored, decided in
 The tables above are the **craft dimension**: the layers of *what* the studio can
 compose. Orthogonal to them is the **runtime dimension** — how an actual production
 is represented, driven, and stored. Decided in
-[`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md);
-not yet built.
+[`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md); the
+`ProductionProvider` seam and its Azure DevOps board are now **built** (`0024`–`0028`),
+with a Graph-backed `OutputStore` the remaining piece.
 
 - **Engine vs. instance.** `sequitur_studios` is a singular, evolving **engine**
   (`sequitur/` + [`artifacts/`](../artifacts/INDEX.md)). A *production* — a specific
@@ -152,9 +163,14 @@ not yet built.
 
 - **Provider seams** keep the platform swappable — the engine reads and writes
   through two interfaces:
-  - `ProductionProvider` — `layer(name) → { seeds, guidance_refs, history, output_refs }`.
-    First impl: a local folder (folder-per-layer = bucket-per-layer). Later: GitHub
-    Projects v2 or ADO, chosen once a real production exists.
+  - `ProductionProvider` — **built (`0025`)**: a `runtime_checkable` protocol
+    (`read_brief` / `write_sequence`) over the board tree, with a live
+    **`AzureDevOpsProduction`** backend (ADO REST via `DefaultAzureCredential`, stdlib
+    `urllib`, no new dep) and a **`LocalFolderProduction`** test double. The platform
+    question (`0005`) is **resolved — Azure DevOps** (`0024`): a custom Basic-derived
+    process, Act→Scene→Beat→Shot hierarchy, departments as Area Paths + Teams, phases as
+    named iterations. The engine runs it **board-to-board** (`Engine.run_production`,
+    `0027`) with a CLI ([`scripts/produce.py`](../scripts/produce.py), `0028`).
   - `OutputStore` — `put(production, layer, artifact) → ref`. Output **bytes** live
     in the **Sequitur Solutions** tenant's **SharePoint, via Microsoft Graph**
     (least-privilege Entra app; Azure Blob deferred). `ref` is a share URL
@@ -214,16 +230,21 @@ top of this doc stops being a description and becomes objects.
   that **owns and wields a slice** of that vocabulary. `grammar.py`/`edit.py` enums
   get re-seated under the role that owns them — `grammar.py` today is a *flattened
   crew* (camera + electric + grip fused into flat enums); this un-flattens it.
-- **Judgment is a swappable strategy (the A→B seam).** A role delegates reasoning to
-  a **`Judgment`**: `HeuristicJudgment` (**A**, deterministic) · `PersonaJudgment`
-  (**B**, an LLM persona over the role's *scoped* grounding) · `HumanJudgment`
-  (**HITL**). Same `propose()` signature, so any one role can be upgraded — or hand-
-  driven — individually.
+- **Judgment is a swappable strategy (the A→B seam) — now with concrete homes.** A role
+  delegates reasoning to a **`Judgment`**: `HeuristicJudgment` (**A**, deterministic, in
+  [`sequitur/crew/`](../sequitur/crew/)) · `PersonaJudgment` (**B**, an LLM persona over
+  the role's *scoped* grounding — realized as a **VS Code custom agent** in
+  [`.github/agents/`](../.github/agents/), `0031`) · `HumanJudgment` (**HITL**). Same
+  `propose()` signature, so any one role can be upgraded — or hand-driven — individually.
+  See *The two Judgment tiers* below.
 - **Three authority tiers.**
   - **Producer = HITL (the user)** — owns *what/whether* (brief, greenlight,
     approval). This is the code analogue the Producer row lacked: **the human seat.**
-  - **Director = agent** — owns *how*; a **`Role`** that reconciles the crew (agency
-    lives in a component, never the container).
+  - **Director = agent** — owns *how*; reconciles the crew. Two faces (`0031`): the
+    **conversational agent** *is* the acting Director (it dispatches the crew subagents
+    and reconciles their disjoint slices), while the code `Director`
+    ([`crew/director.py`](../sequitur/crew/director.py)) is the A-tier reconciler plus the
+    **execute-hook** (`0032`). Agency lives in a component, never the container.
   - **Crew = role-components** — each decides its own concern in isolation.
 - **The container is the Production, not a new `Unit`.** The dumb container is the
   `0005` **Production** (a plan whose buckets = department layers). It *encapsulates
@@ -318,6 +339,61 @@ flowchart TB
     DIR -->|"write decision → history/output"| BOARD
 ```
 
+### The two Judgment tiers — `sequitur/` (A) and `.github/agents/` (B)
+
+The **pivot** of [`storyline/0031`](storyline/0031-the-director-seat.md): the crew
+engine's swappable `Judgment` gets two concrete runtime homes, and the three authority
+tiers get concrete seats. `sequitur/` stops being "the studio" — it is the **A tier +
+schema + execution + seams**; the agents are the **B tier**; the conversational agent is
+the **orchestrator**.
+
+- **Tier A — `sequitur/` (code).** `HeuristicJudgment` — deterministic, offline,
+  no-persona. Owns the **enum schema** (the closed answer space every seat chooses from),
+  the **execution** plane (`build_prompt` → renderers; the `Grader` transform), and the
+  **seams** (`Renderer`, `ProductionProvider`). The always-available fallback for
+  tests / CI / no-network.
+- **Tier B — `.github/agents/` (personas).** `PersonaJudgment` — every `crew/<role>.py`
+  gets a `<role>.agent.md` twin (a VS Code custom agent). A subagent reasons **freely**
+  from its `reference/` grounding but its output is **bound to the code's closed enums**
+  (single source of truth = `crew/`). The two are the *same seat's* two strategies —
+  nothing is duplicated: the code twin owns *vocabulary + heuristic default*, the agent
+  twin owns *grounded judgment*. Built + proven live: the full shoot crew
+  (`cinematographer` · `gaffer` · `keygrip`).
+- **The Director is the conversational agent, not a subagent.** Producer = the human
+  (HITL); Director = the orchestrating conversational agent (interprets the brief,
+  dispatches the crew subagents, reconciles their disjoint field slices into a `Shot`,
+  reports back for greenlight, and — on greenlight — runs the execute-hook); Crew =
+  dispatchable department subagents. The Director suffers session amnesia, so the
+  **devlog is its continuity** — the through-line of directorial intent.
+- **Decision → pixels is closed (`0032`).** `Director.execute(shot, medium=…)` resolves
+  the producer for the medium from the renderer registry and renders a greenlit `Shot`
+  to real bytes — so both tiers share one path from a reconciled decision to output.
+- **Split cleanly: judgment / schema / execution.** Decision-time needs only the
+  *vocabulary*, so the agents are **not** wired into the Python heuristics. Open risk:
+  the agents list enums by hand (vocab-drift) — a generated per-role *vocabulary card*
+  from the enums would keep the code authoritative.
+
+```mermaid
+flowchart TB
+    PROD["Producer — human (HITL)"]
+    DIR["Director — conversational agent (orchestrator)"]
+    subgraph B["Tier B · .github/agents/ · PersonaJudgment"]
+        CIN["cinematographer.agent.md"]
+        GAF["gaffer.agent.md"]
+        GRP["keygrip.agent.md"]
+    end
+    subgraph A["Tier A · sequitur/ · HeuristicJudgment + schema + execution"]
+        ENUMS["crew/ enums — closed answer space"]
+        HOOK["Director.execute → renderer_for(medium)"]
+    end
+    PROD -->|"brief · greenlight"| DIR
+    DIR -->|"dispatch"| CIN & GAF & GRP
+    CIN & GAF & GRP -->|"Contribution (enum-bound)"| DIR
+    B -.->|"output bound to"| ENUMS
+    DIR -->|"reconciled Shot"| HOOK
+    HOOK -->|"real bytes"| OUT["video / still"]
+```
+
 ## Open architectural decisions
 
 - **How far to encode roles in code — DECIDED (`0008`); phase A STARTED (`0012`).**
@@ -330,21 +406,25 @@ flowchart TB
   `Brief`/`Contribution` pair, a `Director` reconciler, and a dumb `Engine` that
   assembles a shoot-phase `Shot`. **Assemble-phase behaviour built (`0023`):**
   `Engine.assemble` + a phase-aware `Director.assemble` reconcile the `Editor` (cut) and
-  `Colorist` (base grade) into a graded edit `Sequence`. Next: binding a local-folder
-  Production in place of the bare `Brief`, a real cut-decision heuristic, and per-shot
-  grade matching.
-- **Build the post layer (`edit.py`)** — *Grammar of the Edit* is now grounded
-  (`0007`); `edit.py` holds the EDL/grammar model and `cutter.py` the MoviePy
-  executor. Build out the cut-decision engine (Ch. 5's six motivators) over a
-  shots→scenes→acts model, cuts/fades first (no handles) then handle padding for
-  dissolves. Then run the **reconciliation sweep** to align the edit references'
-  "Studio application" leads to the real code.
-- **Build the provider seams** — `ProductionProvider` + `OutputStore` with
-  local-folder implementations first (no platform, no auth), then a Graph-backed
-  `OutputStore`. See [`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md).
-- **Production-store platform** — GitHub Projects v2 vs. ADO for the plan; deferred
-  until a first real production exists (the local-folder provider stands in). See
+  `Colorist` (base grade) into a graded edit `Sequence`. **Persona tier realized
+  (`0031`):** the crew's `PersonaJudgment` (B) is a set of VS Code custom agents in
+  [`.github/agents/`](../.github/agents/) and the Director is the conversational agent;
+  **decision→pixels closed (`0032`):** `Director.execute` renders a greenlit `Shot`
+  through the renderer registry. Next: expand the agent crew to the plan/assemble seats,
+  a generated vocabulary card (drift), binding a local-folder Production in place of the
+  bare `Brief`, a real cut-decision heuristic, and per-shot grade matching.
+- **Build the provider seams — `ProductionProvider` DONE (`0025`).** A
+  `runtime_checkable` protocol (`read_brief` / `write_sequence`) with live
+  `AzureDevOpsProduction` + `LocalFolderProduction` backends, run board-to-board by
+  `Engine.run_production` (`0027`) + [`scripts/produce.py`](../scripts/produce.py)
+  (`0028`). Remaining: a Graph-backed **`OutputStore`** for output bytes, scene-scoped
+  reads, per-shot grade matching, and State writes. See
   [`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md).
+- **Production-store platform — RESOLVED: Azure DevOps (`0024`).** GitHub Projects v2
+  vs. ADO settled on **ADO** for its native 4-level hierarchy (Act→Scene→Beat→Shot);
+  the board is provisioned by a one-command template
+  ([`scripts/provision_production.py`](../scripts/provision_production.py), `0026`) with
+  departments as Team + Area-Path buckets and phases as named iterations (`0030`).
 - **Build the sound layer (`0009`)** — `SpeechRenderer` first (Azure Speech on the
   existing `hjg-m8jtp7uy-eastus2` AIServices account, no new resource; standard/HD
   neural voices are call-and-go, no deployment; CNV deferred). The
