@@ -53,16 +53,17 @@
 
 ## Resulting state
 
-- Two agent files in [`.github/agents/`](../../.github/agents/) (`director`, `cinematographer`),
-  live-proven end-to-end. The Director is user-invocable (a mode the Producer selects); the
-  Cinematographer is subagent-only. **No `sequitur/` code changed** — this is the customization
-  layer, the B tier realized in VS Code's agent system.
+- Four agent files in [`.github/agents/`](../../.github/agents/) — `director` plus the full
+  **shoot crew** (`cinematographer` · `gaffer` · `keygrip`), each grounded in its own source
+  (Grammar of the Shot Ch. 1–3 / 4 / 6). All three seats were dispatched live on a shared brief
+  and reconciled into one conflict-free `Shot`. The Director is user-invocable (a mode the
+  Producer selects); the crew are subagent-only. **No `sequitur/` code changed** — this is the
+  customization layer, the B tier realized in VS Code's agent system.
 
 ## Open threads
 
-- **Expand the crew** — add `gaffer` / `keygrip` to complete the shoot path (the Director can
-  then dispatch a full shoot), then `editor` / `colorist` (assemble) and `screenwriter` /
-  `storyboard-artist` (plan).
+- **Expand the crew** — shoot crew is complete (camera/electric/grip, proven live); next are the
+  `editor` / `colorist` (assemble) and `screenwriter` / `storyboard-artist` (plan) seats.
 - **Vocabulary drift** — the enums are the single source of truth, but the agents list them by
   hand. A generated per-role "vocabulary card" would keep the code authoritative.
 - **Wire execution** — on greenlight, run the reconciled `Shot` through `build_prompt` → the
