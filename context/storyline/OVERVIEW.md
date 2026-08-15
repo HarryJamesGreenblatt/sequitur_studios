@@ -334,6 +334,18 @@ into a film-literate prompt.
   added `screenwriter.agent.md` (the persona **B** twin now that the code seat exists) — grounded
   in the Taxonomy, bound to the enums; **proven live** (a neo-noir heist premise → `CRIME` /
   `HEIST_CAPER`+`REVENGE_JUSTICE` / `NOIR` / `LIMITED`·`PRIMARY`·`SUBJECTIVE` / `VOICEOVER`).
+- [`0036-the-interactive-production.md`](0036-the-interactive-production.md)
+  — **product design / vision** (no code): reframed the studio's *experience* from a batch
+  "ramrod" (`run_production`, one pass, dislike → restart) to the **dailies model** — an
+  **interactive, phase-gated, iterative** production where each phase emits a **Producer-reviewable
+  deliverable** (treatment + **poster** → storyboard/shot list → dailies → rough/final cut) and the
+  human **approves or revises that phase** before spend flows on. Reversed the "never emits a
+  screenplay" stance: human-readable artifacts are the **cheapest checkpoints**. It's an
+  **evolution, not a teardown** — Producer greenlight (`0008`), phase axis (`0030`), board-as-instance,
+  and the conversational Director (`0031`) already imply it; `run_production` (`0027`) survives as the
+  batch/CI path. New pieces on the critical path: the **`OutputStore`** (`0005`, finally), a
+  **deliverable+gate ritual**, a **Screenwriter treatment** (Directing Ch. 3–11), a **Production
+  Designer seat + key-art source**. First slice: **plan → {treatment + poster} → gate**.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `config`) + CLIs
@@ -434,6 +446,17 @@ into a film-literate prompt.
 
 ## Open threads (keep fresh)
 
+- **★ NORTH STAR — the interactive production / dailies model (`0036`, design).** Reframe the
+  experience from a batch `run_production` ramrod to a **phase-gated, iterative** production: each
+  phase emits a **Producer-reviewable deliverable** (plan → **treatment + poster** → previz board →
+  shoot **dailies** → **rough/final cut**); the Producer **approves or revises that phase** before
+  spend flows on, and the board persists each approved phase so *revise re-runs one phase, not the
+  whole film*. An **evolution not a teardown** (Producer greenlight `0008`, phase axis `0030`,
+  board-as-instance, conversational Director `0031` already imply it; batch `run_production` `0027`
+  becomes the CI path). Critical-path pieces: **`OutputStore`** (`0005`, finally), a **deliverable+
+  gate ritual**, a **Screenwriter treatment** (grounded Directing Ch. 3–11), a **Production Designer
+  seat + key-art source**. **First slice: plan → {treatment + poster} → gate** (builds the
+  `OutputStore` + gate ritual once, reusable everywhere).
 - **Build the provider seams (`0005`)** — `ProductionProvider` **built** (`0025`):
   [`production.py`](../../sequitur/production.py) — a `runtime_checkable` protocol with
   `read_brief()` (board tree → `Brief`) / `write_sequence()` (graded `Sequence` → work
