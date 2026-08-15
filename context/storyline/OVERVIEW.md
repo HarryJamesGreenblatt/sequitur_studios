@@ -393,6 +393,31 @@ into a film-literate prompt.
   Records the filtering discipline, seat mappings, overlaps, and the "one book per abridgement
   session / copyright gate / extract-on-demand" process; import + mapping happen at staging when the
   Producer's deliverables land. These two unblock the `0036` first slice's two plan producers.
+- [`0042-staging-directing-the-story.md`](0042-staging-directing-the-story.md)
+  — **grounding / staging** (no code): executed the `0041` plan for the first of its two books.
+  The Producer delivered **_Directing the Story_**'s **storytelling half** — **10 chapters**
+  (5–13, 15; ch. 14 intentionally omitted, the intro + storyboarding halves dropped at source as
+  redundant with Paez & Jew). Untangled a mislabeled first delivery (byte-identical duplicates:
+  `CH-10`=Ch. 11, `CH-13`=Ch. 15; the Producer re-extracted the real 10 & 13), **converted →
+  gated → mapped**: verbatim `source/` (media-stripped, `<img>` tags kept), `git check-ignore`
+  confirmed, and a chapter→seat [`INDEX.md`](../../artifacts/directing%20the%20story/INDEX.md)
+  grounding the **Director** + **Screenwriter** (no new `crew/` module). Catalog row → **Imported ·
+  staged**; architecture's Screenwriter + Director cells now cite Glebas. **`reference/`
+  abridgement deferred** to its own session (the `0015` line held). Library = **8 sources** (7
+  abridged, 1 staged); the naming guard (`directing the story/` ≠ `directing/`) holds.
+- [`0043-abridging-directing-the-story.md`](0043-abridging-directing-the-story.md)
+  — the **dedicated abridgement session** `0042` deferred (no code): transformed *Directing the
+  Story*'s **10-chapter storytelling half** from verbatim `source/` into **10 session-ready
+  `reference/` chapters** via **three parallel subagents** (the `0017`/`0018` pattern, clustered by
+  arc: structure & remit 5/6/12 · directing the eye 7/8/9 · meaning/irony/heart/synthesis
+  10/11/13/15). Each ends in a **Studio application** section; all cross-links verified to resolve
+  (10/10). Grounds the **Director** + **Screenwriter** — **no new `crew/` module** (all three
+  subagents confirmed the `0041` call). Key through-lines: Glebas' story spine / "aim at the heart"
+  is the human-readable **treatment** payload the Taxonomy descriptor can't narrate; Ch. 6 & 13 are
+  the clearest corpus yet for the Director `PersonaJudgment` (**B** tier); dramatic irony (Ch. 11)
+  is the open-information case of POV, timed by the Editor. Catalog + architecture flipped **staged
+  → abridged**; the INDEX now links each chapter. Library = **8 sources, all abridged**; the still-
+  raw **Art Direction Handbook** (Rizzo) is the last source gap.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
@@ -428,7 +453,7 @@ into a film-literate prompt.
   with no API call. Interpreter is a project `.venv` (Python 3.12); tests in `tests/`
   (`test_prompt` · `test_edit` · `test_engine` · `test_render` · `test_grade`).
 - **Grounding library:** `artifacts/` is a *multi-source* library indexed by
-  `artifacts/INDEX.md`. **Seven abridged sources** now — spanning every department the
+  `artifacts/INDEX.md`. **Eight abridged sources** now — spanning every department the
   architecture models: *Grammar of the Shot* (production/cinematography,
   encoded under `crew/`), *Grammar of the Edit* (post/editorial, 8 abridged chapters +
   INDEX, grounding [`edit.py`](../../sequitur/edit.py)), *Producing Great Sound* (Rose —
@@ -439,7 +464,11 @@ into a film-literate prompt.
   Jew — previsualization / a Storyboard-Artist seat, **10 abridged chapters** + INDEX,
   `0018`; a board panel = a pre-rendered `Shot` = the reference keyframe), and *Color
   Correction Handbook* (Van Hurkman — post/finishing color grading, grounding the
-  **Colorist** built `0022`, **10 abridged chapters** + INDEX, `0020`). Each source
+  **Colorist** built `0022`, **10 abridged chapters** + INDEX, `0020`), and *Directing
+  the Story* (Glebas — visual storytelling / the story→image bridge, the storytelling
+  half, **10 abridged chapters** + INDEX, `0043`; supplements the **Director** +
+  **Screenwriter**, no new `crew/` module — `directing the story/` ≠ Rabiger's
+  `directing/`). Each source
   holds the raw book (`extraction/` .docx, `source/` .md — gitignored) and the
   abridged, session-ready `reference/` with a per-source `INDEX.md` (chapter → code
   map). Each abridged chapter ends with a "Studio application" section.
