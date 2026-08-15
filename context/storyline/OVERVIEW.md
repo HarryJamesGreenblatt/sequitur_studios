@@ -383,6 +383,16 @@ into a film-literate prompt.
   present. Persists the artifact, not (yet) the verdict — the board State-write is next. One gate
   serves every phase (bytes or a produced path). `tests/test_gate.py` (4, offline); suite **51
   green**. The plan → {treatment + poster} → gate slice is now down to building the two producers.
+- [`0041-staging-directing-the-story-and-production-design.md`](0041-staging-directing-the-story-and-production-design.md)
+  — **grounding decision / plan** (no code, no `source/` yet): lock the choice to pull in two new
+  *plan*-phase sources ahead of delivery — Francis Glebas' **_Directing the Story_** (its
+  **storytelling** half only, dropping the storyboarding half as redundant with Paez & Jew) to
+  supplement the **Director** and **Screenwriter** (a cross-cutting reference, **no new `crew/`
+  module**), and a dedicated **production-design** text (recommended: Rizzo's *Art Direction
+  Handbook*) to finally seat the **Production Designer** — the 8th grounding gap `0036` flagged.
+  Records the filtering discipline, seat mappings, overlaps, and the "one book per abridgement
+  session / copyright gate / extract-on-demand" process; import + mapping happen at staging when the
+  Producer's deliverables land. These two unblock the `0036` first slice's two plan producers.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
