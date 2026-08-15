@@ -49,7 +49,7 @@ deliverables, not a single pass.
 | Screenwriter | script, structure | **The Screenwriter's Taxonomy** (genre/voice/pathway/POV) *([abridged, 8 ch, `0016`](../artifacts/the%20screenwriter's%20taxonomy/INDEX.md))* + **Directing** Ch. 3–8 *(abridged, `0017`)* + **Directing the Story** (Glebas — story spine/structure/heart) *([abridged, 10 ch, `0043`](../artifacts/directing%20the%20story/INDEX.md))* | `Screenwriter` role · typed genre vocabulary (`crew/screenwriting.py`) | **role built — vocab (`0035`)** |
 | Director | interpret script → shot selection | **Directing** Ch. 7–11, 17 (aesthetics, POV, style) *(abridged, `0017`)* + **Directing the Story** (Glebas — the story→image bridge, staging the eye) *([abridged, 10 ch, `0043`](../artifacts/directing%20the%20story/INDEX.md))* + Grammar of the Shot Ch. 1 | `Director` role (crew reconciler, `0014`) | partial (`Director`) |
 | Casting · Actors | casting, performance | **Directing** Ch. 18–20 *(abridged, `0017`)* — **a new dimension** the architecture did not model | *(unmodeled — future role)* | new (`0015`) |
-| Production Designer | sets, costume, color concepts | **Directing** Ch. 23 (visual design) *(abridged, `0017`)* + *(dedicated production-design source still open)* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
+| Production Designer | sets, costume, color concepts | **Directing** Ch. 23 (visual design) *(abridged, `0017`)* + **The Art Direction Handbook** (Rizzo — art dept. & the design process) *([abridged, 8 ch, `0044`→`0045`](../artifacts/the%20art%20direction%20handbook%20for%20tv%20and%20film/INDEX.md))* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
 | Storyboard Artist · Previs | previsualize the script → a shot-by-shot visual plan | **Professional Storyboarding** (Paez & Jew) *([abridged, 10 ch, `0018`](../artifacts/professional%20storyboarding/INDEX.md))* + Grammar of the Shot Ch. 1–3 | **reference keyframes** (`ImageStudio`) a video shot conditions on · a future `StoryboardArtist` role | grounded (`0018`); role planned |
 | Assistant Director | schedule, coverage, shot list | **Directing** Ch. 24–26 *(abridged, `0017`)* + Grammar of the Shot Ch. 1 | shot list / coverage | planned |
 
@@ -479,7 +479,7 @@ flowchart TB
   ([`scripts/provision_production.py`](../scripts/provision_production.py), `0026`) with
   departments as Team + Area-Path buckets and phases as named iterations (`0030`).
 - **Build the sound layer (`0009`)** — `SpeechRenderer` first (Azure Speech on the
-  existing `hjg-m8jtp7uy-eastus2` AIServices account, no new resource; standard/HD
+  existing AIServices account, no new resource; standard/HD
   neural voices are call-and-go, no deployment; CNV deferred). The
   `Renderer` protocol is now **formalized** (`0021`); still to do: ground the sound
   roles from the **abridged Rose** (`0010`), and wire **toaster-strudel** as sequitur's

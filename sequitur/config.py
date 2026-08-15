@@ -118,7 +118,7 @@ class AzureSpeechConfig:
     """Settings for the Azure AI Speech backend (text-to-speech).
 
     Speech rides the *same* AIServices account as the image backend
-    (``hjg-m8jtp7uy-eastus2``) — no new resource, no deployment for standard/HD
+    — no new resource, no deployment for standard/HD
     neural voices. ``key`` is that account's key (reused from Key Vault); when it
     is ``None`` the renderer authenticates with Entra ID, which needs the account's
     ARM ``resource_id`` for the Speech SDK's ``aad#…`` token form.

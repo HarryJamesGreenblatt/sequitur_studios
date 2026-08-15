@@ -47,8 +47,8 @@ sound department forces four things we had only asserted:
      a sensor feeding the Editor, **not** a deliverable.
 
 3. **Azure Speech: use the resource we already have — no new deployment.** Both
-   Cognitive Services accounts are **`AIServices` (S0)**; **`hjg-m8jtp7uy-eastus2`**
-   (eastus2 — the same account hosting `gpt-image-1`/`sora`) **includes Speech**.
+   Cognitive Services accounts are **`AIServices` (S0)**; **the existing eastus2 account**
+   (the same account hosting `gpt-image-1`/`sora`) **includes Speech**.
    Key correction vs. `gpt-image`: **standard/HD neural TTS voices are built-in and
    call-and-go — there is no "deployment."** A deployment exists only for **Custom
    Neural Voice** (train + deploy, Responsible-AI gated), which is **deferred**.

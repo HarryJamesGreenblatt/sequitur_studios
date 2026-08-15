@@ -13,11 +13,11 @@ Azure AI Speech text-to-speech client that is a sibling of `Studio` (video) and
 document, auto-detected) to a WAV and returns `(result, path)`, mirroring the other
 backends' shape.
 
-1. **No new Azure resource.** Speech rides the *same* `hjg-m8jtp7uy-eastus2`
+1. **No new Azure resource.** Speech rides the *same* existing
    AIServices account that hosts `gpt-image-1`/`sora`, exactly as `0009` predicted.
    The key insight made concrete: an AIServices multi-service account exposes one key
    across all its APIs, so `SpeechRenderer` **reuses the existing Key Vault secret**
-   (`azure-openai-image-key`) — no new secret, no deployment (standard/HD neural
+   (the Azure image key) — no new secret, no deployment (standard/HD neural
    voices are call-and-go; only Custom Neural Voice deploys, and it stays deferred).
 
 2. **Config parity.** Added `AzureSpeechConfig` + `get_azure_speech_config()` to
@@ -43,7 +43,7 @@ backends' shape.
 
 1. **Reuse the account key, not a new secret.** Because Speech and gpt-image share
    the AIServices account, "reuse the KV key" (`0009`) means literally the
-   `azure-openai-image-key` secret. This keeps the secret inventory at two and needs
+   existing Azure image-key secret. This keeps the secret inventory at two and needs
    zero Azure changes to bring the voice layer online.
 
 2. **Renderer stays dumb; the craft lift attaches to the role.** `SpeechRenderer`

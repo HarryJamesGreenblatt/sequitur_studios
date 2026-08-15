@@ -37,12 +37,12 @@ composition/orientation; a reference image can).
 
 3. **Backend follows the deliverable's medium, and need not be Google.** The image
    backend is **Azure Foundry `gpt-image-1`** on the user's existing deployment
-   (`hjg-m8jtp7uy-eastus2`, `EnterpriseRG`, eastus2) — the first non-Google renderer,
+   (an existing AIServices account, eastus2) — the first non-Google renderer,
    proving the seam. (The same account also has **`sora`**, a future Azure-native
    *video* alternative to Omni — noted, not wired.)
 
 4. **Secrets live in Azure Key Vault, never in plaintext.** Both API keys
-   (`gemini-api-key`, `azure-openai-image-key`) live in a project Key Vault.
+   (the Gemini and Azure image keys) live in a project Key Vault.
    [`config.py`](../../sequitur/config.py) fetches them at
    runtime via `DefaultAzureCredential` — the `az login` identity authorises the
    *vault read*, so no key ever touches the repo, `.env`, or model context. `.env`

@@ -70,7 +70,7 @@ into a film-literate prompt.
 - [`0009-the-sound-layer.md`](0009-the-sound-layer.md)
   — designed the **sound** layer: a **multi-phase department** (shoot + assemble,
   organized by diegetic/non-diegetic), with a **`SpeechRenderer`** (Azure Speech —
-  rides the existing `hjg-m8jtp7uy-eastus2` AIServices account, **no new resource**;
+  rides the existing AIServices account, **no new resource**;
   standard/HD voices are call-and-go, **no deployment**), a **`Composer`** →
   **toaster-strudel (MCP)** score renderer, and a non-generative **`SoundAnalyst`**
   (audio MIR). Grounding is **composite**: Grammar of the Edit Ch. 3 + a craft source
@@ -87,7 +87,7 @@ into a film-literate prompt.
 - [`0011-the-voice-layer.md`](0011-the-voice-layer.md)
   — **built** the `SpeechRenderer` (`0009`'s first slice): Azure AI Speech text-to-
   speech, the studio's **third render backend** and first *sound* renderer. Rides the
-  existing `hjg-m8jtp7uy-eastus2` AIServices account (**no new resource/deployment**),
+  existing AIServices account (**no new resource/deployment**),
   reuses the shared KV key, and emits the Rose Ch. 2/9/12 contract — **dry, 48 kHz /
   16-bit / mono** — validated with a live synth. First code since `0006`.
 - [`0012-the-crew-unflattened.md`](0012-the-crew-unflattened.md)
@@ -566,7 +566,7 @@ into a film-literate prompt.
   `Brief`, a real cut-decision heuristic (Ch. 5 motivators) + per-shot grade matching
   (Ch. 9), then `PersonaJudgment` (**B**) and PM-board wiring.
 - **Build the sound layer (`0009`)** — `SpeechRenderer` **built** (`0011`: Azure
-  Speech on the existing `hjg-m8jtp7uy-eastus2` account, no new resource / no
+  Speech on the existing account, no new resource / no
   deployment; dry 48 kHz/16-bit/mono, validated live). The `Renderer` protocol is now
   **formalized** (`0021`) with an operator plane (`0022`); still to do: ground the sound
   roles from the **abridged
