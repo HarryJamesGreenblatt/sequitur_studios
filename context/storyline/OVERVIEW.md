@@ -438,6 +438,19 @@ into a film-literate prompt.
   INDEX flipped **staged → abridged**. A follow-on hygiene pass scrubbed real Azure infra identifiers
   (account name, resource group) from the shipped docs, keeping the KV secret *names* as functional
   `config.py` defaults.
+- [`0046-the-production-designer.md`](0046-the-production-designer.md)
+  — **built** the **Production Designer** (the last unbuilt crew seat), grounding the just-abridged
+  Rizzo into code: a plan-phase, vocabulary-only `ProductionDesigner` role
+  ([`crew/production_design.py`](../../sequitur/crew/production_design.py)) in a new
+  **`Department.ART`**, owning `ConceptStance`/`MediumLook`/`EraMarker`/`SetKind` + an open
+  `visual_concept` (the central metaphor the heuristic leaves blank for the persona) and `motifs`.
+  Its `Contribution` is a **design descriptor**, not a `Shot` — added to `plan_crew()` beside the
+  Screenwriter, kept out of `full_crew()`; `test_production_design.py` (5), suite 10 modules green.
+  A persona twin ([`production_designer.agent.md`](../../.github/agents/production_designer.agent.md))
+  + a Director plan-dispatch step make **seven agents** beside the Director. Seams: PD owns the
+  *concept*, [`build_prompt`](../../sequitur/prompt.py)/[`ImageStudio`](../../sequitur/image.py) the
+  *realisation* (Rizzo Ch. 1); era = design intent, grade = the Colorist (overlap logged); only design
+  intent transfers (no build/scout). **Every modeled department now has a code seat + twin.**
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs

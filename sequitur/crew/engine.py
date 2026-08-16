@@ -33,16 +33,17 @@ def shoot_crew() -> list[Role]:
 
 
 def plan_crew() -> list[Role]:
-    """The plan-phase crew: the Screenwriter (the story descriptor).
+    """The plan-phase crew: the Screenwriter (story descriptor) + Production Designer (design descriptor).
 
-    Not part of :func:`full_crew` yet — the Screenwriter's :class:`Contribution` is a
-    *story descriptor*, not a :class:`~sequitur.shot.Shot`, so it needs a plan-phase
-    reconcile (a later pass) before the :class:`Engine` can dispatch it like the shoot
-    and assemble crews.
+    Not part of :func:`full_crew` yet — each seat's :class:`Contribution` is a
+    *descriptor* (a story classification / a design overlay), not a
+    :class:`~sequitur.shot.Shot`, so the plan phase needs its own reconcile (a later
+    pass) before the :class:`Engine` can dispatch it like the shoot and assemble crews.
     """
+    from .production_design import ProductionDesigner
     from .screenwriting import Screenwriter
 
-    return [Screenwriter()]
+    return [Screenwriter(), ProductionDesigner()]
 
 
 def assemble_crew() -> list[Role]:

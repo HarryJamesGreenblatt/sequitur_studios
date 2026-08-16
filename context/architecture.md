@@ -49,7 +49,7 @@ deliverables, not a single pass.
 | Screenwriter | script, structure | **The Screenwriter's Taxonomy** (genre/voice/pathway/POV) *([abridged, 8 ch, `0016`](../artifacts/the%20screenwriter's%20taxonomy/INDEX.md))* + **Directing** Ch. 3–8 *(abridged, `0017`)* + **Directing the Story** (Glebas — story spine/structure/heart) *([abridged, 10 ch, `0043`](../artifacts/directing%20the%20story/INDEX.md))* | `Screenwriter` role · typed genre vocabulary (`crew/screenwriting.py`) | **role built — vocab (`0035`)** |
 | Director | interpret script → shot selection | **Directing** Ch. 7–11, 17 (aesthetics, POV, style) *(abridged, `0017`)* + **Directing the Story** (Glebas — the story→image bridge, staging the eye) *([abridged, 10 ch, `0043`](../artifacts/directing%20the%20story/INDEX.md))* + Grammar of the Shot Ch. 1 | `Director` role (crew reconciler, `0014`) | partial (`Director`) |
 | Casting · Actors | casting, performance | **Directing** Ch. 18–20 *(abridged, `0017`)* — **a new dimension** the architecture did not model | *(unmodeled — future role)* | new (`0015`) |
-| Production Designer | sets, costume, color concepts | **Directing** Ch. 23 (visual design) *(abridged, `0017`)* + **The Art Direction Handbook** (Rizzo — art dept. & the design process) *([abridged, 8 ch, `0044`→`0045`](../artifacts/the%20art%20direction%20handbook%20for%20tv%20and%20film/INDEX.md))* | art/color layer · `ImageStudio` (gpt-image) | partial (image backend) |
+| Production Designer | sets, costume, color concepts | **Directing** Ch. 23 (visual design) *(abridged, `0017`)* + **The Art Direction Handbook** (Rizzo — art dept. & the design process) *([abridged, 8 ch, `0044`→`0045`](../artifacts/the%20art%20direction%20handbook%20for%20tv%20and%20film/INDEX.md))* | `ProductionDesigner` role · design vocabulary (`crew/production_design.py`) · `ImageStudio` (gpt-image) | **role built — vocab (`0046`)** |
 | Storyboard Artist · Previs | previsualize the script → a shot-by-shot visual plan | **Professional Storyboarding** (Paez & Jew) *([abridged, 10 ch, `0018`](../artifacts/professional%20storyboarding/INDEX.md))* + Grammar of the Shot Ch. 1–3 | **reference keyframes** (`ImageStudio`) a video shot conditions on · a future `StoryboardArtist` role | grounded (`0018`); role planned |
 | Assistant Director | schedule, coverage, shot list | **Directing** Ch. 24–26 *(abridged, `0017`)* + Grammar of the Shot Ch. 1 | shot list / coverage | planned |
 
@@ -428,17 +428,21 @@ flowchart TB
     PROD["Producer — human (HITL)"]
     DIR["Director — conversational agent (orchestrator)"]
     subgraph B["Tier B · .github/agents/ · PersonaJudgment"]
+        SCR["screenwriter.agent.md"]
+        PDS["production_designer.agent.md"]
         CIN["cinematographer.agent.md"]
         GAF["gaffer.agent.md"]
         GRP["keygrip.agent.md"]
+        EDT["editor.agent.md"]
+        COL["colorist.agent.md"]
     end
     subgraph A["Tier A · sequitur/ · HeuristicJudgment + schema + execution"]
         ENUMS["crew/ enums — closed answer space"]
         HOOK["Director.execute → renderer_for(medium)"]
     end
     PROD -->|"brief · greenlight"| DIR
-    DIR -->|"dispatch"| CIN & GAF & GRP
-    CIN & GAF & GRP -->|"Contribution (enum-bound)"| DIR
+    DIR -->|"dispatch"| SCR & PDS & CIN & GAF & GRP & EDT & COL
+    SCR & PDS & CIN & GAF & GRP & EDT & COL -->|"Contribution (enum-bound)"| DIR
     B -.->|"output bound to"| ENUMS
     DIR -->|"reconciled Shot"| HOOK
     HOOK -->|"real bytes"| OUT["video / still"]
@@ -460,9 +464,11 @@ flowchart TB
   (`0031`):** the crew's `PersonaJudgment` (B) is a set of VS Code custom agents in
   [`.github/agents/`](../.github/agents/) and the Director is the conversational agent;
   **decision→pixels closed (`0032`):** `Director.execute` renders a greenlit `Shot`
-  through the renderer registry. Next: expand the agent crew to the plan/assemble seats,
-  a generated vocabulary card (drift), binding a local-folder Production in place of the
-  bare `Brief`, a real cut-decision heuristic, and per-shot grade matching.
+  through the renderer registry. **Plan + assemble agent seats now exist:** Screenwriter
+  (`0035`), Production Designer (`0046`), Editor + Colorist (`0034`) — seven agents beside the
+  Director. Next: a `StoryboardArtist` seat, a generated vocabulary card (drift), binding a
+  local-folder Production in place of the bare `Brief`, a real cut-decision heuristic, and
+  per-shot grade matching.
 - **Build the provider seams — `ProductionProvider` DONE (`0025`).** A
   `runtime_checkable` protocol (`read_brief` / `write_sequence`) with live
   `AzureDevOpsProduction` + `LocalFolderProduction` backends, run board-to-board by

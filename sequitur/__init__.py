@@ -74,6 +74,13 @@ from .crew.camera import (
 from .crew.editorial import EditCategory, EditReason, Editor, Transition
 from .crew.colorist import Cast, Colorist, Look, TonalRange
 from .crew.grip import CameraMovement, KeyGrip, MotionSpeed
+from .crew.production_design import (
+    ConceptStance,
+    EraMarker,
+    MediumLook,
+    ProductionDesigner,
+    SetKind,
+)
 from .crew.screenwriting import (
     Audience,
     DialogueMode,
@@ -192,6 +199,11 @@ __all__ = [
     "Scope",
     "Focus",
     "Stance",
+    "ProductionDesigner",
+    "ConceptStance",
+    "MediumLook",
+    "EraMarker",
+    "SetKind",
     "Transition",
     "EditReason",
     "EditCategory",

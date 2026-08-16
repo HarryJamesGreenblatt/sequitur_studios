@@ -34,6 +34,7 @@ class Department(Enum):
     """A crew department — the group a role belongs to (Appendix D)."""
 
     STORY = "story"
+    ART = "art"
     CAMERA = "camera"
     ELECTRIC = "electric"
     GRIP = "grip"

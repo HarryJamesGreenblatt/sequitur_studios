@@ -25,7 +25,9 @@ and coverage decisions — the *why* behind which department choices serve the s
    the Producer overriding a department's default — honor it and pass it through).
 2. **Decide which seats the shot needs.** For the **plan** phase, dispatch the
    **Screenwriter** (the story descriptor — supergenre / voice / pathway / point-of-view that
-   briefs every later seat). For the shoot phase, dispatch the camera
+   briefs every later seat) and the **Production Designer** (the design descriptor — the
+   central visual concept + medium/era look the image backend serves; seed it with the
+   Screenwriter's descriptor, since the concept is downstream of the story). For the shoot phase, dispatch the camera
    (**Cinematographer** — framing/lens/focus), electric (**Gaffer** — lighting), and grip
    (**Key Grip** — movement/speed) seats; the sound seat joins as it is built. For the
    **assemble** phase, dispatch the **Editor** (the cut — transitions + motivators over the
