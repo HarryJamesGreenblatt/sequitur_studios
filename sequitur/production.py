@@ -32,7 +32,9 @@ i-th timeline clip maps to the i-th Shot work item.
 
 from __future__ import annotations
 
+import html
 import json
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterable, Protocol, runtime_checkable
@@ -42,7 +44,23 @@ from .crew.role import Brief
 from .shot import Shot
 
 if TYPE_CHECKING:
+    from .crew.role import Phase
     from .edit import Clip, Sequence
+    from .gate import Deliverable
+
+
+# -- Deliverable <-> board state ------------------------------------------------
+#
+# A gate verdict maps onto the board's workflow State (the custom WITs use
+# To do / Doing / Done): a pending report is unreviewed, a revise sends it back
+# into progress, an approved report is done.
+
+_STATUS_STATE: dict[str, str] = {
+    "pending": "To do",
+    "revise": "Doing",
+    "approved": "Done",
+}
+_STATE_STATUS: dict[str, str] = {state: status for status, state in _STATUS_STATE.items()}
 
 
 # -- Look <-> board picklist display -------------------------------------------
@@ -114,6 +132,10 @@ class ProductionProvider(Protocol):
 
     def write_sequence(self, sequence: "Sequence") -> None: ...
 
+    def report(self, deliverable: "Deliverable", *, body: str | None = None) -> str: ...
+
+    def fetch_reports(self, *, phase: "Phase | None" = None) -> list["Deliverable"]: ...
+
 
 class LocalFolderProduction:
     """A file-backed provider — the test double for the board (no network).
@@ -158,6 +180,49 @@ class LocalFolderProduction:
                 )
         self.path.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
+    def report(self, deliverable: "Deliverable", *, body: str | None = None) -> str:
+        """File a deliverable onto the board (the AD/PA's report) — idempotent by phase+name."""
+        data = self._load()
+        reports = data.setdefault("deliverables", [])
+        record = {
+            "production": deliverable.production,
+            "phase": deliverable.phase.value,
+            "name": deliverable.name,
+            "ref": str(deliverable.ref),
+            "status": deliverable.status.value,
+            "notes": deliverable.notes,
+            "body": body,
+        }
+        for i, existing in enumerate(reports):
+            if existing["phase"] == record["phase"] and existing["name"] == record["name"]:
+                reports[i] = record
+                break
+        else:
+            reports.append(record)
+        self.path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        return f"{record['phase']}/{record['name']}"
+
+    def fetch_reports(self, *, phase: "Phase | None" = None) -> list["Deliverable"]:
+        """Read the board's deliverables back (the production's working memory)."""
+        from .crew.role import Phase
+        from .gate import Deliverable, GateStatus
+
+        out: list[Deliverable] = []
+        for record in self._load().get("deliverables", []):
+            if phase is not None and record["phase"] != phase.value:
+                continue
+            out.append(
+                Deliverable(
+                    production=record["production"],
+                    phase=Phase(record["phase"]),
+                    name=record["name"],
+                    ref=record["ref"],
+                    status=GateStatus(record["status"]),
+                    notes=record.get("notes"),
+                )
+            )
+        return out
+
 
 class AzureDevOpsProduction:
     """The live board provider — reads/writes Azure DevOps work items over REST.
@@ -176,6 +241,9 @@ class AzureDevOpsProduction:
         "Custom.Mood",
         "Custom.Look",
     )
+
+    #: The work-item type the AD/PA files deliverables as (added to the process).
+    _DELIVERABLE_WIT = "Deliverable"
 
     def __init__(self, config=None, credential=None, *, project=None) -> None:
         from .config import get_ado_config
@@ -320,3 +388,144 @@ class AzureDevOpsProduction:
                 [{"op": "add", "path": "/fields/Custom.Look", "value": label}],
                 patch=True,
             )
+
+    # -- deliverables: the AD/PA's report seam (storyline board-as-memory) --
+
+    def _deliverable_id(self, title: str) -> int | None:
+        """The id of an existing Deliverable with this title, if any (idempotent report)."""
+        safe = title.replace("'", "''")
+        query = (
+            "SELECT [System.Id] FROM workitems "
+            "WHERE [System.TeamProject] = @project "
+            f"AND [System.WorkItemType] = '{self._DELIVERABLE_WIT}' "
+            f"AND [System.Title] = '{safe}'"
+        )
+        result = self._request(
+            "POST", self._project_url("wit/wiql?api-version=7.1"), {"query": query}
+        )
+        items = result.get("workItems", [])
+        return items[0]["id"] if items else None
+
+    def _attach_file(self, wid: int, path: Path) -> None:
+        """Upload a file and pin it to the work item as an AttachedFile (the poster on the board)."""
+        url = self._project_url(
+            f"wit/attachments?fileName={urllib.parse.quote(path.name)}&api-version=7.1"
+        )
+        req = urllib.request.Request(
+            url,
+            data=path.read_bytes(),
+            method="POST",
+            headers={
+                "Authorization": f"Bearer {self._token()}",
+                "Content-Type": "application/octet-stream",
+            },
+        )
+        with urllib.request.urlopen(req) as resp:
+            attachment = json.loads(resp.read().decode("utf-8"))
+        self._request(
+            "PATCH",
+            self._project_url(f"wit/workitems/{wid}?api-version=7.1"),
+            [
+                {
+                    "op": "add",
+                    "path": "/relations/-",
+                    "value": {
+                        "rel": "AttachedFile",
+                        "url": attachment["url"],
+                        "attributes": {"comment": path.name},
+                    },
+                }
+            ],
+            patch=True,
+        )
+
+    def report(self, deliverable: "Deliverable", *, body: str | None = None) -> str:
+        """File a deliverable onto the board as a reviewable Deliverable work item.
+
+        The AD/PA's write side: the text body lands in ``System.Description`` (queryable
+        — the board-as-memory / RAG substrate), an image deliverable is pinned as an
+        attachment, and the gate verdict becomes the work item ``State``. Idempotent by
+        title, so re-reporting a revised deliverable updates the same item.
+        """
+        title = f"[{deliverable.phase.value}] {deliverable.name}"
+        state = _STATUS_STATE.get(deliverable.status.value, "To do")
+        is_image = str(deliverable.name).lower().endswith(
+            (".png", ".jpg", ".jpeg", ".webp")
+        )
+        parts = []
+        if body:
+            parts.append("<pre>" + html.escape(body) + "</pre>")
+        if deliverable.notes:
+            parts.append("<p><em>" + html.escape(deliverable.notes) + "</em></p>")
+        parts.append("<p>ref: " + html.escape(str(deliverable.ref)) + "</p>")
+        ops = [
+            {"op": "add", "path": "/fields/System.Title", "value": title},
+            {"op": "add", "path": "/fields/System.State", "value": state},
+            {"op": "add", "path": "/fields/System.Description", "value": "".join(parts)},
+        ]
+        existing = self._deliverable_id(title)
+        if existing is None:
+            created = self._request(
+                "POST",
+                self._project_url(
+                    f"wit/workitems/${self._DELIVERABLE_WIT}?api-version=7.1"
+                ),
+                ops,
+                patch=True,
+            )
+            wid = created["id"]
+        else:
+            self._request(
+                "PATCH",
+                self._project_url(f"wit/workitems/{existing}?api-version=7.1"),
+                ops,
+                patch=True,
+            )
+            wid = existing
+        if is_image:
+            self._attach_file(wid, Path(str(deliverable.ref)))
+        return str(wid)
+
+    def fetch_reports(self, *, phase: "Phase | None" = None) -> list["Deliverable"]:
+        """Read the board's Deliverable items back — the production's working memory."""
+        from .crew.role import Phase
+        from .gate import Deliverable, GateStatus
+
+        query = (
+            "SELECT [System.Id] FROM workitems "
+            "WHERE [System.TeamProject] = @project "
+            f"AND [System.WorkItemType] = '{self._DELIVERABLE_WIT}' "
+            "ORDER BY [System.Id] ASC"
+        )
+        result = self._request(
+            "POST", self._project_url("wit/wiql?api-version=7.1"), {"query": query}
+        )
+        ids = [item["id"] for item in result.get("workItems", [])]
+        if not ids:
+            return []
+        batch = self._request(
+            "POST",
+            self._org_url("wit/workitemsbatch?api-version=7.1"),
+            {"ids": ids, "fields": ["System.Title", "System.State"]},
+        )
+        out: list[Deliverable] = []
+        for item in batch.get("value", []):
+            fields = item.get("fields", {})
+            head, _, name = fields.get("System.Title", "").partition("] ")
+            try:
+                phase_val = Phase(head.lstrip("["))
+            except ValueError:
+                continue
+            if phase is not None and phase_val != phase:
+                continue
+            status = _STATE_STATUS.get(fields.get("System.State", ""), "pending")
+            out.append(
+                Deliverable(
+                    production=self.config.project,
+                    phase=phase_val,
+                    name=name or fields.get("System.Title", ""),
+                    ref="",
+                    status=GateStatus(status),
+                )
+            )
+        return out

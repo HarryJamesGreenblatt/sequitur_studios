@@ -471,6 +471,14 @@ into a film-literate prompt.
   **headline** type (title/tagline) legibly, garbles fine print (billing off by default). **Copy
   ownership settled:** title + tagline are the **Screenwriter's** (thematic compression); the KeyArtist
   only *houses* them — its two parents are the PD (look) + Screenwriter (words).
+- [`0049-the-assistant-director.md`](0049-the-assistant-director.md)
+  — **closed the control-plane gap** (nothing was hitting the board): the `ProductionProvider` gains
+  `report`/`fetch_reports` on both backends — a live ADO `Deliverable` work item per deliverable (text →
+  Description = the RAG substrate, image → attachment, gate verdict → State). The **AD/PA** is the second
+  Skills seat ([`.github/skills/assistant_director/`](../../.github/skills/assistant_director/)) — the
+  **Mediator** that owns board I/O so craft seats never touch ADO; two directions (report up / fetch
+  down = board-as-memory). Proven live on `TheLaunch` (treatment + one-sheet → board items #13/#14).
+  `test_production` 7 → 10; suite green.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs

@@ -116,6 +116,69 @@ def test_engine_runs_a_production_board_to_board() -> None:
     assert [s["look"] for s in written["shots"]] == ["Cool", "Cool"]
 
 
+def test_report_and_fetch_reports_round_trip() -> None:
+    from sequitur import Deliverable, GateStatus, Phase
+
+    with tempfile.TemporaryDirectory() as d:
+        path = Path(d) / "p.json"
+        path.write_text(json.dumps({"scene": "s", "shots": []}), encoding="utf-8")
+        provider = LocalFolderProduction(path)
+
+        deliverable = Deliverable(
+            production="TheLaunch",
+            phase=Phase.PLAN,
+            name="treatment.md",
+            ref=str(Path(d) / "treatment.md"),
+            status=GateStatus.PENDING,
+        )
+        key = provider.report(deliverable, body="Once upon a garage...")
+        assert key == "plan/treatment.md"
+
+        reports = provider.fetch_reports()
+        assert [r.name for r in reports] == ["treatment.md"]
+        assert reports[0].phase is Phase.PLAN
+        assert reports[0].status is GateStatus.PENDING
+        # The body is persisted on the board for RAG readback.
+        written = json.loads(path.read_text(encoding="utf-8"))
+        assert written["deliverables"][0]["body"] == "Once upon a garage..."
+
+
+def test_report_is_idempotent_and_tracks_the_verdict() -> None:
+    from sequitur import Deliverable, GateStatus, Phase
+
+    with tempfile.TemporaryDirectory() as d:
+        path = Path(d) / "p.json"
+        path.write_text(json.dumps({"scene": "s", "shots": []}), encoding="utf-8")
+        provider = LocalFolderProduction(path)
+
+        pending = Deliverable(
+            production="X", phase=Phase.PLAN, name="treatment.md", ref="r", status=GateStatus.PENDING
+        )
+        provider.report(pending, body="draft")
+        provider.report(pending.approve(), body="final")  # same phase+name
+
+        reports = provider.fetch_reports()
+    assert len(reports) == 1  # re-reporting updates in place, not appends
+    assert reports[0].status is GateStatus.APPROVED
+
+
+def test_fetch_reports_filters_by_phase() -> None:
+    from sequitur import Deliverable, GateStatus, Phase
+
+    with tempfile.TemporaryDirectory() as d:
+        path = Path(d) / "p.json"
+        path.write_text(json.dumps({"scene": "s", "shots": []}), encoding="utf-8")
+        provider = LocalFolderProduction(path)
+        provider.report(
+            Deliverable(production="X", phase=Phase.PLAN, name="treatment.md", ref="r", status=GateStatus.PENDING)
+        )
+        provider.report(
+            Deliverable(production="X", phase=Phase.SHOOT, name="dailies.png", ref="r", status=GateStatus.PENDING)
+        )
+        assert len(provider.fetch_reports(phase=Phase.PLAN)) == 1
+        assert len(provider.fetch_reports()) == 2
+
+
 def test_ado_production_is_parameterized_by_project() -> None:
     # One ADO project = one Production. The project is a parameter (explicit ->
     # env default); constructing the provider builds config but hits no network.
