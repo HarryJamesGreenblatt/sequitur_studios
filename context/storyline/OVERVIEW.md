@@ -461,6 +461,16 @@ into a film-literate prompt.
   caveat is resolved. A `Plan` is *not* renderable — its outputs are the dailies **treatment** (story)
   + **poster** (design). `test_engine.py` 8 → 10; suite 10 modules green. (Sound's `Composer` +
   toaster-strudel MCP deferred until the baseline pipeline is proven.)
+- [`0048-the-keyartist-skill.md`](0048-the-keyartist-skill.md)
+  — **built the KeyArtist as a Skill, not a Role** — the first **generalist-under-direction** seat.
+  A theatrical one-sheet (key art, *with* type) is graphic-design/marketing, not production design, so
+  it grounds on **no source** (poster design is general model competence) and lives as
+  [`.github/skills/keyartist/`](../../.github/skills/keyartist/) (`SKILL.md` persona + a bundled arm) +
+  a deterministic `build_key_art_prompt` composer. Proven live via **invocation pattern (a)**: a
+  subagent reads the skill, returns a directive, the tool-holder renders. Empirical: `gpt-image` renders
+  **headline** type (title/tagline) legibly, garbles fine print (billing off by default). **Copy
+  ownership settled:** title + tagline are the **Screenwriter's** (thematic compression); the KeyArtist
+  only *houses* them — its two parents are the PD (look) + Screenwriter (words).
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
