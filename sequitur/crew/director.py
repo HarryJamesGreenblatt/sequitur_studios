@@ -15,11 +15,13 @@ from typing import TYPE_CHECKING
 
 from ..render import Medium, RenderResult, renderer_for
 from ..shot import Shot
-from .role import Department, Role
+from .role import Department, Phase, Role
 
 if TYPE_CHECKING:
     from ..edit import Sequence
+    from ..gate import Deliverable, Gate
     from ..output import OutputStore
+    from ..plan import Plan
     from .role import Brief, Contribution
 
 
@@ -43,6 +45,71 @@ class Director(Role):
             aspect_ratio=brief.aspect_ratio,
             **fields,
         )
+
+    def plan(self, brief: Brief, contributions: list[Contribution]) -> Plan:
+        """Reconcile the plan crew into a :class:`~sequitur.plan.Plan`.
+
+        The Screenwriter contributes the story descriptor, the Production Designer the
+        design descriptor; the Director groups each seat's owned slice into the plan's
+        story/design halves. Like the shoot and assemble reconciles the fields are
+        disjoint, so grouping is loss-free. Unlike them the result is a *Plan*, not a
+        renderable :class:`Shot` — the intent the later phases realise, and the source of
+        the dailies-model treatment (story) and poster (design).
+        """
+        from ..plan import Plan
+        from .production_design import ProductionDesigner
+
+        story: dict = {}
+        design: dict = {}
+        for contribution in contributions:
+            target = design if contribution.role == ProductionDesigner.title else story
+            for key, value in contribution.fields.items():
+                if value is not None:
+                    target[key] = value
+        return Plan(
+            scene=brief.scene,
+            mood=brief.mood,
+            aspect_ratio=brief.aspect_ratio,
+            story=story,
+            design=design,
+        )
+
+    def deliver_plan(
+        self,
+        plan: Plan,
+        *,
+        gate: Gate,
+        out_path: str | Path | None = None,
+        treatment: str | None = None,
+    ) -> list[Deliverable]:
+        """Produce the plan phase's two dailies deliverables and submit them to a gate.
+
+        The storyline-0036 first slice: a **treatment** (from ``plan.story``) and a
+        **poster** (from ``plan.design``, composed by
+        :func:`~sequitur.prompt.build_poster_prompt` and rendered through the still
+        backend). Each is filed durably via the :class:`~sequitur.gate.Gate` and returned
+        as a PENDING :class:`~sequitur.gate.Deliverable` for the Producer's review.
+
+        Two tiers feed this. By default the deterministic **A** composers run: the
+        Screenwriter's :meth:`~sequitur.crew.screenwriting.Screenwriter.treatment`
+        skeleton and a poster from ``plan.design`` (whose ``visual_concept`` is blank in
+        the heuristic, so the frame falls back to the scene). Pass a persona-authored
+        ``treatment`` (the Screenwriter **B** agent's narrated version) and seat a real
+        ``visual_concept`` on the plan's design (the Production Designer **B** agent) to
+        get the meaningful daily — the A path is only the offline baseline.
+        """
+        from ..prompt import build_poster_prompt
+        from .screenwriting import Screenwriter
+
+        text = treatment if treatment is not None else Screenwriter().treatment(plan)
+        story_deliverable = gate.submit(
+            text.encode("utf-8"), phase=Phase.PLAN, name="treatment.md"
+        )
+
+        poster = renderer_for(Medium.STILL).render(build_poster_prompt(plan), out_path=out_path)
+        poster_deliverable = gate.submit(poster.ref, phase=Phase.PLAN, name="poster.png")
+
+        return [story_deliverable, poster_deliverable]
 
     def execute(
         self,

@@ -28,8 +28,29 @@ from sequitur import (  # noqa: E402
     ShotSize,
     SubjectView,
     build_image_prompt,
+    build_key_art_prompt,
     build_prompt,
 )
+
+
+def test_key_art_prompt_places_headline_type_and_omits_billing_by_default() -> None:
+    prompt = build_key_art_prompt(
+        "a lone grand piano in a spotlight amid empty chairs",
+        title="THE LAST SET",
+        tagline="EVERY NOTE HAS A PRICE",
+        motifs=["empty facing chairs", "dust in the beam"],
+        archetype="a single-object one-sheet isolated against negative space",
+        look="a film look, moody chiaroscuro",
+        mood="nostalgia, mortality",
+    )
+    # It asks for a one-sheet WITH type (unlike the production-art poster prompt).
+    assert "one-sheet" in prompt
+    assert '"THE LAST SET"' in prompt  # exact-spelled headline
+    assert '"EVERY NOTE HAS A PRICE"' in prompt
+    assert "negative space" in prompt
+    # Fine print garbles, so the billing block is off unless explicitly requested.
+    assert "billing block" not in prompt
+    assert "billing block" in build_key_art_prompt("x", title="Y", billing=True)
 
 
 def _full_shot() -> Shot:

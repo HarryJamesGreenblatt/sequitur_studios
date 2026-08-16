@@ -17,6 +17,7 @@ from sequitur import (  # noqa: E402
     CameraAngle,
     CameraMovement,
     Cinematographer,
+    ConceptStance,
     Director,
     Engine,
     HeuristicJudgment,
@@ -25,10 +26,13 @@ from sequitur import (  # noqa: E402
     LocalFolderOutputStore,
     Look,
     Medium,
+    MediumLook,
     Phase,
+    Plan,
     RenderResult,
     Shot,
     ShotSize,
+    Supergenre,
     Transition,
     build_prompt,
     register,
@@ -82,6 +86,34 @@ def test_judgment_is_swappable() -> None:
 
     dp = Cinematographer(judgment=SilentJudgment())
     assert dp.propose(Brief(scene="x")).fields == {}
+
+
+def test_engine_reconciles_a_plan() -> None:
+    plan = Engine().plan(Brief(scene="a fox crossing a frozen field", mood="still, cold"))
+    assert isinstance(plan, Plan)
+    assert plan.scene == "a fox crossing a frozen field"
+    assert plan.mood == "still, cold"
+    # The Screenwriter's story descriptor and the Production Designer's design
+    # descriptor land in disjoint halves of the plan.
+    assert plan.story["supergenre"] is Supergenre.LIFE  # Screenwriter default
+    assert plan.design["medium_look"] is MediumLook.DIGITAL  # Production Designer default
+    # The halves stay disjoint — a story key never leaks into the design descriptor.
+    assert "visual_concept" in plan.design and "supergenre" not in plan.design
+
+
+def test_plan_hints_route_to_the_right_half() -> None:
+    brief = Brief(
+        scene="a heist in a rain-soaked city",
+        hints={
+            "supergenre": Supergenre.CRIME,
+            "visual_concept": "the city as a rain-streaked maze",
+            "concept_stance": ConceptStance.CONTRAST,
+        },
+    )
+    plan = Engine().plan(brief)
+    assert plan.story["supergenre"] is Supergenre.CRIME
+    assert plan.design["visual_concept"] == "the city as a rain-streaked maze"
+    assert plan.design["concept_stance"] is ConceptStance.CONTRAST
 
 
 def test_engine_assembles_a_graded_sequence() -> None:

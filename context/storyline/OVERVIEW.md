@@ -451,12 +451,22 @@ into a film-literate prompt.
   *concept*, [`build_prompt`](../../sequitur/prompt.py)/[`ImageStudio`](../../sequitur/image.py) the
   *realisation* (Rizzo Ch. 1); era = design intent, grade = the Colorist (overlap logged); only design
   intent transfers (no build/scout). **Every modeled department now has a code seat + twin.**
+- [`0047-the-plan-phase-reconcile.md`](0047-the-plan-phase-reconcile.md)
+  — **built the plan-phase reconcile** (the last of three): a new **`Plan`** aggregate
+  ([`plan.py`](../../sequitur/plan.py)) — the plan analogue of `shot.py`/`edit.py` — holding the
+  reconciled `story` (Screenwriter) + `design` (Production Designer) descriptor halves, plus
+  `Director.plan` (groups each seat's disjoint slice, loss-free) and `Engine.plan` (mirrors
+  `run`/`assemble`). With every phase now reconcilable, **`full_crew()` spans all three**
+  (plan → `Plan`, shoot → `Shot`, assemble → `Sequence`); the `0035`/`0046` "kept out of full_crew"
+  caveat is resolved. A `Plan` is *not* renderable — its outputs are the dailies **treatment** (story)
+  + **poster** (design). `test_engine.py` 8 → 10; suite 10 modules green. (Sound's `Composer` +
+  toaster-strudel MCP deferred until the baseline pipeline is proven.)
 
-- **Code:** `sequitur/` package (`crew/` · `shot`, `prompt`, `studio`, `image`,
+- **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
   `scripts/generate.py` (render a shot) · `scripts/produce.py` (run a production board-to-board) + tests
   (`tests/test_prompt.py` · `test_edit.py` · `test_engine.py` · `test_render.py` ·
-  `test_grade.py` · `test_production.py` · `test_output.py` · `test_gate.py` · `test_screenwriting.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
+  `test_grade.py` · `test_production.py` · `test_output.py` · `test_gate.py` · `test_screenwriting.py` · `test_production_design.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
   (`crew/camera.py`), `Gaffer` (`crew/lighting.py`), `KeyGrip` (`crew/grip.py`) — each
   *owning* its slice of the grammar enums (the old flat `grammar.py`, un-flattened),
   plus the assemble-phase `Editor` (`crew/editorial.py`) and `Colorist`

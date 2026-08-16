@@ -30,6 +30,7 @@ from typing import TYPE_CHECKING, Any
 from .role import Department, Phase, Role
 
 if TYPE_CHECKING:
+    from ..plan import Plan
     from .role import Brief
 
 
@@ -353,3 +354,58 @@ class Screenwriter(Role):
             "focus": h.get("focus", Focus.PRIMARY),
             "stance": h.get("stance", Stance.OBJECTIVE),
         }
+
+    def treatment(self, plan: Plan) -> str:
+        """Compose a human-readable **treatment** from a plan's story descriptor (tier A).
+
+        The deterministic template: a coherent prose derivation of the taxonomy layers
+        (the dailies-model plan deliverable, storyline 0036/0047). The Screenwriter
+        *persona* (B) narrates the full treatment from its Glebas / Directing grounding —
+        the payload the descriptor can classify but not narrate; this A version is the
+        offline, testable baseline the persona replaces.
+        """
+        s = plan.story
+        scene = plan.scene.rstrip(".")
+        opening = (scene[:1].upper() + scene[1:]) if scene else "This production"
+        phr = lambda x: getattr(x, "phrase", None)  # noqa: E731
+
+        lines = [f"# Treatment — {scene}", ""]
+
+        # Logline: genre + modifiers, from labels only (never the enums' internal
+        # intent/breaks glosses, which are design metadata, not prose).
+        mt, sg = s.get("movie_type"), s.get("supergenre")
+        logline = opening
+        if sg is not None:
+            mt_word = (phr(mt) or "").split()[-1]  # "a drama" -> "drama"
+            logline += f" is a {phr(sg)}{' ' + mt_word if mt_word else ''}"
+        macros = s.get("macrogenres") or []
+        if macros:
+            logline += ", turning on " + ", ".join(phr(m) for m in macros)
+            micro = s.get("microgenres") or []
+            if micro:
+                logline += " (" + ", ".join(micro) + ")"
+        lines.append(logline.rstrip() + ".")
+
+        pw = s.get("pathway")
+        if pw is not None:
+            lines.append("The audience follows " + phr(pw) + ".")
+
+        pov = [phr(x) for x in (s.get("scope"), s.get("focus"), s.get("stance")) if x]
+        if pov:
+            lines.append("Point of view: " + "; ".join(pov) + ".")
+
+        voice = s.get("voice")
+        if voice is not None:
+            vbits = [phr(voice.linearity), phr(voice.style), phr(voice.dialogue_mode)]
+            aud = phr(voice.audience)
+            lines.append("Voice: " + ", ".join(b for b in vbits if b) + (f" — for {aud}." if aud else "."))
+
+        if plan.mood:
+            lines += ["", f"*Mood:* {plan.mood.rstrip('.')}."]
+
+        lines += [
+            "",
+            "*(Structural outline from the story descriptor — the Screenwriter persona "
+            "narrates the full treatment from its Glebas / Directing grounding.)*",
+        ]
+        return "\n".join(lines)

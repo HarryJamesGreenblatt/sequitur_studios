@@ -18,6 +18,7 @@ from .role import Phase, Role
 
 if TYPE_CHECKING:
     from ..edit import Sequence
+    from ..plan import Plan
     from ..production import ProductionProvider
     from ..shot import Shot
     from .role import Brief
@@ -35,10 +36,8 @@ def shoot_crew() -> list[Role]:
 def plan_crew() -> list[Role]:
     """The plan-phase crew: the Screenwriter (story descriptor) + Production Designer (design descriptor).
 
-    Not part of :func:`full_crew` yet — each seat's :class:`Contribution` is a
-    *descriptor* (a story classification / a design overlay), not a
-    :class:`~sequitur.shot.Shot`, so the plan phase needs its own reconcile (a later
-    pass) before the :class:`Engine` can dispatch it like the shoot and assemble crews.
+    The Director's plan-phase reconcile (:meth:`Director.plan`) merges their descriptors
+    into a :class:`~sequitur.plan.Plan`; both are part of :func:`full_crew`.
     """
     from .production_design import ProductionDesigner
     from .screenwriting import Screenwriter
@@ -55,8 +54,14 @@ def assemble_crew() -> list[Role]:
 
 
 def full_crew() -> list[Role]:
-    """The whole crew across phases — the Engine's default mount."""
-    return shoot_crew() + assemble_crew()
+    """The whole crew across all three phases — the Engine's default mount.
+
+    Now that every phase has a reconcile (plan -> :class:`~sequitur.plan.Plan`, shoot ->
+    :class:`~sequitur.shot.Shot`, assemble -> :class:`~sequitur.edit.Sequence`), the
+    default crew spans all three; :meth:`Engine.run` / :meth:`Engine.assemble` /
+    :meth:`Engine.plan` filter by the active phase, so mounting every seat is harmless.
+    """
+    return plan_crew() + shoot_crew() + assemble_crew()
 
 
 class Engine:
@@ -71,6 +76,18 @@ class Engine:
         active = [r for r in self.crew if getattr(r, "phase", None) == phase]
         contributions = [role.propose(brief) for role in active]
         return self.director.reconcile(brief, contributions)
+
+    def plan(self, brief: Brief) -> Plan:
+        """Dispatch the plan-phase crew and reconcile their descriptors into a Plan.
+
+        The plan-phase analogue of :meth:`run` (shoot -> Shot) and :meth:`assemble`
+        (assemble -> Sequence): the Screenwriter + Production Designer classify the story
+        and design; the Director reconciles them into a :class:`~sequitur.plan.Plan` — the
+        intent the dailies-model treatment and poster are produced from (storyline 0036).
+        """
+        active = [r for r in self.crew if getattr(r, "phase", None) == Phase.PLAN]
+        contributions = [role.propose(brief) for role in active]
+        return self.director.plan(brief, contributions)
 
     def assemble(self, brief: Brief) -> Sequence:
         """Dispatch the assemble-phase crew and reconcile a graded edit Sequence."""

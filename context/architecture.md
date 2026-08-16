@@ -460,7 +460,11 @@ flowchart TB
   `Brief`/`Contribution` pair, a `Director` reconciler, and a dumb `Engine` that
   assembles a shoot-phase `Shot`. **Assemble-phase behaviour built (`0023`):**
   `Engine.assemble` + a phase-aware `Director.assemble` reconcile the `Editor` (cut) and
-  `Colorist` (base grade) into a graded edit `Sequence`. **Persona tier realized
+  `Colorist` (base grade) into a graded edit `Sequence`. **Plan-phase reconcile built
+  (`0047`):** `Engine.plan` + `Director.plan` fuse the `Screenwriter` (story) and
+  `ProductionDesigner` (design) descriptors into a `Plan` aggregate ([`plan.py`](../sequitur/plan.py));
+  with all three phases now reconcilable, `full_crew()` spans plan + shoot + assemble.
+  **Persona tier realized
   (`0031`):** the crew's `PersonaJudgment` (B) is a set of VS Code custom agents in
   [`.github/agents/`](../.github/agents/) and the Director is the conversational agent;
   **decision→pixels closed (`0032`):** `Director.execute` renders a greenlit `Shot`

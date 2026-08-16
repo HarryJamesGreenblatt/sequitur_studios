@@ -107,6 +107,7 @@ from .crew.lighting import (
 )
 from .image import ImageStudio
 from .shot import Shot
+from .plan import Plan
 from .edit import (
     Act,
     Beat,
@@ -126,7 +127,7 @@ from .production import (
 )
 from .output import LocalFolderOutputStore, OutputStore
 from .gate import Deliverable, Gate, GateStatus
-from .prompt import build_image_prompt, build_prompt
+from .prompt import build_image_prompt, build_key_art_prompt, build_poster_prompt, build_prompt
 from .render import (
     Medium,
     Operation,
@@ -148,8 +149,11 @@ __all__ = [
     "ImageStudio",
     "SpeechRenderer",
     "Shot",
+    "Plan",
     "build_prompt",
     "build_image_prompt",
+    "build_poster_prompt",
+    "build_key_art_prompt",
     "ShotSize",
     "CameraAngle",
     "SubjectView",
