@@ -62,6 +62,13 @@ _STATUS_STATE: dict[str, str] = {
 }
 _STATE_STATUS: dict[str, str] = {state: status for status, state in _STATUS_STATE.items()}
 
+# A gate Phase maps onto the board's named phase iteration (the provisioner's PHASES).
+_PHASE_ITERATION: dict[str, str] = {
+    "plan": "1 \U0001F3AC Pre-Production",
+    "shoot": "2 \U0001F3A5 Production",
+    "assemble": "3 \u2702\uFE0F Post-Production",
+}
+
 
 # -- Look <-> board picklist display -------------------------------------------
 #
@@ -191,6 +198,8 @@ class LocalFolderProduction:
             "ref": str(deliverable.ref),
             "status": deliverable.status.value,
             "notes": deliverable.notes,
+            "author": deliverable.author,
+            "department": deliverable.department,
             "body": body,
         }
         for i, existing in enumerate(reports):
@@ -219,6 +228,8 @@ class LocalFolderProduction:
                     ref=record["ref"],
                     status=GateStatus(record["status"]),
                     notes=record.get("notes"),
+                    author=record.get("author"),
+                    department=record.get("department"),
                 )
             )
         return out
@@ -439,6 +450,21 @@ class AzureDevOpsProduction:
             patch=True,
         )
 
+    def _add_hyperlink(self, wid: int, url: str, comment: str) -> None:
+        """Pin a clickable https Hyperlink relation to the work item (the artifact's real link)."""
+        self._request(
+            "PATCH",
+            self._project_url(f"wit/workitems/{wid}?api-version=7.1"),
+            [
+                {
+                    "op": "add",
+                    "path": "/relations/-",
+                    "value": {"rel": "Hyperlink", "url": url, "attributes": {"comment": comment}},
+                }
+            ],
+            patch=True,
+        )
+
     def report(self, deliverable: "Deliverable", *, body: str | None = None) -> str:
         """File a deliverable onto the board as a reviewable Deliverable work item.
 
@@ -457,12 +483,42 @@ class AzureDevOpsProduction:
             parts.append("<pre>" + html.escape(body) + "</pre>")
         if deliverable.notes:
             parts.append("<p><em>" + html.escape(deliverable.notes) + "</em></p>")
-        parts.append("<p>ref: " + html.escape(str(deliverable.ref)) + "</p>")
+        # A real https link to the artifact (SharePoint), not a local filepath string.
+        from .config import store_url
+
+        link = store_url(deliverable.ref)
+        if link:
+            parts.append(
+                f'<p>artifact: <a href="{html.escape(link)}">{html.escape(deliverable.name)}</a></p>'
+            )
+        else:
+            parts.append("<p>ref: " + html.escape(str(deliverable.ref)) + "</p>")
         ops = [
             {"op": "add", "path": "/fields/System.Title", "value": title},
             {"op": "add", "path": "/fields/System.State", "value": state},
             {"op": "add", "path": "/fields/System.Description", "value": "".join(parts)},
         ]
+        if deliverable.department:
+            ops.append(
+                {
+                    "op": "add",
+                    "path": "/fields/System.AreaPath",
+                    "value": f"{self.config.project}\\{deliverable.department}",
+                }
+            )
+        iteration_name = _PHASE_ITERATION.get(deliverable.phase.value)
+        if iteration_name:
+            ops.append(
+                {
+                    "op": "add",
+                    "path": "/fields/System.IterationPath",
+                    "value": f"{self.config.project}\\{iteration_name}",
+                }
+            )
+        if deliverable.author:
+            ops.append(
+                {"op": "add", "path": "/fields/System.Tags", "value": deliverable.author}
+            )
         existing = self._deliverable_id(title)
         if existing is None:
             created = self._request(
@@ -483,7 +539,15 @@ class AzureDevOpsProduction:
             )
             wid = existing
         if is_image:
-            self._attach_file(wid, Path(str(deliverable.ref)))
+            try:
+                self._attach_file(wid, Path(str(deliverable.ref)))
+            except Exception:  # noqa: BLE001 - re-report may already have the attachment
+                pass
+        if link:
+            try:
+                self._add_hyperlink(wid, link, deliverable.name)
+            except Exception:  # noqa: BLE001 - re-report may already have the link
+                pass
         return str(wid)
 
     def fetch_reports(self, *, phase: "Phase | None" = None) -> list["Deliverable"]:

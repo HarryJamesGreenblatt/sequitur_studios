@@ -34,6 +34,15 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 # everything else is filed as an attachment (image posters, etc.).
 _TEXT_SUFFIXES = {".md", ".txt", ".json"}
 
+# The AD's coordination knowledge: which seat produces which deliverable, and the board
+# department (Area Path) it files under. Routing metadata, not creative content.
+_ROUTING: dict[str, tuple[str, str]] = {
+    "treatment.md": ("Screenwriter", "Story"),
+    "copy.md": ("Screenwriter", "Story"),
+    "poster.png": ("Production Designer", "Art"),
+    "key_art.png": ("KeyArtist", "Art"),
+}
+
 
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="AD/PA: collect a phase's deliverables and report them to the board.")
@@ -88,16 +97,20 @@ def main() -> None:
         body = None
         if artifact.suffix.lower() in _TEXT_SUFFIXES:
             body = artifact.read_text(encoding="utf-8")
+        author, department = _ROUTING.get(artifact.name, (None, None))
         deliverable = Deliverable(
             production=args.production,
             phase=phase,
             name=artifact.name,
             ref=str(artifact),
             status=GateStatus.PENDING,
+            author=author,
+            department=department,
         )
         if args.dry_run:
             kind = "text" if body is not None else "attachment"
-            print(f"would report ({kind}): [{phase.value}] {artifact.name}")
+            who = f"{author or '?'} / {department or '?'}"
+            print(f"would report ({kind}): [{phase.value}] {artifact.name}  ({who})")
             continue
         wid = provider.report(deliverable, body=body)
         print(f"reported: [{phase.value}] {artifact.name}  ->  board item {wid}")

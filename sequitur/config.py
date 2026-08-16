@@ -217,3 +217,24 @@ def get_output_store_root() -> Path:
             "durable folder (e.g. a OneDrive-synced path) for rendered artifacts."
         )
     return Path(root)
+
+
+def store_url(path: str | Path) -> str | None:
+    """Map a local store path to its shareable **https** URL, or ``None`` if unavailable.
+
+    ``OUTPUT_STORE_ROOT`` is the local (OneDrive-synced) root; the non-secret
+    ``OUTPUT_STORE_URL_BASE`` (``.env``) is the SharePoint https URL exposing that same
+    root. The path's location *under* the root is URL-encoded and appended, so a filed
+    artifact carries a real clickable link instead of a local filepath string. Returns
+    ``None`` when the base is unset or the path lies outside the store root.
+    """
+    from urllib.parse import quote
+
+    base = os.environ.get("OUTPUT_STORE_URL_BASE")
+    if not base:
+        return None
+    try:
+        rel = Path(path).resolve().relative_to(get_output_store_root().resolve())
+    except (ValueError, RuntimeError):
+        return None
+    return base.rstrip("/") + "/" + "/".join(quote(part) for part in rel.parts)

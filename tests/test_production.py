@@ -130,6 +130,8 @@ def test_report_and_fetch_reports_round_trip() -> None:
             name="treatment.md",
             ref=str(Path(d) / "treatment.md"),
             status=GateStatus.PENDING,
+            author="Screenwriter",
+            department="Story",
         )
         key = provider.report(deliverable, body="Once upon a garage...")
         assert key == "plan/treatment.md"
@@ -138,6 +140,8 @@ def test_report_and_fetch_reports_round_trip() -> None:
         assert [r.name for r in reports] == ["treatment.md"]
         assert reports[0].phase is Phase.PLAN
         assert reports[0].status is GateStatus.PENDING
+        assert reports[0].author == "Screenwriter"
+        assert reports[0].department == "Story"
         # The body is persisted on the board for RAG readback.
         written = json.loads(path.read_text(encoding="utf-8"))
         assert written["deliverables"][0]["body"] == "Once upon a garage..."

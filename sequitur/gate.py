@@ -57,6 +57,10 @@ class Deliverable:
     ref: Path | str
     status: GateStatus = GateStatus.PENDING
     notes: str | None = None
+    #: The crew seat that authored this deliverable (provenance for the board).
+    author: str | None = None
+    #: The owning department (the board Area Path the AD/PA files it under).
+    department: str | None = None
 
     def approve(self) -> "Deliverable":
         """Return an approved copy — the Producer accepted it; the phase may advance."""

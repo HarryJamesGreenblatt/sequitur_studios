@@ -479,6 +479,15 @@ into a film-literate prompt.
   **Mediator** that owns board I/O so craft seats never touch ADO; two directions (report up / fetch
   down = board-as-memory). Proven live on `TheLaunch` (treatment + one-sheet → board items #13/#14).
   `test_production` 7 → 10; suite green.
+- [`0050-board-record-remediation.md`](0050-board-record-remediation.md)
+  — **fixed the thin board record** (Producer critique): deliverables landed placeless. `Deliverable`
+  gains `author` + `department`; `report()` now sets **AreaPath** (department), **IterationPath** (phase,
+  via a `_PHASE_ITERATION` map), an **author tag** (seats aren't ADO identities), and a real **https
+  Hyperlink** (a `config.store_url()` path→SharePoint mapper via `OUTPUT_STORE_URL_BASE`) — no more
+  filepath strings. Added **Story + Art** departments to the provisioner (the plan seats had no area).
+  Reprovisioned `TheLaunch`, re-ran the AD: verified `treatment → Story/Pre-Production/Screenwriter` +
+  `key art → Art/Pre-Production/KeyArtist` with attachment + SharePoint link. The record is right; the
+  **content coherence** (treatment ↔ key art) is the next pass.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs

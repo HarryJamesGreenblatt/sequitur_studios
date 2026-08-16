@@ -54,10 +54,11 @@ from sequitur.config import ADO_RESOURCE_ID  # noqa: E402  (import also loads .e
 
 API = "api-version=7.1"
 
-#: The seven crew departments, as Area-Path / Team names. These mirror the crew
-#: departments; note the lighting department's board name is "Lighting" (the code's
-#: ``Department.ELECTRIC`` — Appendix D — surfaces as "Lighting" on the board).
-DEPARTMENTS = ["Direction", "Camera", "Lighting", "Grip", "Editorial", "Color", "Sound"]
+#: The crew departments, as Area-Path / Team names. These mirror the code's
+#: ``Department`` enum: **Story** (Screenwriter), **Art** (Production Designer / KeyArtist)
+#: are the plan-phase seats; note the lighting department's board name is "Lighting" (the
+#: code's ``Department.ELECTRIC`` — Appendix D — surfaces as "Lighting" on the board).
+DEPARTMENTS = ["Direction", "Story", "Art", "Camera", "Lighting", "Grip", "Editorial", "Color", "Sound"]
 
 #: The three production phases, as named (dateless) iteration nodes. This is the board
 #: side of the code's ``Phase`` enum (``plan`` -> Pre-Production, ``shoot`` -> Production,
