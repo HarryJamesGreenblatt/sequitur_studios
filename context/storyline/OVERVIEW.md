@@ -488,6 +488,17 @@ into a film-literate prompt.
   Reprovisioned `TheLaunch`, re-ran the AD: verified `treatment → Story/Pre-Production/Screenwriter` +
   `key art → Art/Pre-Production/KeyArtist` with attachment + SharePoint link. The record is right; the
   **content coherence** (treatment ↔ key art) is the next pass.
+- [`0051-reports-as-events-unfold.md`](0051-reports-as-events-unfold.md)
+  — **the coherent re-run, on the record.** Fixed the two `TheLaunch` failures: *separate chambers*
+  (key art dropped the protagonist) and *the vacuum* (plan ran in chat, no board trace). Coherence by
+  **threading** (not prompting): Screenwriter authors treatment first → Production Designer seeded with
+  the *treatment* → KeyArtist seeded with all three → a one-sheet that agrees with the film (Mara the
+  subject, her hand to the crayon sun, Sol as glow). And the **AD/PA reports each department as it
+  lands** — Story (copy/treatment), Art (concept/directive/key art) → 5 placed/authored/linked board
+  items, a live audit trail (answers "how would I know you didn't cook it"). Found the **publish race**:
+  the ADO attachment is instant/authoritative, the SharePoint hyperlink eventually-consistent (Tier-0
+  sync) → **`GraphOutputStore`** queued as the real fix. Threading is orchestration now; the `Plan`-
+  carries-treatment code seam is the future automation step.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs

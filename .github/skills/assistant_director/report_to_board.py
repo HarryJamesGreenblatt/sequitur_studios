@@ -39,7 +39,9 @@ _TEXT_SUFFIXES = {".md", ".txt", ".json"}
 _ROUTING: dict[str, tuple[str, str]] = {
     "treatment.md": ("Screenwriter", "Story"),
     "copy.md": ("Screenwriter", "Story"),
+    "concept.md": ("Production Designer", "Art"),
     "poster.png": ("Production Designer", "Art"),
+    "key_art_directive.md": ("KeyArtist", "Art"),
     "key_art.png": ("KeyArtist", "Art"),
 }
 
