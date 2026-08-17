@@ -596,12 +596,14 @@ into a film-literate prompt.
   `0033`): the crew engine's swappable `Judgment` has **two concrete tiers** —
   deterministic **code** (`sequitur/`, A = schema + execution + seams) and persona
   **agents** (`.github/agents/`, B), with the **conversational agent as the Director**.
-  Built today: the **shoot** crew (camera/grip/electric) and the **assemble** crew
-  (Editor + `Colorist`, `0022`–`0023`) both decide via the crew engine; the **renderer
-  seam** (producers video/image/voice/film + a second **operator** plane whose first
+  Built today: the **plan** crew (Screenwriter / Production Designer / Casting Director →
+  a `Plan` + cast, `0035`–`0054`), the **shoot** crew (camera/grip/electric) and the
+  **assemble** crew (Editor + `Colorist`, `0022`–`0023`) all decide via the crew engine; the
+  **renderer seam** (producers video/image/voice/film + a second **operator** plane whose first
   member is the color **`Grader`**); `Director.execute` closes **decision → pixels**
   (`0032`); and a live **Azure DevOps** production board the engine runs board-to-board.
-  Remaining seats: plan-phase (Screenwriter / Storyboard Artist) + the sound department.
+  Remaining seats: the Storyboard Artist / previs + the sound department; the casting
+  **selection** (Phase 2) and the board **verdict loop** are the next behaviours.
 - **Secrets:** both backend API keys live in **Azure Key Vault**, fetched at runtime
   via `DefaultAzureCredential`; `.env` holds only non-secret pointers (vault name,
   endpoint, deployment). Never reintroduce plaintext keys.

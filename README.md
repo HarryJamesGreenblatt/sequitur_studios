@@ -21,22 +21,26 @@ The studio has two halves, both taking shape:
   `gpt-image-1` — the Production Designer's look-dev deliverable), and **voice**
   (Azure AI Speech text-to-speech).
 
-Today the studio fully implements the **camera department during production** —
-grounded in Christopher J. Bowen's *Grammar of the Shot* and encoded as the typed
-grammar under `sequitur/crew/`. The **grounding library spans every department the
-architecture models**: seven film-craft sources imported and abridged — Bowen's *Grammar
-of the Shot* and *Grammar of the Edit*, Jay Rose's *Producing Great Sound for Film and
-Video*, Eric R. Williams' *The Screenwriter's Taxonomy*, Rabiger & Hurbis-Cherrier's
-*Directing: Film Techniques and Aesthetics* (a Director-centric spine across every
-phase), Paez & Jew's *Professional Storyboarding* (previsualization — a storyboard
-panel *is* a pre-rendered shot), and Alexis Van Hurkman's *Color Correction Handbook*
-(the grade — grounding the **Colorist**, now seated). The studio is evolving toward the
-**dailies model** — an interactive, phase-gated pipeline where each phase emits a
-Producer-reviewable **deliverable** (treatment + poster → storyboard → dailies → cut) and
-the human approves or revises that phase before spend flows on. Its data plane is built (a
-durable **output store**, a render→persist hook, and a **deliverable + gate** model); the
-remaining work is largely **code** — the two plan-phase producers and the crew engine's
-other roles. The full map lives in
+Today the studio composes across **all three phases in code** — a *plan* (Screenwriter ·
+Production Designer · Casting Director → a `Plan` and its cast), a *shoot* (Cinematographer ·
+Gaffer · Key Grip → a `Shot`), and an *assemble* (Editor · Colorist → a graded `Sequence`) —
+driven by a real crew engine and bound to a live **Azure DevOps** production board. The
+**grounding library spans every department the architecture models**: **nine** film-craft
+sources imported and abridged — Bowen's *Grammar of the Shot* and *Grammar of the Edit*,
+Jay Rose's *Producing Great Sound for Film and Video*, Eric R. Williams' *The Screenwriter's
+Taxonomy*, Rabiger & Hurbis-Cherrier's *Directing: Film Techniques and Aesthetics* (a
+Director-centric spine across every phase), Francis Glebas' *Directing the Story* (the
+story-spine → image bridge), Paez & Jew's *Professional Storyboarding* (previsualization — a
+storyboard panel *is* a pre-rendered shot), Alexis Van Hurkman's *Color Correction Handbook*
+(the grade — grounding the **Colorist**), and Michael Rizzo's *The Art Direction Handbook*
+(the **Production Designer**'s world). The studio is evolving toward the **dailies model** —
+an interactive, phase-gated pipeline where each phase emits a Producer-reviewable
+**deliverable** (treatment + poster → storyboard → dailies → cut) and the human approves or
+revises that phase before spend flows on. Its data plane is built (a durable **output store**
+with a SharePoint/Graph backend, a render→persist hook, and a **deliverable + gate** model),
+and the plan phase already emits its treatment, poster, and **cast**; the remaining work is
+the **verdict loop** (approve/revise on the board), the storyboard/previs seat, and the sound
+department. The full map lives in
 [`context/architecture.md`](context/architecture.md).
 
 ## Setup
@@ -135,9 +139,9 @@ hands them that role's grounded vocabulary and tooling.
 
 | Phase | Departments (Bowen App. D) | Grounding source | Status |
 |-------|----------------------------|------------------|--------|
-| Pre-production | Producer · Screenwriter · Director · AD · Production Designer · Storyboard Artist | **The Screenwriter's Taxonomy** (story) + **Directing** (dramaturgy, aesthetics, design) + **Professional Storyboarding** (previs) — abridged | grounded; roles next |
+| **Pre-production** | Producer · Screenwriter · Director · Casting Director · Production Designer · AD · Storyboard Artist | **The Screenwriter's Taxonomy** (story) + **Directing** (dramaturgy, casting, design) + **Directing the Story** (story→image) + **The Art Direction Handbook** (design) + **Professional Storyboarding** (previs) — abridged | **Screenwriter · Production Designer · Casting Director seated**; Storyboard Artist next |
 | **Production** | **Camera · Electric · Grip** (+ Sound) | **Grammar of the Shot** — encoded under `crew/` | **implemented** |
-| Post-production | Editor · Colorist · Sound editor · Composer | **Grammar of the Edit** + **Rose, *Producing Great Sound*** + **Color Correction Handbook** (Van Hurkman) + **Directing** Ch. 30–36 — abridged | grounded; `Editor` seated, code in progress |
+| **Post-production** | Editor · Colorist · Sound editor · Composer | **Grammar of the Edit** + **Rose, *Producing Great Sound*** + **Color Correction Handbook** (Van Hurkman) + **Directing** Ch. 30–36 — abridged | **assemble runs** — `Editor` + `Colorist` seated |
 | Delivery | Producer (marketing, distribution) | **Directing** Ch. 37 — abridged | grounded; out of code scope (for now) |
 
 The studio's executable core is the **crew engine**: roles as behaviour (`Role` +
@@ -152,16 +156,22 @@ model, and the diagrams are in [`context/architecture.md`](context/architecture.
 ```
 sequitur/      the studio code
   crew/        the crew engine — roles as behaviour, not just vocabulary
-    role.py        Role base + Department/Phase axes + Brief/Contribution
-    camera.py      Cinematographer — owns ShotSize/Angle/View/Lens/DoF/Composition
-    lighting.py    Gaffer — owns LightQuality/Scheme/Direction/ColorTemperature
-    grip.py        KeyGrip — owns CameraMovement/MotionSpeed
-    editorial.py   Editor — owns Transition/EditReason/EditCategory
-    judgment.py    swappable reasoning (HeuristicJudgment A · Persona B · Human)
-    director.py    Director — reconciles crew Contributions into one Shot
-    engine.py      dumb dispatch — Engine().run(phase, brief) -> Shot
-  shot.py      the Shot aggregate the camera/electric/grip crews compose
-  prompt.py    Shot -> film-literate prompt (build_prompt video / build_image_prompt still)
+    role.py            Role base + Department/Phase axes + Brief/Contribution
+    screenwriting.py   Screenwriter — owns the taxonomy (genre/voice/pathway/POV)
+    production_design.py  Production Designer — owns the visual-concept vocabulary
+    casting.py         Casting Director — owns AgeBand/Billing (the cast's design)
+    camera.py          Cinematographer — owns ShotSize/Angle/View/Lens/DoF/Composition
+    lighting.py        Gaffer — owns LightQuality/Scheme/Direction/ColorTemperature
+    grip.py            KeyGrip — owns CameraMovement/MotionSpeed
+    editorial.py       Editor — owns Transition/EditReason/EditCategory
+    colorist.py        Colorist — owns Look/Cast/TonalRange (the grade)
+    judgment.py        swappable reasoning (HeuristicJudgment A · Persona B · Human)
+    director.py        Director — reconciles crew Contributions (Plan/Shot/Sequence)
+    engine.py          dumb dispatch — Engine().run/plan/assemble(phase, brief)
+  shot.py      the Shot aggregate the shoot crew composes
+  plan.py      the Plan aggregate the plan crew reconciles (story + design + cast)
+  cast.py      the cast axis — Character (the role) + Actor (the embodiment)
+  prompt.py    Shot -> film-literate prompt (build_prompt / build_image_prompt / poster / key art)
   studio.py    video render() / edit() over the Gemini Omni Interactions API
   image.py     still-image render() over Azure Foundry gpt-image
   speech.py    text-to-speech render() over Azure AI Speech (dry 48kHz/16-bit/mono)
@@ -171,18 +181,29 @@ sequitur/      the studio code
   grade.py     reified colour-grade model (Grade = a Command stack of ops) + look registry
   lut.py       bakes a grade's primaries (ASC CDL) into a .cube LUT via colour-science
   grader.py    transform that applies a Grade to a clip/still (colour-science .cube -> ffmpeg lut3d)
+  production.py  the ProductionProvider seam — board <-> Brief/Sequence (ADO + local)
+  output.py    the OutputStore seam — durable artifact bytes (local folder + Graph/SharePoint)
+  gate.py      the dailies gate — a Deliverable + its verdict (pending/approved/revise)
   config.py    .env pointers + Key Vault secret fetch (DefaultAzureCredential)
 scripts/
-  generate.py  CLI renderer (--image for stills, --dry-run to preview the prompt)
-tests/         behaviour-guard tests (test_prompt · test_edit · test_engine · test_render · test_grade)
-artifacts/     grounding library — one folder per source (see INDEX.md)
+  generate.py    CLI renderer (--image for stills, --dry-run to preview the prompt)
+  produce.py     run a production board-to-board (read a Brief -> assemble -> write back)
+  deliver_plan.py  file a plan's treatment + poster through the gate
+  provision_process.py     codify/heal the org-level ADO process template
+  provision_production.py  stand up a new production's board (areas, teams, phases)
+tests/         behaviour-guard tests (test_prompt · test_edit · test_engine · test_render ·
+               test_grade · test_production · test_output · test_gate · test_screenwriting ·
+               test_production_design · test_casting)
+artifacts/     grounding library — one folder per source (see INDEX.md), nine abridged
   grammar of the shot/     production — cinematography (encoded under crew/)
   grammar of the edit/     post — editorial (grounds edit.py + the Editor)
   producing great sound.../ sound department (Jay Rose, 18 ch)
   the screenwriter's taxonomy/  development — genre/voice/pathway/POV (Williams, 8 ch)
   directing/               Director spine across every phase (Rabiger, 28 ch)
+  directing the story/     the story-spine -> image bridge (Glebas, 10 ch)
   professional storyboarding/  previs — staging/board types/workflow (Paez & Jew, 10 ch)
   color correction handbook/   post — color grading (Van Hurkman, 10 ch)
+  the art direction handbook.../  the Production Designer's world (Rizzo, 8 ch)
     reference/ abridged, session-ready references (ships)
     source/    verbatim ground truth (gitignored)
 context/
@@ -196,15 +217,16 @@ output/        generated clips (gitignored)
 Grounding is complete for every department the architecture models; the remaining
 work is **code**.
 
-- **Crew engine — the next phases.** The shoot phase composes a `Shot` today
-  (`Engine().run(Phase.SHOOT, Brief(...))`). Next: the **assemble** phase — the
-  `Editor` chaining shots into a `Sequence` (honouring the 180°/30° rules,
-  matching/reverse, eye-line, and screen direction; Ch. 5 of *Grammar of the Shot* is
-  effectively its spec) — and binding a real **Production** (the PM board) in place of
-  a bare `Brief`, through the `ProductionProvider`/`OutputStore` seams.
-- **The `Screenwriter` role** — `crew/screenwriting.py` with the typed
-  genre/voice/pathway/POV vocabulary the abridged *Screenwriter's Taxonomy* grounds;
-  its contribution seeds the `Brief` the `Director` reconciles.
+- **Crew engine — all three phases compose today.** `Engine.plan` → a `Plan` (+ cast),
+  `Engine.run(Phase.SHOOT, …)` → a `Shot`, `Engine.assemble` → a graded `Sequence`, and
+  `Engine.run_production(provider)` runs a production **board-to-board** through the
+  `ProductionProvider` / `OutputStore` seams. Next: the **verdict loop** — the Producer
+  approves or revises a phase's deliverable on the board and the crew advances (or re-runs
+  that one phase).
+- **Plan producers — built.** `Screenwriter` (`0035`), `Production Designer` (`0046`), and
+  `Casting Director` (`0054`) are seated; the plan phase emits a treatment, a poster, and a
+  cast. The typed genre/voice/pathway/POV, visual-concept, and casting vocabularies each
+  seed the `Plan` the `Director` reconciles.
 - **A Director persona** — swap the `Director`'s heuristic for a `PersonaJudgment`
   grounded in the abridged *Directing* chapters (the **B** in the A→B seam).
 - **Sound & score** — `SpeechRenderer` (Azure Speech) is **built**; next are the
@@ -217,9 +239,11 @@ work is **code**.
   bakes the grade's primaries (ASC CDL) into a `.cube` LUT via **colour-science** and
   applies it with ffmpeg `lut3d`. Next are the HSL/shape secondaries (as masked passes)
   and a scope-reader `validate()` / broadcast-safe gate.
-- **The casting/actors dimension** — a new layer *Directing* Ch. 18–20 grounds but no
-  code models yet: a `Casting` role + a playable-intent performance concept wired to
-  the image (character keyframes) and voice backends.
+- **Character consistency (casting Phase 2–3)** — the `Character` / `Actor` entities and the
+  `CastingDirector` seat are **built** (`0054`); next is rendering each principal's candidate
+  looks through `ImageStudio`, letting the Producer **cast** one at the gate, and threading
+  that cast reference into key art and shots so every render of a character is the *same*
+  character (the generative analogue of casting an actor).
 - **Reference-keyframe pipeline** — now grounded by the abridged *Professional
   Storyboarding* (a board panel *is* a reference keyframe): the `gpt-image` still
   backend already lands concept frames; next is a `StoryboardArtist` role that emits a

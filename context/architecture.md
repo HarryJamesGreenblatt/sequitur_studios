@@ -13,13 +13,14 @@ The design principle that ties it together:
 > **code layer** (in `sequitur/`). A user can step into a role and the workflow
 > hands them that role's grounded vocabulary and tooling.
 
-Today the studio spans **two phases in code**: the *shoot* crew
-(Cinematographer / Gaffer / Key Grip) composes a fully-grounded **shot**, and the
-*assemble* crew (Editor + Colorist) reconciles a graded edit **sequence** — both
+Today the studio spans **all three phases in code**: the *plan* crew (Screenwriter /
+Production Designer / Casting Director) reconciles a **`Plan`** and its **cast**, the
+*shoot* crew (Cinematographer / Gaffer / Key Grip) composes a fully-grounded **shot**, and
+the *assemble* crew (Editor + Colorist) reconciles a graded edit **sequence** — all
 driven by a real **crew engine** (`Role` + swappable `Judgment`), bound to a live
 **Azure DevOps** production board, and rendering **real bytes** across four media
-(video, still, voice, film). The remaining seats (the plan-phase Screenwriter /
-Storyboard Artist, the sound department) are grounded and scaffolded here.
+(video, still, voice, film). The remaining seats (the plan-phase Storyboard Artist /
+previs, the sound department) are grounded and scaffolded here.
 
 This doc maps **three dimensions**: the **craft layers** (immediately below — *what*
 the studio composes), the **runtime model** (further down — *how* a production is
@@ -104,11 +105,12 @@ deliverables, not a single pass.
   **Directing** (Rabiger & Hurbis-Cherrier — a Director-centric *spine* across every
   phase) is now **abridged** (28 ch, `0017` — a full comprehensive scan, nothing
   dropped), touching every seat from Screenwriter to Producer-ship. Directing also
-  opens a **casting/actors** dimension the architecture had never modelled (Ch. 18–20,
-  still unmodeled in code). Production design gains its first source (Directing Ch. 23),
-  and finishing/grade a second (Ch. 36); a **dedicated design/color source is still
-  open.** With five sources abridged, the library is **complete for the departments
-  modelled today** — the next work is *code*, not grounding.
+  grounds the **casting/actors** dimension — now **modelled in code** (`0054`: the
+  `CastingDirector` seat + `Character`/`Actor` entities, Ch. 18–20). Production design
+  gained its own dedicated source (Rizzo's *Art Direction Handbook*, `0044`–`0045`), and the
+  story→image bridge a further one (Glebas' *Directing the Story*, `0043`). With **nine
+  sources abridged**, the library is **complete for every department modelled** — the next
+  work is *code*, not grounding.
 - **Previsualization is now sourced — a sixth abridged source (`0018`).** **Professional
   Storyboarding** (Paez & Jew — *[abridged, 10 ch](../artifacts/professional%20storyboarding/INDEX.md)*)
   grounds a seat the architecture had gestured at but never modelled: the **Storyboard
@@ -268,9 +270,10 @@ pieces are built bottom-up:
 The **Producer's authority evolves** from a single greenlight into a **per-phase gate**
 (still the human/HITL seat); the **phase axis** (named ADO iterations, `0030`) becomes the
 pipeline's stages; and the **conversational Director** presents each deliverable and
-captures the verdict in chat. The first slice is **plan → {treatment + poster} → gate**,
-now down to building the two plan producers (a Screenwriter *treatment* output and a
-Production Designer seat).
+captures the verdict in chat. The first slice **plan → {treatment + poster + cast} → gate**
+is **built** (`0047`–`0054`: the Screenwriter *treatment*, the Production Designer poster,
+and the Casting Director's cast); the open piece is the **verdict** becoming a board write
+(approve/revise → State).
 
 ## The crew engine — roles as behavior, the Production as container
 
@@ -415,8 +418,8 @@ the **orchestrator**.
   nothing is duplicated: the code twin owns *vocabulary + heuristic default*, the agent
   twin owns *grounded judgment*. Built + proven live: the **shoot** crew
   (`cinematographer` · `gaffer` · `keygrip`), the **assemble** crew (`editor` ·
-  `colorist`), and the **plan** seat (`screenwriter`) — every seat that has a code twin
-  (`0034`–`0035`).
+  `colorist`), and the **plan** seats (`screenwriter` · `production_designer` ·
+  `casting_director`) — every seat that has a code twin (`0034`–`0054`).
 - **The Director is the conversational agent, not a subagent.** Producer = the human
   (HITL); Director = the orchestrating conversational agent (interprets the brief,
   dispatches the crew subagents, reconciles their disjoint field slices into a `Shot`,
@@ -438,6 +441,7 @@ flowchart TB
     subgraph B["Tier B · .github/agents/ · PersonaJudgment"]
         SCR["screenwriter.agent.md"]
         PDS["production_designer.agent.md"]
+        CST["casting_director.agent.md"]
         CIN["cinematographer.agent.md"]
         GAF["gaffer.agent.md"]
         GRP["keygrip.agent.md"]
@@ -449,8 +453,8 @@ flowchart TB
         HOOK["Director.execute → renderer_for(medium)"]
     end
     PROD -->|"brief · greenlight"| DIR
-    DIR -->|"dispatch"| SCR & PDS & CIN & GAF & GRP & EDT & COL
-    SCR & PDS & CIN & GAF & GRP & EDT & COL -->|"Contribution (enum-bound)"| DIR
+    DIR -->|"dispatch"| SCR & PDS & CST & CIN & GAF & GRP & EDT & COL
+    SCR & PDS & CST & CIN & GAF & GRP & EDT & COL -->|"Contribution (enum-bound)"| DIR
     B -.->|"output bound to"| ENUMS
     DIR -->|"reconciled Shot"| HOOK
     HOOK -->|"real bytes"| OUT["video / still"]
@@ -477,19 +481,19 @@ flowchart TB
   [`.github/agents/`](../.github/agents/) and the Director is the conversational agent;
   **decision→pixels closed (`0032`):** `Director.execute` renders a greenlit `Shot`
   through the renderer registry. **Plan + assemble agent seats now exist:** Screenwriter
-  (`0035`), Production Designer (`0046`), Editor + Colorist (`0034`) — seven agents beside the
-  Director. Next: a `StoryboardArtist` seat, a generated vocabulary card (drift), binding a
-  local-folder Production in place of the bare `Brief`, a real cut-decision heuristic, and
-  per-shot grade matching.
+  (`0035`), Production Designer (`0046`), Casting Director (`0054`), Editor + Colorist
+  (`0034`) — **eight agents** beside the Director. Next: a `StoryboardArtist` seat, a
+  generated vocabulary card (drift), the board **verdict** write, a real cut-decision
+  heuristic, and per-shot grade matching.
 - **Build the provider seams — `ProductionProvider` DONE (`0025`).** A
   `runtime_checkable` protocol (`read_brief` / `write_sequence`) with live
   `AzureDevOpsProduction` + `LocalFolderProduction` backends, run board-to-board by
   `Engine.run_production` (`0027`) + [`scripts/produce.py`](../scripts/produce.py)
   (`0028`). The **`OutputStore`** is now **built** (`0038`, `LocalFolderOutputStore` over
   a OneDrive-synced root), wired to the render→persist hook (`0039`) and the **gate**
-  (`0040`); remaining: a Graph-backed `OutputStore` backend, the board **verdict/State
-  write** (link a deliverable `ref` + advance phase), scene-scoped reads, and per-shot
-  grade matching. See
+  (`0040`); the **`GraphOutputStore`** backend is now **built** (`0053`, authoritative
+  `webUrl`s). Remaining: the board **verdict/State write** (link a deliverable `ref` +
+  advance phase), scene-scoped reads, and per-shot grade matching. See
   [`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md).
 - **Production-store platform — RESOLVED: Azure DevOps (`0024`).** GitHub Projects v2
   vs. ADO settled on **ADO** for its native 4-level hierarchy (Act→Scene→Beat→Shot);
