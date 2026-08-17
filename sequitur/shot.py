@@ -12,6 +12,7 @@ crew's shared canvas, not one fragment per department.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from .crew.camera import (
     CameraAngle,
@@ -29,6 +30,9 @@ from .crew.lighting import (
     LightQuality,
     LightScheme,
 )
+
+if TYPE_CHECKING:
+    from .cast import Character
 
 
 @dataclass
@@ -71,3 +75,23 @@ class Shot:
     single_scene: bool = True                  # one continuous shot, no cuts (Ch. 5)
     avoid: list[str] = field(default_factory=list)  # negative prompts, spoken inline
     aspect_ratio: str = "16:9"                 # "16:9" (landscape) or "9:16" (portrait)
+
+    # The cast in frame (storyline 0057) — the diegetic join to the cast axis. Which
+    # Characters this shot features; the prompt names them and a backend conditions on
+    # their locked references for consistency. Empty for shots with no principals.
+    cast: list["Character"] = field(default_factory=list)
+
+    def locked_references(self) -> list[str]:
+        """The locked reference of each cast Character with a selected embodiment.
+
+        A backend uses these to *condition* the render on the cast's identities (the
+        gpt-image edits array, or Omni's multimodal input). Characters not yet cast, or
+        cast to an Actor without a reference, contribute nothing.
+        """
+        refs: list[str] = []
+        for character in self.cast:
+            actor = getattr(character, "cast", None)
+            reference = getattr(actor, "reference", None) if actor else None
+            if reference:
+                refs.append(str(reference))
+        return refs

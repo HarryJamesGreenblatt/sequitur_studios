@@ -39,6 +39,21 @@ def _compose(shot: Shot, *, moving: bool) -> str:
     if framing:
         parts.append("Framing: " + ", ".join(framing) + ".")
 
+    # Who is in frame (storyline 0057) — name each cast member so a conditioning
+    # reference can bind to a name (neither backend labels reference images structurally).
+    if shot.cast:
+        who: list[str] = []
+        for character in shot.cast:
+            name = getattr(character, "name", "")
+            actor = getattr(character, "cast", None)
+            descriptor = (getattr(actor, "look", "") if actor else "") or getattr(
+                character, "essence", ""
+            )
+            who.append(f"{name} ({descriptor.rstrip('.')})" if descriptor else name)
+        featuring = ", ".join(w for w in who if w)
+        if featuring:
+            parts.append("Featuring " + featuring + ".")
+
     # Camera: angle, lens / focus, and (video only) movement and speed.
     camera_fields = [shot.angle]
     if moving:

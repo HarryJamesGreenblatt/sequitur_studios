@@ -128,6 +128,51 @@ def test_image_studio_conditions_a_still_on_reference_images() -> None:
         assert "generate" in recorded and "edit" not in recorded
 
 
+def test_image_studio_derives_references_from_a_shots_cast() -> None:
+    # A Shot carrying a cast Character with a locked reference conditions the render
+    # automatically — the backend owns its conditioning (storyline 0057), no explicit
+    # references argument needed.
+    import base64
+    import tempfile
+    import types
+
+    from sequitur import Actor, Character, Shot
+
+    def _result():
+        b64 = base64.b64encode(b"img-bytes").decode()
+        return types.SimpleNamespace(data=[types.SimpleNamespace(b64_json=b64)])
+
+    recorded: dict = {}
+
+    class _Images:
+        def generate(self, **kw):
+            recorded["generate"] = kw
+            return _result()
+
+        def edit(self, **kw):
+            recorded["edit"] = {**kw, "image_names": [f.name for f in kw["image"]]}
+            return _result()
+
+    class _Client:
+        images = _Images()
+
+    cfg = types.SimpleNamespace(deployment="gpt-image-1")
+    studio = ImageStudio(cfg, client=_Client())
+
+    with tempfile.TemporaryDirectory() as d:
+        ref = Path(d) / "nora-locked.png"
+        ref.write_bytes(b"reference-bytes")
+        nora = Character(name="Nora", candidates=[Actor(look="weathered", reference=str(ref))])
+        nora.select(nora.candidates[0])
+        shot = Shot(scene="a platform at dusk", cast=[nora])
+
+        out = Path(d) / "scene.png"
+        studio.render(shot, out_path=out)
+        # The shot's locked cast reference conditioned the render via the edit endpoint.
+        assert "edit" in recorded and recorded["edit"]["image_names"] == [str(ref)]
+        assert out.read_bytes()
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for t in tests:

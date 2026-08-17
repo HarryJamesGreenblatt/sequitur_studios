@@ -94,6 +94,10 @@ class ImageStudio:
         if isinstance(shot, Shot):
             prompt = build_image_prompt(shot)
             aspect_ratio = aspect_ratio or shot.aspect_ratio
+            # The backend owns *how* it conditions on a Shot's cast (storyline 0057):
+            # derive the locked references from the cast unless the caller overrides.
+            if references is None:
+                references = shot.locked_references() or None
         else:
             prompt = shot
             aspect_ratio = aspect_ratio or "16:9"

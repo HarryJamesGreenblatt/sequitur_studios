@@ -563,6 +563,21 @@ into a film-literate prompt.
   references → `edit`, none → `generate`), `test_engine` 10 → 11 (execute forwards the reference);
   **12-module suite green.** Next: the Shot↔cast diegetic join (derive references automatically) +
   key art on the reference; offline stub proof only, not yet run live through `gpt-image`.
+- [`0057-conditioning-mechanics.md`](0057-conditioning-mechanics.md)
+  — **design memo (+ a fork-independent step 1)** answering *does applying the cast to a shot
+  account for how Omni/gpt-image actually take seeds, with multiple characters or specific
+  conditions?* Verified both backends: gpt-image **edits** takes an `image=[...]` array with
+  **no per-image role binding** (binding is prompt-driven), a mask on the first image only, and
+  `input_fidelity:high` for face-lock; Gemini/**Omni** takes a **typed, budgeted** multimodal
+  `input` list (~4–5 character refs) and is **stateful** (`previous_interaction_id`) — and our
+  `Studio` passes text only, so video ingests no seeds yet. Named the contingencies (multi-
+  character cap + prompt-coupled binding; conditional depiction = state vs identity-defining;
+  URL→bytes; per-backend conditioning) and set the design (a **typed, budgeted, prompt-coupled**
+  cast-in-shot model, per-backend seams). **Shipped step 1** (fork-independent): `Shot.cast` +
+  `Shot.locked_references()` (the diegetic join), a **“Featuring …”** prompt clause naming the
+  cast so references bind, and `ImageStudio` deriving references from a Shot's cast (the backend
+  owns its conditioning). `test_casting`/`test_render` +2; **12-module suite green.** Open forks
+  (Producer's call): conditional-depiction model, Omni consistency strategy, URL→bytes, overflow.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `cast`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
@@ -632,8 +647,10 @@ into a film-literate prompt.
   (`0032`); and a live **Azure DevOps** production board the engine runs board-to-board.
   Remaining seats: the Storyboard Artist / previs + the sound department; the casting
   **selection** (Phase 2, built `0055`) closes decision → cast in code, the cast-reference
-  **conditioning** seam (Phase 3, `0056`) lets downstream stills render against a locked
-  identity, and the board **verdict loop** (approve/revise → State) is the next behaviour.
+  **conditioning** seam (Phase 3, `0056`–`0057`) lets downstream stills render against a locked
+  identity (the **Shot↔cast join** + prompt naming landed `0057`; the video/Omni multimodal path,
+  typed/budgeted refs, and conditional depiction are staged forks), and the board **verdict
+  loop** (approve/revise → State) is the next behaviour.
 - **Secrets:** both backend API keys live in **Azure Key Vault**, fetched at runtime
   via `DefaultAzureCredential`; `.env` holds only non-secret pointers (vault name,
   endpoint, deployment). Never reintroduce plaintext keys.

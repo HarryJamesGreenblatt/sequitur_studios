@@ -76,6 +76,27 @@ def test_plan_crew_now_seats_story_design_and_casting() -> None:
     assert {"Screenwriter", "ProductionDesigner", "CastingDirector"} <= titles
 
 
+def test_shot_carries_its_cast_and_exposes_locked_references() -> None:
+    # The diegetic join (storyline 0057): a Shot knows which Characters are in frame,
+    # and can surface their locked keyframes for a backend to condition on.
+    from sequitur import Shot, build_image_prompt
+
+    nora = Character(
+        name="Nora",
+        essence="stubborn tenderness",
+        candidates=[Actor(look="weathered, grey-eyed", reference="store/nora/1.png")],
+    )
+    nora.select(nora.candidates[0])
+    stranger = Character(name="Stranger")  # named but never cast
+
+    shot = Shot(scene="a platform at dusk", cast=[nora, stranger])
+    # Only cast Characters with a reference contribute a locked keyframe.
+    assert shot.locked_references() == ["store/nora/1.png"]
+    # The prompt names the cast so a conditioning reference can bind to a name.
+    prompt = build_image_prompt(shot)
+    assert "Featuring Nora" in prompt and "Stranger" in prompt
+
+
 def test_character_prompt_composes_look_and_design_brief() -> None:
     # The audition frame reads the Actor's look through the Character's design brief.
     actor = Actor(look="weathered, grey-eyed, close-cropped silver hair")
