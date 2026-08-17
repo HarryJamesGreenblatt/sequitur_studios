@@ -212,6 +212,33 @@ def test_execute_with_a_store_requires_a_production() -> None:
         register(Medium.STILL, ImageStudio)
 
 
+def test_execute_forwards_cast_references_to_the_renderer() -> None:
+    seen: dict = {}
+
+    class FakeStudio:  # a still backend that accepts conditioning references
+        medium = Medium.STILL
+
+        def render(self, shot, *, out_path=None, references=None):
+            Path(out_path).write_bytes(b"conditioned")
+            seen["references"] = references
+            return RenderResult("fake-native", Path(out_path))
+
+    register(Medium.STILL, lambda: FakeStudio())
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            shot = Engine().run(Phase.SHOOT, Brief(scene="Nora on the platform"))
+            # The locked cast reference threads through to the backend (storyline 0055).
+            Director().execute(
+                shot,
+                medium=Medium.STILL,
+                out_path=Path(d) / "s.png",
+                references=["store/Nora/plan/Nora-candidate-1.png"],
+            )
+            assert seen["references"] == ["store/Nora/plan/Nora-candidate-1.png"]
+    finally:
+        register(Medium.STILL, ImageStudio)
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for t in tests:

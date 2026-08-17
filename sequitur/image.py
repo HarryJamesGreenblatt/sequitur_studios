@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import base64
 import time
+from contextlib import ExitStack
 from pathlib import Path
 
 from .config import OUTPUT_DIR, AzureImageConfig, get_azure_image_config
@@ -32,11 +33,20 @@ class ImageStudio:
     """A still-image render session backed by Azure Foundry ``gpt-image``.
 
     render() -> generate a still from a prompt or a Shot; returns (result, path).
+    Pass ``references`` (locked cast keyframes) to *condition* the render on those
+    images via the edits endpoint — the casting-consistency lock (storyline 0055).
     """
 
     medium = Medium.STILL
 
-    def __init__(self, config: AzureImageConfig | None = None) -> None:
+    def __init__(self, config: AzureImageConfig | None = None, *, client=None) -> None:
+        # An injected ``client`` (tests / a custom transport) skips endpoint discovery
+        # and credential setup — construction then needs no Azure deps or network.
+        if client is not None:
+            self.config = config or get_azure_image_config()
+            self.client = client
+            return
+
         # Imported lazily so --dry-run and the video path need no Azure deps.
         from openai import AzureOpenAI
 
@@ -71,8 +81,16 @@ class ImageStudio:
         aspect_ratio: str | None = None,
         size: str | None = None,
         out_path: str | Path | None = None,
+        references: list[str | Path] | None = None,
     ):
-        """Generate a still image. Returns (result, saved_path)."""
+        """Generate a still image. Returns (result, saved_path).
+
+        When ``references`` (paths to locked keyframes — e.g. a cast Actor's audition
+        reference, storyline 0055) are given, the render is *conditioned* on those
+        images through the gpt-image **edits** endpoint, so the same face/identity
+        carries across frames — the consistency payoff a text prompt cannot guarantee.
+        Without references it takes the plain generation path.
+        """
         if isinstance(shot, Shot):
             prompt = build_image_prompt(shot)
             aspect_ratio = aspect_ratio or shot.aspect_ratio
@@ -82,15 +100,30 @@ class ImageStudio:
 
         size = size or _SIZE_BY_ASPECT.get(aspect_ratio, "1024x1024")
 
-        result = self.client.images.generate(
-            model=self.config.deployment,
-            prompt=prompt,
-            size=size,
-            n=1,
-        )
+        if references:
+            result = self._edit(prompt, references, size)
+        else:
+            result = self.client.images.generate(
+                model=self.config.deployment,
+                prompt=prompt,
+                size=size,
+                n=1,
+            )
         return RenderResult(result, self._save(result, out_path))
 
     # -- internals ---------------------------------------------------------
+
+    def _edit(self, prompt: str, references: list[str | Path], size: str):
+        """Render conditioned on ``references`` via the gpt-image edits endpoint."""
+        with ExitStack() as stack:
+            images = [stack.enter_context(open(Path(r), "rb")) for r in references]
+            return self.client.images.edit(
+                model=self.config.deployment,
+                image=images,
+                prompt=prompt,
+                size=size,
+                n=1,
+            )
 
     def _save(self, result, out_path: str | Path | None) -> Path:
         path = Path(out_path) if out_path else OUTPUT_DIR / f"still_{int(time.time())}.png"

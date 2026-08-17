@@ -79,6 +79,55 @@ def test_unknown_medium_raises() -> None:
         _FACTORIES[empty] = saved
 
 
+def test_image_studio_conditions_a_still_on_reference_images() -> None:
+    # References route to the gpt-image EDITS endpoint (the casting-consistency lock,
+    # storyline 0055); without them the render takes the plain generation path. An
+    # injected client keeps this offline — no endpoint, credential, or network.
+    import base64
+    import tempfile
+    import types
+
+    def _result():
+        b64 = base64.b64encode(b"img-bytes").decode()
+        return types.SimpleNamespace(data=[types.SimpleNamespace(b64_json=b64)])
+
+    recorded: dict = {}
+
+    class _Images:
+        def generate(self, **kw):
+            recorded["generate"] = kw
+            return _result()
+
+        def edit(self, **kw):
+            recorded["edit"] = {**kw, "image_names": [f.name for f in kw["image"]]}
+            return _result()
+
+    class _Client:
+        images = _Images()
+
+    cfg = types.SimpleNamespace(deployment="gpt-image-1")
+    studio = ImageStudio(cfg, client=_Client())
+
+    with tempfile.TemporaryDirectory() as d:
+        ref = Path(d) / "nora-locked.png"
+        ref.write_bytes(b"reference-bytes")
+
+        conditioned = Path(d) / "scene.png"
+        result = studio.render(
+            "Nora on the platform at dusk", references=[ref], out_path=conditioned
+        )
+        # Routed to edit, conditioned on the locked reference — not generate.
+        assert "edit" in recorded and "generate" not in recorded
+        assert recorded["edit"]["image_names"] == [str(ref)]
+        assert result.ref == conditioned and conditioned.read_bytes()
+
+        recorded.clear()
+        plain = Path(d) / "plain.png"
+        studio.render("a lighthouse in a storm", out_path=plain)
+        # No references -> the plain generation path.
+        assert "generate" in recorded and "edit" not in recorded
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for t in tests:

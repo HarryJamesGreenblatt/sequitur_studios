@@ -550,6 +550,19 @@ into a film-literate prompt.
   Director agent's plan steps now spell that out. `test_casting` 7 → 10 (incl. an offline
   end-to-end audition); **12-module suite green.** Next: thread the locked reference downstream
   (Phase 3) + generalize the verdict loop to the board (approve/revise → State).
+- [`0056-the-consistency-lock.md`](0056-the-consistency-lock.md)
+  — **Casting Phase 3, step 1 — the consistency mechanism.** A locked reference (0055) is inert
+  until something renders *against* it, and a text prompt can't guarantee identity. Gave the still
+  backend the ability to **condition** a render on the cast's locked keyframes:
+  [`ImageStudio.render`](../../sequitur/image.py) gained a `references` argument that routes to the
+  gpt-image **edits** endpoint (`images.edit`, conditioned on the input images) instead of
+  `images.generate` — no new renderer (casting makes a still, the 0019 principle). Added an
+  injected-`client` constructor path (offline-constructible, the test seam), and
+  [`Director.execute`](../../sequitur/crew/director.py) forwards `references` **only when given**
+  (text-only media untouched, existing path unchanged). `test_render` 6 → 7 (a stub-client test:
+  references → `edit`, none → `generate`), `test_engine` 10 → 11 (execute forwards the reference);
+  **12-module suite green.** Next: the Shot↔cast diegetic join (derive references automatically) +
+  key art on the reference; offline stub proof only, not yet run live through `gpt-image`.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `cast`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
@@ -618,8 +631,9 @@ into a film-literate prompt.
   member is the color **`Grader`**); `Director.execute` closes **decision → pixels**
   (`0032`); and a live **Azure DevOps** production board the engine runs board-to-board.
   Remaining seats: the Storyboard Artist / previs + the sound department; the casting
-  **selection** (Phase 2, built `0055`) now closes decision → cast in code, and the board
-  **verdict loop** (approve/revise → State) is the next behaviour to generalize.
+  **selection** (Phase 2, built `0055`) closes decision → cast in code, the cast-reference
+  **conditioning** seam (Phase 3, `0056`) lets downstream stills render against a locked
+  identity, and the board **verdict loop** (approve/revise → State) is the next behaviour.
 - **Secrets:** both backend API keys live in **Azure Key Vault**, fetched at runtime
   via `DefaultAzureCredential`; `.env` holds only non-secret pointers (vault name,
   endpoint, deployment). Never reintroduce plaintext keys.

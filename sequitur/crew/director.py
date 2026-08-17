@@ -169,6 +169,7 @@ class Director(Role):
         production: str | None = None,
         phase: str = "shoot",
         name: str | None = None,
+        references: list[str | Path] | None = None,
     ) -> RenderResult:
         """Close decision -> pixels (-> durable): render a greenlit :class:`Shot`.
 
@@ -180,12 +181,20 @@ class Director(Role):
         studio's headline medium. The Director stays backend-agnostic — it holds a
         renderer *by medium*, never a concrete class.
 
+        Pass ``references`` (locked cast keyframes) to *condition* an image render on
+        those identities — the casting-consistency payoff (storyline 0055); they are
+        forwarded to the backend only when given, so text-only media are unaffected.
+
         A renderer writes to a *scratch* path. Pass a ``store`` (with the owning
         ``production``) to also file that artifact durably under ``phase`` and return
         a :class:`~sequitur.render.RenderResult` whose ``ref`` is the durable location
         (storyline 0038) — the dailies model's render -> persist step, ready for a gate.
         """
-        result = renderer_for(medium).render(shot, out_path=out_path)
+        renderer = renderer_for(medium)
+        if references is not None:
+            result = renderer.render(shot, out_path=out_path, references=references)
+        else:
+            result = renderer.render(shot, out_path=out_path)
         if store is None:
             return result
         if not production:
