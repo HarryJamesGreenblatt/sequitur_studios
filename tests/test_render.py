@@ -173,6 +173,50 @@ def test_image_studio_derives_references_from_a_shots_cast() -> None:
         assert out.read_bytes()
 
 
+def test_image_studio_fetches_a_url_reference_then_conditions() -> None:
+    # A share-URL reference (a GraphOutputStore ref) is fetched to bytes, then conditioned
+    # on via the edit endpoint (fetch-then-condition, storyline 0058).
+    import base64
+    import tempfile
+    import types
+
+    import sequitur.output as _output
+
+    def _result():
+        b64 = base64.b64encode(b"img-bytes").decode()
+        return types.SimpleNamespace(data=[types.SimpleNamespace(b64_json=b64)])
+
+    recorded: dict = {}
+
+    class _Images:
+        def edit(self, **kw):
+            recorded["names"] = [getattr(f, "name", None) for f in kw["image"]]
+            recorded["data"] = [f.read() for f in kw["image"]]
+            return _result()
+
+    class _Client:
+        images = _Images()
+
+    cfg = types.SimpleNamespace(deployment="gpt-image-1")
+    studio = ImageStudio(cfg, client=_Client())
+
+    saved = _output.fetch_reference
+    _output.fetch_reference = lambda ref, **_: b"fetched-share-bytes"
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / "scene.png"
+            studio.render(
+                "Nora on the platform",
+                references=["https://contoso.sharepoint.com/x/nora-locked.png"],
+                out_path=out,
+            )
+            # The URL was fetched to bytes and passed to the edit endpoint under its name.
+            assert recorded["data"] == [b"fetched-share-bytes"]
+            assert recorded["names"] == ["nora-locked.png"]
+    finally:
+        _output.fetch_reference = saved
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for t in tests:

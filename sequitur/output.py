@@ -53,6 +53,8 @@ class OutputStore(Protocol):
         name: str | None = None,
     ) -> Path | str: ...
 
+    def fetch(self, ref: str | Path) -> bytes: ...
+
 
 class LocalFolderOutputStore:
     """A directory-backed output store (storyline 0005's provider #1).
@@ -92,6 +94,10 @@ class LocalFolderOutputStore:
         dest = dest_dir / (name or source.name)
         shutil.copyfile(source, dest)
         return dest
+
+    def fetch(self, ref: str | Path) -> bytes:
+        """Read a filed artifact's bytes back — the ref is a local store path."""
+        return Path(ref).read_bytes()
 
 
 class GraphOutputStore:
@@ -179,4 +185,49 @@ class GraphOutputStore:
         item = self._upload(item_path, data)
         # ``webUrl`` is authoritative the instant the upload returns — the whole point.
         return item["webUrl"]
+
+    def fetch(self, ref: str | Path) -> bytes:
+        """Resolve a stored ref back to its bytes — the fetch half of the URL seam (0058).
+
+        A Graph ref is a SharePoint **share URL** (``webUrl``), not a content endpoint, so
+        bytes are fetched via Graph's **shares** API: the URL is encoded to a share token
+        (``u!`` + unpadded base64url) and its ``driveItem/content`` downloaded. A plain
+        local path (a mixed-store ref) is read directly. This is what lets a render
+        *condition* on a durable share-link reference (fetch-then-condition).
+        """
+        s = str(ref)
+        if not s.startswith(("http://", "https://")):
+            return Path(s).read_bytes()
+        return self._download(s)
+
+    def _download(self, share_url: str) -> bytes:
+        """Download a share URL's bytes via Graph's shares endpoint."""
+        import base64
+        import urllib.request
+
+        token = base64.urlsafe_b64encode(share_url.encode("utf-8")).decode("ascii").rstrip("=")
+        url = f"{self._GRAPH}/shares/u!{token}/driveItem/content"
+        req = urllib.request.Request(
+            url, headers={"Authorization": f"Bearer {self._token()}"}
+        )
+        with urllib.request.urlopen(req) as resp:
+            return resp.read()
+
+
+def fetch_reference(ref: str | Path, *, store: "OutputStore | None" = None) -> bytes:
+    """Resolve a reference (a local path *or* a durable share URL) to its bytes.
+
+    The fetch-then-condition helper (storyline 0058): a locked cast reference may be a
+    local :class:`LocalFolderOutputStore` path or a :class:`GraphOutputStore` share URL.
+    A local path is read directly; a URL is resolved through the configured output store
+    (which knows how to authenticate and download it), so a renderer can seed on either.
+    """
+    s = str(ref)
+    if s.startswith(("http://", "https://")):
+        if store is None:
+            from .config import get_output_store
+
+            store = get_output_store()
+        return store.fetch(s)
+    return Path(s).read_bytes()
 

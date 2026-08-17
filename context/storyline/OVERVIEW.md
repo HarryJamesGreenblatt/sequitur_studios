@@ -590,6 +590,16 @@ into a film-literate prompt.
   `--approve`/`--revise --notes` and its skill's two directions become **three** (report up ·
   verdict down · fetch down); the Producer decides, the AD records. `test_production` 10 → 13;
   **12-module suite green.** The dailies loop now closes in code: file (Gate) → report (AD) → verdict.
+- [`0059-fork-three-the-share-link-store.md`](0059-fork-three-the-share-link-store.md)
+  — **fork 3 — the share-link store + fetch-then-condition.** A durable ref is now a URL but the
+  edits endpoint needs bytes, and nothing let a production *select* Graph. Closed both:
+  `config.get_output_store()` selects `GraphOutputStore` (authoritative SharePoint **share URLs**)
+  when `OUTPUT_STORE_BACKEND=graph`, else the local folder; a new **`OutputStore.fetch(ref)`**
+  (protocol + both backends) resolves a ref back to bytes — Graph via the **shares** API
+  (`u!`-encoded token → `driveItem/content`), local by reading the path; and a `fetch_reference`
+  helper + a URL-aware `ImageStudio._edit` mean a render **fetches a share-URL reference to bytes
+  then conditions** on it (fetch-then-condition). `test_output` +7, `test_render` +1;
+  **12-module suite green** (Graph stubbed). Next: wire the CLIs to the factory + a live round-trip.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `cast`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs

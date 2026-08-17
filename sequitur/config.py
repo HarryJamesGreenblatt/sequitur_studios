@@ -275,3 +275,21 @@ def get_graph_store_config() -> GraphStoreConfig:
         drive_id=drive_id,
         root_path=os.environ.get("GRAPH_STORE_ROOT_PATH", "").strip("/"),
     )
+
+
+def get_output_store():
+    """Return the configured :class:`~sequitur.output.OutputStore` backend.
+
+    ``OUTPUT_STORE_BACKEND`` (in ``.env``) selects the data plane: ``graph`` uses the
+    Microsoft Graph store (uploads return authoritative SharePoint **share URLs** —
+    storyline 0053/0058), anything else (default) the local OneDrive-synced folder. The
+    backend is built lazily so import stays credential-free.
+    """
+    backend = os.environ.get("OUTPUT_STORE_BACKEND", "local").strip().lower()
+    if backend == "graph":
+        from .output import GraphOutputStore
+
+        return GraphOutputStore()
+    from .output import LocalFolderOutputStore
+
+    return LocalFolderOutputStore()

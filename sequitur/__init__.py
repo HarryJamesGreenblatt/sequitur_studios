@@ -128,7 +128,7 @@ from .production import (
     LocalFolderProduction,
     ProductionProvider,
 )
-from .output import GraphOutputStore, LocalFolderOutputStore, OutputStore
+from .output import GraphOutputStore, LocalFolderOutputStore, OutputStore, fetch_reference
 from .gate import Deliverable, Gate, GateStatus
 from .prompt import (
     build_character_prompt,
@@ -249,6 +249,7 @@ __all__ = [
     "OutputStore",
     "LocalFolderOutputStore",
     "GraphOutputStore",
+    "fetch_reference",
     "Gate",
     "Deliverable",
     "GateStatus",

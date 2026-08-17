@@ -118,9 +118,26 @@ class ImageStudio:
     # -- internals ---------------------------------------------------------
 
     def _edit(self, prompt: str, references: list[str | Path], size: str):
-        """Render conditioned on ``references`` via the gpt-image edits endpoint."""
+        """Render conditioned on ``references`` via the gpt-image edits endpoint.
+
+        A reference may be a local path *or* a durable share URL (a
+        :class:`~sequitur.output.GraphOutputStore` ref); a URL is fetched to bytes first
+        (fetch-then-condition, storyline 0058) so the edits endpoint always gets bytes.
+        """
+        import io
+
+        from . import output
+
         with ExitStack() as stack:
-            images = [stack.enter_context(open(Path(r), "rb")) for r in references]
+            images = []
+            for ref in references:
+                s = str(ref)
+                if s.startswith(("http://", "https://")):
+                    handle = io.BytesIO(output.fetch_reference(s))
+                    handle.name = s.rsplit("/", 1)[-1] or "reference.png"
+                    images.append(handle)
+                else:
+                    images.append(stack.enter_context(open(Path(s), "rb")))
             return self.client.images.edit(
                 model=self.config.deployment,
                 image=images,

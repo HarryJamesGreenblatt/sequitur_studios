@@ -25,10 +25,15 @@ class _StubGraphStore(GraphOutputStore):
     def __init__(self) -> None:
         super().__init__(drive_id="drive-1", root_path="Sequitur Studios/output")
         self.uploaded: tuple[str, bytes] | None = None
+        self.downloaded: str | None = None
 
     def _upload(self, item_path: str, data: bytes) -> dict:  # type: ignore[override]
         self.uploaded = (item_path, data)
         return {"webUrl": "https://contoso.sharepoint.com/" + item_path}
+
+    def _download(self, share_url: str) -> bytes:  # type: ignore[override]
+        self.downloaded = share_url
+        return b"resolved-bytes"
 
 
 
@@ -130,6 +135,66 @@ def test_graph_bytes_without_a_name_is_an_error() -> None:
         pass
     else:  # pragma: no cover - the assertion is the failure signal
         raise AssertionError("storing raw bytes without a name should raise")
+
+
+def test_local_fetch_reads_the_bytes_back() -> None:
+    with tempfile.TemporaryDirectory() as d:
+        store = LocalFolderOutputStore(d)
+        ref = store.put(b"poster-bytes", production="P", layer="plan", name="poster.png")
+        assert store.fetch(ref) == b"poster-bytes"
+
+
+def test_graph_fetch_resolves_a_share_url_via_the_shares_endpoint() -> None:
+    store = _StubGraphStore()
+    data = store.fetch("https://contoso.sharepoint.com/x/poster.png")
+    assert data == b"resolved-bytes"
+    assert store.downloaded == "https://contoso.sharepoint.com/x/poster.png"
+
+
+def test_graph_fetch_reads_a_local_path_directly() -> None:
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / "ref.png"
+        p.write_bytes(b"local-ref")
+        assert _StubGraphStore().fetch(p) == b"local-ref"
+
+
+def test_fetch_reference_reads_a_local_path() -> None:
+    from sequitur import fetch_reference
+
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / "ref.png"
+        p.write_bytes(b"reference-bytes")
+        assert fetch_reference(p) == b"reference-bytes"
+
+
+def test_fetch_reference_resolves_a_url_through_the_store() -> None:
+    # A share-URL reference is resolved to bytes via the store's fetch (fetch-then-condition).
+    from sequitur import fetch_reference
+
+    store = _StubGraphStore()
+    data = fetch_reference("https://contoso.sharepoint.com/x/ref.png", store=store)
+    assert data == b"resolved-bytes"
+    assert store.downloaded == "https://contoso.sharepoint.com/x/ref.png"
+
+
+def test_get_output_store_selects_the_backend() -> None:
+    from sequitur.config import get_output_store
+
+    saved = {k: os.environ.get(k) for k in ("OUTPUT_STORE_BACKEND", "OUTPUT_STORE_ROOT", "GRAPH_DRIVE_ID")}
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            os.environ["OUTPUT_STORE_ROOT"] = d
+            os.environ.pop("OUTPUT_STORE_BACKEND", None)
+            assert isinstance(get_output_store(), LocalFolderOutputStore)  # default
+            os.environ["OUTPUT_STORE_BACKEND"] = "graph"
+            os.environ["GRAPH_DRIVE_ID"] = "drive-1"
+            assert isinstance(get_output_store(), GraphOutputStore)  # opted in
+    finally:
+        for k, v in saved.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
 
 
 if __name__ == "__main__":
