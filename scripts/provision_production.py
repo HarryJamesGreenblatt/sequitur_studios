@@ -7,8 +7,9 @@ tier. A production *instance* is one **project** on that process, plus the per-p
 scaffolding a fresh project does **not** inherit, which this script stands up
 idempotently:
 
-* the seven department **Area Paths** (Direction, Camera, Lighting, Grip, Editorial,
-  Color, Sound);
+* the department **Area Paths** (Direction, Story, Art, Camera, Lighting, Grip,
+  Editorial, Color, Sound) plus **Marketing** (the market-facing area, not a production
+  craft — mirrors the KeyArtist seat that sits outside the crew, storyline 0052);
 * the default team set to include child areas (so its board shows the whole tree);
 * a **team per department**, each scoped to its Area Path (the per-crew bucket);
 * each team's **backlog iteration** (else the board errors ``TF400509``) and
@@ -54,11 +55,14 @@ from sequitur.config import ADO_RESOURCE_ID  # noqa: E402  (import also loads .e
 
 API = "api-version=7.1"
 
-#: The crew departments, as Area-Path / Team names. These mirror the code's
-#: ``Department`` enum: **Story** (Screenwriter), **Art** (Production Designer / KeyArtist)
-#: are the plan-phase seats; note the lighting department's board name is "Lighting" (the
-#: code's ``Department.ELECTRIC`` — Appendix D — surfaces as "Lighting" on the board).
-DEPARTMENTS = ["Direction", "Story", "Art", "Camera", "Lighting", "Grip", "Editorial", "Color", "Sound"]
+#: The department Area-Path / Team names. Most mirror the code's ``Department`` enum:
+#: **Story** (Screenwriter), **Art** (Production Designer / KeyArtist) are the plan-phase
+#: seats; note the lighting department's board name is "Lighting" (the code's
+#: ``Department.ELECTRIC`` — Appendix D — surfaces as "Lighting" on the board).
+#: **Marketing** is not a production craft: it's the home of the market-facing plane
+#: (the ``Marketing Asset`` WIT — key art / one-sheet), whose seat (KeyArtist) sits
+#: outside the crew by design (storyline 0052).
+DEPARTMENTS = ["Direction", "Story", "Art", "Camera", "Lighting", "Grip", "Editorial", "Color", "Sound", "Marketing"]
 
 #: The three production phases, as named (dateless) iteration nodes. This is the board
 #: side of the code's ``Phase`` enum (``plan`` -> Pre-Production, ``shoot`` -> Production,
@@ -296,10 +300,11 @@ class Provisioner:
     # -- optional example tree --------------------------------------------
 
     def create_example(self) -> None:
-        self.log("example", "Act -> Scene -> Beat -> Shot x2 (with Mood/Look)")
+        self.log("example", "Cut -> Act -> Scene -> Beat -> Shot x2 (with Mood/Look)")
         if self.dry:
             return
-        act = self._wi("Act", "Act I - Arrival", "Direction")
+        cut = self._wi("Cut", "Rough Cut", "Editorial")
+        act = self._wi("Act", "Act I - Arrival", "Direction", parent=cut)
         scene = self._wi("Scene", "Scene 1 - The Platform", "Direction", parent=act)
         beat = self._wi("Beat", "Beat 1 - The train pulls in", "Editorial", parent=scene)
         self._wi("Shot", "Shot 1 - Wide: empty platform", "Camera", parent=beat,

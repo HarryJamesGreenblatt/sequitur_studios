@@ -18,9 +18,13 @@ One backend exists today: :class:`LocalFolderOutputStore`, which files artifacts
 under a root directory. Point that root (``OUTPUT_STORE_ROOT``) at a OneDrive-synced
 folder and "local disk" already buys **tenant durability** for free — storyline
 0005's local-folder provider #1 and its Option-A OneDrive bridge, in one. A
-``GraphOutputStore`` (SharePoint share URLs via Microsoft Graph) swaps in behind the
-same protocol later; its ``ref`` is a URL string, which is why the seam's return type
-is ``Path | str`` (mirroring :class:`~sequitur.render.RenderResult`).
+:class:`GraphOutputStore` (SharePoint uploads via Microsoft Graph) swaps in behind the
+same protocol; its ``ref`` is a URL string, which is why the seam's return type
+is ``Path | str`` (mirroring :class:`~sequitur.render.RenderResult`). The Graph
+backend uploads bytes directly and returns an **authoritative** share URL only after
+the upload completes, closing the "publish race" of storyline 0051 (the local backend
+depends on the OneDrive sync client to publish the file, so its https link is
+*eventually* consistent — the URL is correct before the bytes have synced).
 """
 
 from __future__ import annotations
@@ -88,3 +92,91 @@ class LocalFolderOutputStore:
         dest = dest_dir / (name or source.name)
         shutil.copyfile(source, dest)
         return dest
+
+
+class GraphOutputStore:
+    """A SharePoint/OneDrive output store backed by the Microsoft Graph API.
+
+    Where :class:`LocalFolderOutputStore` writes bytes into a OneDrive-synced folder
+    and leans on the *desktop sync client* to publish them — so its https link is
+    only *eventually* consistent (the "publish race" of storyline 0051: the URL is
+    right the moment it is minted, but briefly serves the stale blob until the client
+    uploads the overwrite) — this backend uploads the bytes to the drive **directly**
+    over Graph and returns an **authoritative** ``webUrl`` only after the upload has
+    completed. That URL string is the ``ref`` (storyline 0038's deferred "URL later").
+
+    Auth is the caller's Entra identity (``DefaultAzureCredential`` on the Graph
+    scope) — no key, no new dependency beyond the ``azure-identity`` already used for
+    Key Vault; the transport is stdlib :mod:`urllib`. ``__init__`` touches no network
+    (the token and every request are lazy), so it is safe to construct offline.
+    """
+
+    _GRAPH = "https://graph.microsoft.com/v1.0"
+    _SCOPE = "https://graph.microsoft.com/.default"
+
+    def __init__(
+        self,
+        drive_id: str | None = None,
+        root_path: str | None = None,
+        *,
+        credential=None,
+    ) -> None:
+        if drive_id is None or root_path is None:
+            from .config import get_graph_store_config
+
+            cfg = get_graph_store_config()
+            drive_id = drive_id or cfg.drive_id
+            root_path = cfg.root_path if root_path is None else root_path
+        self.drive_id = drive_id
+        self.root_path = root_path.strip("/")
+        self._credential = credential
+
+    def _token(self) -> str:
+        if self._credential is None:
+            from azure.identity import DefaultAzureCredential
+
+            self._credential = DefaultAzureCredential()
+        return self._credential.get_token(self._SCOPE).token
+
+    def _upload(self, item_path: str, data: bytes) -> dict:
+        """Simple upload of ``data`` to ``drive/root:/<item_path>`` (Graph creates parents)."""
+        import json
+        import urllib.parse
+        import urllib.request
+
+        encoded = "/".join(urllib.parse.quote(part) for part in item_path.split("/"))
+        url = f"{self._GRAPH}/drives/{self.drive_id}/root:/{encoded}:/content"
+        req = urllib.request.Request(
+            url,
+            data=data,
+            method="PUT",
+            headers={
+                "Authorization": f"Bearer {self._token()}",
+                "Content-Type": "application/octet-stream",
+            },
+        )
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+
+    def put(
+        self,
+        artifact: bytes | str | Path,
+        *,
+        production: str,
+        layer: str,
+        name: str | None = None,
+    ) -> str:
+        if isinstance(artifact, (bytes, bytearray)):
+            if not name:
+                raise ValueError("A name is required when storing raw bytes.")
+            data, filename = bytes(artifact), name
+        else:
+            source = Path(artifact)
+            data, filename = source.read_bytes(), name or source.name
+        item_path = "/".join(
+            part for part in (self.root_path, production, layer, filename) if part
+        )
+        item = self._upload(item_path, data)
+        # ``webUrl`` is authoritative the instant the upload returns — the whole point.
+        return item["webUrl"]
+

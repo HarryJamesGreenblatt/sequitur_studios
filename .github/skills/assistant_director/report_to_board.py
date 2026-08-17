@@ -35,14 +35,16 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _TEXT_SUFFIXES = {".md", ".txt", ".json"}
 
 # The AD's coordination knowledge: which seat produces which deliverable, and the board
-# department (Area Path) it files under. Routing metadata, not creative content.
+# department (Area Path) it files under. Routing metadata, not creative content. The
+# KeyArtist's outputs route to **Marketing** — the market-facing plane (key art / one-sheet
+# is a campaign artifact, not production design), filed as a Marketing Asset (storyline 0052).
 _ROUTING: dict[str, tuple[str, str]] = {
     "treatment.md": ("Screenwriter", "Story"),
     "copy.md": ("Screenwriter", "Story"),
     "concept.md": ("Production Designer", "Art"),
     "poster.png": ("Production Designer", "Art"),
-    "key_art_directive.md": ("KeyArtist", "Art"),
-    "key_art.png": ("KeyArtist", "Art"),
+    "key_art_directive.md": ("KeyArtist", "Marketing"),
+    "key_art.png": ("KeyArtist", "Marketing"),
 }
 
 

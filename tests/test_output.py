@@ -16,6 +16,20 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from sequitur import LocalFolderOutputStore, OutputStore  # noqa: E402
+from sequitur import GraphOutputStore  # noqa: E402
+
+
+class _StubGraphStore(GraphOutputStore):
+    """A GraphOutputStore that records the upload path instead of hitting the network."""
+
+    def __init__(self) -> None:
+        super().__init__(drive_id="drive-1", root_path="Sequitur Studios/output")
+        self.uploaded: tuple[str, bytes] | None = None
+
+    def _upload(self, item_path: str, data: bytes) -> dict:  # type: ignore[override]
+        self.uploaded = (item_path, data)
+        return {"webUrl": "https://contoso.sharepoint.com/" + item_path}
+
 
 
 def test_backend_satisfies_the_protocol() -> None:
@@ -76,6 +90,46 @@ def test_default_root_reads_the_env_pointer() -> None:
                 os.environ.pop("OUTPUT_STORE_ROOT", None)
             else:
                 os.environ["OUTPUT_STORE_ROOT"] = saved
+
+
+def test_graph_backend_satisfies_the_protocol() -> None:
+    # runtime_checkable: the Graph backend structurally implements the same seam.
+    # __init__ touches no network, so an explicit drive id constructs offline.
+    assert isinstance(GraphOutputStore(drive_id="drive-1", root_path=""), OutputStore)
+
+
+def test_graph_put_bytes_uploads_under_the_key_and_returns_the_url() -> None:
+    store = _StubGraphStore()
+    ref = store.put(b"poster-bytes", production="HeistNoir", layer="plan", name="poster.png")
+    assert store.uploaded == (
+        "Sequitur Studios/output/HeistNoir/plan/poster.png",
+        b"poster-bytes",
+    )
+    # The ref is the authoritative webUrl string, not a local path (0038's "URL later").
+    assert ref == "https://contoso.sharepoint.com/Sequitur Studios/output/HeistNoir/plan/poster.png"
+
+
+def test_graph_put_a_rendered_path_reads_and_uploads_it() -> None:
+    with tempfile.TemporaryDirectory() as d:
+        scratch = Path(d) / "scratch.mp4"
+        scratch.write_bytes(b"daily-bytes")
+        store = _StubGraphStore()
+        store.put(scratch, production="HeistNoir", layer="shoot")
+        assert store.uploaded == (
+            "Sequitur Studios/output/HeistNoir/shoot/scratch.mp4",
+            b"daily-bytes",
+        )
+        assert scratch.exists()  # the scratch source is left intact
+
+
+def test_graph_bytes_without_a_name_is_an_error() -> None:
+    store = _StubGraphStore()
+    try:
+        store.put(b"x", production="P", layer="plan")
+    except ValueError:
+        pass
+    else:  # pragma: no cover - the assertion is the failure signal
+        raise AssertionError("storing raw bytes without a name should raise")
 
 
 if __name__ == "__main__":

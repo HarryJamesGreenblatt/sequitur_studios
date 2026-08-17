@@ -152,9 +152,9 @@ compose. Orthogonal to them is the **runtime dimension** — how an actual produ
 is represented, driven, and stored. Decided in
 [`storyline/0005`](storyline/0005-productions-as-instances-and-output-storage.md); the
 `ProductionProvider` seam and its Azure DevOps board (`0024`–`0028`) **and** the
-`OutputStore` data plane (`0038`) are now **built** — a Graph/SharePoint `OutputStore`
-backend and the board's **verdict-write** (linking a deliverable's `ref` + moving phase
-State) are the remaining pieces.
+`OutputStore` data plane (`0038`) are now **built** — including a Graph/SharePoint
+`OutputStore` backend (`0053`); the board's **verdict-write** (linking a deliverable's
+`ref` + moving phase State) is the remaining piece.
 
 - **Engine vs. instance.** `sequitur_studios` is a singular, evolving **engine**
   (`sequitur/` + [`artifacts/`](../artifacts/INDEX.md)). A *production* — a specific
@@ -179,17 +179,25 @@ State) are the remaining pieces.
     **`AzureDevOpsProduction`** backend (ADO REST via `DefaultAzureCredential`, stdlib
     `urllib`, no new dep) and a **`LocalFolderProduction`** test double. The platform
     question (`0005`) is **resolved — Azure DevOps** (`0024`): a custom Basic-derived
-    process, Act→Scene→Beat→Shot hierarchy, departments as Area Paths + Teams, phases as
-    named iterations. The engine runs it **board-to-board** (`Engine.run_production`,
+    process, **`Cut` → Act → Scene → Beat → Shot** hierarchy (`0052` added the `Cut`
+    crown — the complete assembled work, editorial's landing node), departments as Area
+    Paths + Teams, phases as named iterations. The board carries **three planes** (`0052`):
+    the *diegetic* narrative tree, *production* **`Deliverable`** items, and *campaign*
+    **`Marketing Asset`** items (key art) under a **Marketing** area — the review WITs
+    share the Requirement level, separated onto dept boards by Area Path. The org process
+    **template itself** is codified ([`scripts/provision_process.py`](../scripts/provision_process.py),
+    `0052`; idempotent / drift-healing), sibling to the per-project provisioner. The engine
+    runs it **board-to-board** (`Engine.run_production`,
     `0027`) with a CLI ([`scripts/produce.py`](../scripts/produce.py), `0028`).
   - `OutputStore` — **built (`0038`)**: a `runtime_checkable` protocol
     (`put(artifact, *, production, layer, name) → ref`; `artifact` = raw bytes or a
     rendered path) with a **`LocalFolderOutputStore`** backend. Its root
     (`OUTPUT_STORE_ROOT`) points at a **OneDrive-synced** folder in the Sequitur
     Solutions tenant, so this one disk backend already buys SharePoint/OneDrive
-    durability — no API code, no new dependency. `ref` is a local `Path` today; a
-    `GraphOutputStore` (share-URL refs via Microsoft Graph) swaps in behind the same
-    protocol later (Azure Blob still deferred). `Director.execute(…, store=…)` files a
+    durability — no API code, no new dependency. `ref` is a local `Path` for that backend;
+    a **`GraphOutputStore`** (share-URL refs via Microsoft Graph) is now **built (`0053`)**
+    behind the same protocol — it uploads bytes directly and returns an authoritative
+    `webUrl`, closing the `0051` publish race (Azure Blob still deferred). `Director.execute(…, store=…)` files a
     render durably in one call (`0039`), and the **`Gate`** submits any phase's artifact
     to it (see *the dailies model* below).
 

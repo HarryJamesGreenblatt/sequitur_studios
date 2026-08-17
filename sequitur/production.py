@@ -256,6 +256,12 @@ class AzureDevOpsProduction:
     #: The work-item type the AD/PA files deliverables as (added to the process).
     _DELIVERABLE_WIT = "Deliverable"
 
+    #: Market-facing deliverables (the Marketing department) file as this type instead —
+    #: the campaign plane (key art / one-sheet), a distinct WIT from a production
+    #: Deliverable so the two planes get their own boards (storyline 0052).
+    _MARKETING_DEPARTMENT = "Marketing"
+    _MARKETING_WIT = "Marketing Asset"
+
     def __init__(self, config=None, credential=None, *, project=None) -> None:
         from .config import get_ado_config
 
@@ -402,13 +408,21 @@ class AzureDevOpsProduction:
 
     # -- deliverables: the AD/PA's report seam (storyline board-as-memory) --
 
-    def _deliverable_id(self, title: str) -> int | None:
-        """The id of an existing Deliverable with this title, if any (idempotent report)."""
+    def _wit_for(self, deliverable: "Deliverable") -> str:
+        """The board work-item type for a deliverable — market-facing artifacts (the
+        Marketing department) are Marketing Assets; everything else is a production
+        Deliverable (the three-plane model, storyline 0052)."""
+        if (deliverable.department or "") == self._MARKETING_DEPARTMENT:
+            return self._MARKETING_WIT
+        return self._DELIVERABLE_WIT
+
+    def _deliverable_id(self, title: str, wit: str) -> int | None:
+        """The id of an existing report of this type with this title (idempotent report)."""
         safe = title.replace("'", "''")
         query = (
             "SELECT [System.Id] FROM workitems "
             "WHERE [System.TeamProject] = @project "
-            f"AND [System.WorkItemType] = '{self._DELIVERABLE_WIT}' "
+            f"AND [System.WorkItemType] = '{wit}' "
             f"AND [System.Title] = '{safe}'"
         )
         result = self._request(
@@ -466,15 +480,18 @@ class AzureDevOpsProduction:
         )
 
     def report(self, deliverable: "Deliverable", *, body: str | None = None) -> str:
-        """File a deliverable onto the board as a reviewable Deliverable work item.
+        """File a deliverable onto the board as a reviewable work item.
 
         The AD/PA's write side: the text body lands in ``System.Description`` (queryable
         — the board-as-memory / RAG substrate), an image deliverable is pinned as an
         attachment, and the gate verdict becomes the work item ``State``. Idempotent by
-        title, so re-reporting a revised deliverable updates the same item.
+        title, so re-reporting a revised deliverable updates the same item. The work-item
+        *type* follows the plane — market-facing artifacts (Marketing department) become
+        Marketing Assets; everything else a production Deliverable (storyline 0052).
         """
         title = f"[{deliverable.phase.value}] {deliverable.name}"
         state = _STATUS_STATE.get(deliverable.status.value, "To do")
+        wit = self._wit_for(deliverable)
         is_image = str(deliverable.name).lower().endswith(
             (".png", ".jpg", ".jpeg", ".webp")
         )
@@ -483,10 +500,14 @@ class AzureDevOpsProduction:
             parts.append("<pre>" + html.escape(body) + "</pre>")
         if deliverable.notes:
             parts.append("<p><em>" + html.escape(deliverable.notes) + "</em></p>")
-        # A real https link to the artifact (SharePoint), not a local filepath string.
+        # A real https link to the artifact. A Graph-backed store already returns an
+        # authoritative URL as the ref; a local store's path is mapped to its
+        # (eventually-consistent) SharePoint URL via store_url.
         from .config import store_url
 
-        link = store_url(deliverable.ref)
+        ref_str = str(deliverable.ref)
+        ref_is_url = ref_str.startswith(("http://", "https://"))
+        link = ref_str if ref_is_url else store_url(deliverable.ref)
         if link:
             parts.append(
                 f'<p>artifact: <a href="{html.escape(link)}">{html.escape(deliverable.name)}</a></p>'
@@ -519,12 +540,12 @@ class AzureDevOpsProduction:
             ops.append(
                 {"op": "add", "path": "/fields/System.Tags", "value": deliverable.author}
             )
-        existing = self._deliverable_id(title)
+        existing = self._deliverable_id(title, wit)
         if existing is None:
             created = self._request(
                 "POST",
                 self._project_url(
-                    f"wit/workitems/${self._DELIVERABLE_WIT}?api-version=7.1"
+                    f"wit/workitems/{urllib.parse.quote('$' + wit)}?api-version=7.1"
                 ),
                 ops,
                 patch=True,
@@ -538,7 +559,9 @@ class AzureDevOpsProduction:
                 patch=True,
             )
             wid = existing
-        if is_image:
+        if is_image and not ref_is_url:
+            # A local image ref: pin the actual bytes as an attachment (instant, on-board).
+            # A Graph URL ref needs no fallback — its link is already authoritative.
             try:
                 self._attach_file(wid, Path(str(deliverable.ref)))
             except Exception:  # noqa: BLE001 - re-report may already have the attachment
@@ -551,14 +574,14 @@ class AzureDevOpsProduction:
         return str(wid)
 
     def fetch_reports(self, *, phase: "Phase | None" = None) -> list["Deliverable"]:
-        """Read the board's Deliverable items back — the production's working memory."""
+        """Read the board's reported artifacts back — the production's working memory."""
         from .crew.role import Phase
         from .gate import Deliverable, GateStatus
 
         query = (
             "SELECT [System.Id] FROM workitems "
             "WHERE [System.TeamProject] = @project "
-            f"AND [System.WorkItemType] = '{self._DELIVERABLE_WIT}' "
+            f"AND [System.WorkItemType] IN ('{self._DELIVERABLE_WIT}', '{self._MARKETING_WIT}') "
             "ORDER BY [System.Id] ASC"
         )
         result = self._request(

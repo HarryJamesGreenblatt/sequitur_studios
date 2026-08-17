@@ -499,6 +499,28 @@ into a film-literate prompt.
   the ADO attachment is instant/authoritative, the SharePoint hyperlink eventually-consistent (Tier-0
   sync) → **`GraphOutputStore`** queued as the real fix. Threading is orchestration now; the `Plan`-
   carries-treatment code seam is the future automation step.
+- [`0052-the-cut-and-the-marketing-plane.md`](0052-the-cut-and-the-marketing-plane.md)
+  — **a schema revision from a board-visibility bug.** `Deliverable` items weren't showing on any board:
+  root cause = the WIT was mapped to **no backlog level**. Chasing *why* surfaced two film-craft
+  categories the schema had conflated/omitted — **three planes**: *diegetic* (the work), *production
+  deliverables* (the film **becoming** — treatment/storyboard/dailies/cut, trace to the tree), and the
+  **campaign** (key art / one-sheet — *about* the film, for the market — a different plane, not a missing
+  leaf). Built: a new **`Cut`** WIT — the **diegetic crown** (`Cut → Act → Scene → Beat → Shot`),
+  editorial's landing node, the board analogue of the code's edit `Sequence` — on a new **Cuts**
+  portfolio level; a **`Marketing Asset`** WIT (the campaign plane) under a new **Marketing** area; and
+  `Deliverable` + `Marketing Asset` mapped to the **Requirement** level (the visibility fix; boards
+  separated by Area Path). The org **process template is now codified** — new
+  [`scripts/provision_process.py`](../../scripts/provision_process.py) declares WIT types + icons/colours
+  + states + level mappings and applies them idempotently (heals drift), the sibling to
+  `provision_production.py`. `production.py`/AD routing file campaign artifacts as `Marketing Asset`.
+- [`0053-the-graph-output-store.md`](0053-the-graph-output-store.md)
+  — **closed the `0051` publish race.** A second `OutputStore` backend, **`GraphOutputStore`**, uploads a
+  produced artifact's bytes to SharePoint/OneDrive **directly over Microsoft Graph** and returns the
+  item's **`webUrl`** — authoritative the instant the upload returns (no dependence on the OneDrive sync
+  client, unlike Tier-0's eventually-consistent link). Same `OutputStore` protocol (the `Path | str` ref
+  `0038` designed in), `DefaultAzureCredential` on the Graph scope + stdlib `urllib` (no new dep), lazy
+  `__init__` (offline-safe). Config = non-secret `GRAPH_DRIVE_ID` (+ optional `GRAPH_STORE_ROOT_PATH`).
+  `test_output` covers it via a stubbed upload; 11-module suite green.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
@@ -591,17 +613,24 @@ into a film-literate prompt.
   MCP); the `ProductionProvider` *code* seam over it is **now built** (`0025`:
   [`production.py`](../../sequitur/production.py) — `read_brief` / `write_sequence`, a live
   `AzureDevOpsProduction` backend + a `LocalFolderProduction` test double). The board is also
-  **operationalized** (`0025` addendum): the four narrative levels are **Acts → Scenes → Beats → Shots**
-  (Shot moved up to the Requirement tier so the crew's working leaf has a Kanban board), and
-  each of the seven departments is a **Team + Area Path** with its own board (the bucket), under
-  a master all-departments team. A new production stands up to this state with one command
+  **operationalized** (`0025` addendum): the narrative levels are **Cuts → Acts → Scenes → Beats →
+  Shots** (`0052` added the **`Cut`** crown — the complete assembled work, editorial's landing node;
+  Shot sits on the Requirement tier so the crew's working leaf has a Kanban board), and
+  each department is a **Team + Area Path** with its own board (the bucket), under
+  a master all-departments team. The board also carries **three planes** (`0052`): the *diegetic*
+  narrative tree, *production* **`Deliverable`** items, and *campaign* **`Marketing Asset`** items
+  (key art) under a **Marketing** area — the review WITs share the Requirement level, separated by
+  board via Area Path. A new production stands up to this state with one command
   (`0026`: [`scripts/provision_production.py`](../../scripts/provision_production.py) —
-  idempotent, `--dry-run`/`--with-example`); the inherited process is the org-level template for
-  the board's structure. The **phase axis** is now on the board too (`0030`): three **named,
+  idempotent, `--dry-run`/`--with-example`); the **org process template itself** is now codified too
+  (`0052`: [`scripts/provision_process.py`](../../scripts/provision_process.py) — WIT types, icons,
+  colours, states, backlog-level mappings, applied idempotently / drift-healing). The **phase axis** is
+  on the board too (`0030`): three **named,
   dateless iterations** (Pre/Prod/Post) that every team subscribes to — a per-crew Pre/Prod/Post
   switcher — provisioned as part of the baseline template. Output bytes live
-  in the **Sequitur Solutions** tenant's **SharePoint via Microsoft Graph** (Azure Blob
-  deferred).
+  in the **Sequitur Solutions** tenant's **SharePoint via Microsoft Graph** — both an
+  eventually-consistent Tier-0 (`LocalFolderOutputStore` over a synced folder) and, since `0053`, an
+  authoritative-URL **`GraphOutputStore`** (direct Graph upload).
 
 ## Open threads (keep fresh)
 
@@ -632,8 +661,9 @@ into a film-literate prompt.
   (not just `Look`), and the **provider-side phase seam** (`0030` put the phase axis on the board
   as named Pre/Prod/Post iterations; still to build the `Phase → iteration` map, phase-scoped
   reads, and an `advance(shot, to=…)` verb, plus modelling non-camera deliverables — e.g. the
-  upstream production-design reference frame — as their own phased items). Then a Graph-backed
-  **`OutputStore`** (Entra app, least-privilege, scoped to one SharePoint library) for output bytes.
+  upstream production-design reference frame — as their own phased items). The Graph-backed
+  **`OutputStore`** is **built** (`0053`: `GraphOutputStore` — direct Graph upload, authoritative
+  `webUrl`, closing the `0051` publish race); still to wire a live `GRAPH_DRIVE_ID` into a real run.
 - **Acquire *Grammar of the Edit*** — **DONE** (`0007`): 8 chapters abridged into
   `artifacts/grammar of the edit/reference/`. Next is building the post layer it
   grounds.

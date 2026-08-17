@@ -238,3 +238,40 @@ def store_url(path: str | Path) -> str | None:
     except (ValueError, RuntimeError):
         return None
     return base.rstrip("/") + "/" + "/".join(quote(part) for part in rel.parts)
+
+
+@dataclass(frozen=True)
+class GraphStoreConfig:
+    """Settings for the Microsoft Graph (SharePoint/OneDrive) output store.
+
+    All non-secret: uploads are authorised by the caller's Entra identity
+    (``DefaultAzureCredential`` on the Graph scope), so there is no key.
+    ``drive_id`` is the target document-library **drive** (the SharePoint site's
+    library that backs the same tenant location as ``OUTPUT_STORE_ROOT``);
+    ``root_path`` is the folder *within* that drive under which productions are
+    filed (empty = the drive root). Both are tenant-specific infrastructure names
+    and live only in ``.env``, never in shipped code.
+    """
+
+    drive_id: str
+    root_path: str = ""
+
+
+def get_graph_store_config() -> GraphStoreConfig:
+    """Return the Graph output-store settings, or fail loudly.
+
+    ``GRAPH_DRIVE_ID`` (in ``.env``) identifies the SharePoint document-library drive
+    to upload into; the optional ``GRAPH_STORE_ROOT_PATH`` names a folder within it
+    (default: the drive root). Both are tenant-specific and live only in ``.env``.
+    """
+    drive_id = os.environ.get("GRAPH_DRIVE_ID")
+    if not drive_id:
+        raise RuntimeError(
+            "No Graph output store configured. Set GRAPH_DRIVE_ID in .env to the "
+            "SharePoint document-library drive id for durable artifact uploads "
+            "(and optionally GRAPH_STORE_ROOT_PATH for a subfolder)."
+        )
+    return GraphStoreConfig(
+        drive_id=drive_id,
+        root_path=os.environ.get("GRAPH_STORE_ROOT_PATH", "").strip("/"),
+    )
