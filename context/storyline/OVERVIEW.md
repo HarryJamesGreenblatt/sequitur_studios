@@ -600,6 +600,18 @@ into a film-literate prompt.
   helper + a URL-aware `ImageStudio._edit` mean a render **fetches a share-URL reference to bytes
   then conditions** on it (fetch-then-condition). `test_output` +7, `test_render` +1;
   **12-module suite green** (Graph stubbed). Next: wire the CLIs to the factory + a live round-trip.
+- [`0060-the-audition-arm.md`](0060-the-audition-arm.md)
+  — **the connective tissue for an end-to-end casting run.** A readiness check found the plan/copy
+  slice runnable but the **casting slice had no live entry point** — `Director.audition` /
+  `Character.select` had no CLI. Built [`scripts/audition.py`](../../scripts/audition.py) (the
+  casting companion to `deliver_plan.py`): reads a **cast-spec JSON** (the Casting Director's
+  designed characters + candidate looks) and runs the two-step workflow — **audition** (render each
+  candidate via `ImageStudio` → file at the `Gate` → lock its reference → write an audition-state
+  JSON) then **select** (`--select "Mara=2"`, the membership-checked verdict, no re-render);
+  `--dry-run` lists the candidate prompts. Wired both plan CLIs to **`config.get_output_store()`**
+  (fork 3) so Graph share links flow (with a `--store` local override). Verified offline (audition
+  dry-run + select binding persist; `deliver_plan --dry-run` intact); no `sequitur/` change.
+  The *mysterious audition* end-to-end is unblocked — pending the Producer's go for the live parts.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `cast`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs

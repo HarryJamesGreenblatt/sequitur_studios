@@ -65,9 +65,16 @@ def main(argv: list[str] | None = None) -> int:
         print(build_poster_prompt(plan))
         return 0
 
-    from sequitur import Gate, LocalFolderOutputStore
+    from sequitur import Gate
 
-    store = LocalFolderOutputStore(args.store)  # None -> OUTPUT_STORE_ROOT from .env
+    if args.store:
+        from sequitur import LocalFolderOutputStore
+
+        store = LocalFolderOutputStore(args.store)  # explicit local root
+    else:
+        from sequitur.config import get_output_store
+
+        store = get_output_store()  # configured backend (Graph share links when selected)
     gate = Gate(store, production=args.production)
     treatment, poster = Director().deliver_plan(plan, gate=gate)
 
