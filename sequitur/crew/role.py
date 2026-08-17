@@ -35,6 +35,7 @@ class Department(Enum):
 
     STORY = "story"
     ART = "art"
+    CASTING = "casting"
     CAMERA = "camera"
     ELECTRIC = "electric"
     GRIP = "grip"

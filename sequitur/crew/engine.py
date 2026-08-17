@@ -34,15 +34,16 @@ def shoot_crew() -> list[Role]:
 
 
 def plan_crew() -> list[Role]:
-    """The plan-phase crew: the Screenwriter (story descriptor) + Production Designer (design descriptor).
+    """The plan-phase crew: Screenwriter (story) + Production Designer (design) + Casting Director (cast).
 
     The Director's plan-phase reconcile (:meth:`Director.plan`) merges their descriptors
-    into a :class:`~sequitur.plan.Plan`; both are part of :func:`full_crew`.
+    and cast into a :class:`~sequitur.plan.Plan`; all are part of :func:`full_crew`.
     """
+    from .casting import CastingDirector
     from .production_design import ProductionDesigner
     from .screenwriting import Screenwriter
 
-    return [Screenwriter(), ProductionDesigner()]
+    return [Screenwriter(), ProductionDesigner(), CastingDirector()]
 
 
 def assemble_crew() -> list[Role]:

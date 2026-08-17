@@ -57,11 +57,16 @@ class Director(Role):
         the dailies-model treatment (story) and poster (design).
         """
         from ..plan import Plan
+        from .casting import CastingDirector
         from .production_design import ProductionDesigner
 
         story: dict = {}
         design: dict = {}
+        cast: list = []
         for contribution in contributions:
+            if contribution.role == CastingDirector.title:
+                cast = contribution.fields.get("cast") or cast
+                continue
             target = design if contribution.role == ProductionDesigner.title else story
             for key, value in contribution.fields.items():
                 if value is not None:
@@ -72,6 +77,7 @@ class Director(Role):
             aspect_ratio=brief.aspect_ratio,
             story=story,
             design=design,
+            cast=cast,
         )
 
     def deliver_plan(

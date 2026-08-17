@@ -82,6 +82,7 @@ from .crew.production_design import (
     ProductionDesigner,
     SetKind,
 )
+from .crew.casting import AgeBand, Billing, CastingDirector
 from .crew.screenwriting import (
     Audience,
     DialogueMode,
@@ -109,6 +110,7 @@ from .crew.lighting import (
 from .image import ImageStudio
 from .shot import Shot
 from .plan import Plan
+from .cast import Actor, Character
 from .edit import (
     Act,
     Beat,
@@ -209,6 +211,11 @@ __all__ = [
     "MediumLook",
     "EraMarker",
     "SetKind",
+    "CastingDirector",
+    "AgeBand",
+    "Billing",
+    "Character",
+    "Actor",
     "Transition",
     "EditReason",
     "EditCategory",

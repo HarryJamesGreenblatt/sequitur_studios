@@ -521,12 +521,26 @@ into a film-literate prompt.
   `0038` designed in), `DefaultAzureCredential` on the Graph scope + stdlib `urllib` (no new dep), lazy
   `__init__` (offline-safe). Config = non-secret `GRAPH_DRIVE_ID` (+ optional `GRAPH_STORE_ROOT_PATH`).
   `test_output` covers it via a stubbed upload; 11-module suite green.
+- [`0054-the-casting-director.md`](0054-the-casting-director.md)
+  — **the cast axis; casting as design *and* selection.** Closed a plan-slice skip: characters
+  were named and rendered but never *cast*, so every render invented a different person. Built
+  the **Casting Director** seat (`Department.CASTING`, plan phase, grounded in Directing Ch. 18–20 —
+  the unmodelled performance layer) and the missing **`Character` / `Actor`** entities
+  ([`sequitur/cast.py`](../../sequitur/cast.py)): a character is a **second diegetic axis**,
+  orthogonal to `Cut → Act → Scene → Beat → Shot` (it cuts *across* the tree), so it gets
+  first-class representation — not a `Deliverable`. Casting is both a **design** (conceive the
+  role) and a **selection** (generate candidate embodiments → the Producer picks one), mirroring
+  *an Actor plays a Character*: a `Character` holds its casting brief (`Billing`/`AgeBand` +
+  narrated look/essence/wardrobe/voice), its `candidates` (the audition's abundance), and its
+  `cast` (the chosen `Actor`, whose reference locks the look for downstream consistency). `Plan`
+  gains a third `cast` axis; agent twin `casting_director.agent.md` (8 agents). `test_casting` (7),
+  12-module suite green. Phase 1 (entities + seat); the render/selection verdict loop is next.
 
-- **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `prompt`, `studio`, `image`,
+- **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `cast`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
   `scripts/generate.py` (render a shot) · `scripts/produce.py` (run a production board-to-board) + tests
   (`tests/test_prompt.py` · `test_edit.py` · `test_engine.py` · `test_render.py` ·
-  `test_grade.py` · `test_production.py` · `test_output.py` · `test_gate.py` · `test_screenwriting.py` · `test_production_design.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
+  `test_grade.py` · `test_production.py` · `test_output.py` · `test_gate.py` · `test_screenwriting.py` · `test_production_design.py` · `test_casting.py`). The Bowen vocabulary lives under **`crew/`** (`0012`): a  thin `Role` base (`crew/role.py`) with three shoot-phase roles — `Cinematographer`
   (`crew/camera.py`), `Gaffer` (`crew/lighting.py`), `KeyGrip` (`crew/grip.py`) — each
   *owning* its slice of the grammar enums (the old flat `grammar.py`, un-flattened),
   plus the assemble-phase `Editor` (`crew/editorial.py`) and `Colorist`

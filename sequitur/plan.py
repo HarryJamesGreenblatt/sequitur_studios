@@ -18,16 +18,21 @@ design half as one evocative frame), produced from these descriptors and reviewe
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .cast import Character
 
 
 @dataclass
 class Plan:
-    """The reconciled plan of a production — story + design descriptors (plan phase).
+    """The reconciled plan of a production — story + design descriptors + cast (plan phase).
 
-    The two halves carry each plan seat's *owned* descriptor (disjoint keys, so the
-    reconcile is loss-free): ``story`` is the Screenwriter's taxonomy layers (storyline
-    0035); ``design`` is the Production Designer's visual concept + look (storyline 0046).
+    The halves carry each plan seat's *owned* slice (disjoint, so the reconcile is
+    loss-free): ``story`` is the Screenwriter's taxonomy layers (storyline 0035); ``design``
+    is the Production Designer's visual concept + look (storyline 0046); ``cast`` is the
+    Casting Director's :class:`~sequitur.cast.Character` list (storyline 0054) — the second
+    diegetic axis, orthogonal to the narrative tree.
     ``scene``/``mood``/``aspect_ratio`` pass through from the :class:`~sequitur.crew.role.Brief`.
     """
 
@@ -38,3 +43,5 @@ class Plan:
     story: dict[str, Any] = field(default_factory=dict)
     #: The Production Designer's design descriptor — visual concept / stance / look / era / set.
     design: dict[str, Any] = field(default_factory=dict)
+    #: The Casting Director's cast — the production's Characters (the cast axis).
+    cast: list["Character"] = field(default_factory=list)
