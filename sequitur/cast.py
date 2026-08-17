@@ -63,3 +63,15 @@ class Character:
     wardrobe: str = ""                 # costume register — open
     candidates: list[Actor] = field(default_factory=list)  # the audition (abundance)
     cast: Actor | None = None          # the selected embodiment — the locked look
+
+    def select(self, actor: Actor) -> None:
+        """Cast one auditioned :class:`Actor` — the Producer's verdict (storyline 0054).
+
+        Binds the chosen embodiment as :attr:`cast`; its ``reference`` is now the
+        character's locked look for every downstream render. Only an Actor that
+        *auditioned* (is among :attr:`candidates`) can be cast — the abundance-then-
+        selection discipline (Directing Ch. 18): you choose from the field you called.
+        """
+        if actor not in self.candidates:
+            raise ValueError(f"{actor.look!r} did not audition for {self.name!r}.")
+        self.cast = actor

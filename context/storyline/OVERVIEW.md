@@ -535,6 +535,21 @@ into a film-literate prompt.
   `cast` (the chosen `Actor`, whose reference locks the look for downstream consistency). `Plan`
   gains a third `cast` axis; agent twin `casting_director.agent.md` (8 agents). `test_casting` (7),
   12-module suite green. Phase 1 (entities + seat); the render/selection verdict loop is next.
+- [`0055-casting-as-selection.md`](0055-casting-as-selection.md)
+  — **built Casting Phase 2 — the verdict loop's first instance.** Closed the 0054 skip: a
+  `Character` could hold candidates but nothing rendered the audition or performed the
+  selection. Three moves — **audition → gate → verdict**: a new
+  [`build_character_prompt`](../../sequitur/prompt.py) composes an `Actor`'s look through the
+  `Character`'s design brief into a deliberately **scene-agnostic, neutral character reference**
+  (a lockable portrait, not an action beat); `Director.audition(character, *, gate)` renders each
+  candidate through the existing **STILL** backend (no new renderer — casting makes a still, the
+  0019 principle), files each at the `Gate` (0040) as a PENDING `Deliverable`, and **locks** each
+  candidate's `reference` to its durable keyframe; `Character.select(actor)` binds the chosen
+  embodiment as `cast` and **refuses** any Actor that never auditioned (Ch. 18's
+  abundance-then-selection). The seat *designs and auditions*; the **Producer** *selects* — the
+  Director agent's plan steps now spell that out. `test_casting` 7 → 10 (incl. an offline
+  end-to-end audition); **12-module suite green.** Next: thread the locked reference downstream
+  (Phase 3) + generalize the verdict loop to the board (approve/revise → State).
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `cast`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
@@ -603,7 +618,8 @@ into a film-literate prompt.
   member is the color **`Grader`**); `Director.execute` closes **decision → pixels**
   (`0032`); and a live **Azure DevOps** production board the engine runs board-to-board.
   Remaining seats: the Storyboard Artist / previs + the sound department; the casting
-  **selection** (Phase 2) and the board **verdict loop** are the next behaviours.
+  **selection** (Phase 2, built `0055`) now closes decision → cast in code, and the board
+  **verdict loop** (approve/revise → State) is the next behaviour to generalize.
 - **Secrets:** both backend API keys live in **Azure Key Vault**, fetched at runtime
   via `DefaultAzureCredential`; `.env` holds only non-secret pointers (vault name,
   endpoint, deployment). Never reintroduce plaintext keys.

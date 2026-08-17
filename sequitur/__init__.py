@@ -130,7 +130,13 @@ from .production import (
 )
 from .output import GraphOutputStore, LocalFolderOutputStore, OutputStore
 from .gate import Deliverable, Gate, GateStatus
-from .prompt import build_image_prompt, build_key_art_prompt, build_poster_prompt, build_prompt
+from .prompt import (
+    build_character_prompt,
+    build_image_prompt,
+    build_key_art_prompt,
+    build_poster_prompt,
+    build_prompt,
+)
 from .render import (
     Medium,
     Operation,
@@ -157,6 +163,7 @@ __all__ = [
     "build_image_prompt",
     "build_poster_prompt",
     "build_key_art_prompt",
+    "build_character_prompt",
     "ShotSize",
     "CameraAngle",
     "SubjectView",

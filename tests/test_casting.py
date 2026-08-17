@@ -20,6 +20,7 @@ from sequitur import (  # noqa: E402
     Character,
     Department,
     Phase,
+    build_character_prompt,
 )
 
 
@@ -73,6 +74,89 @@ def test_plan_crew_now_seats_story_design_and_casting() -> None:
 
     titles = {type(r).__name__ for r in plan_crew()}
     assert {"Screenwriter", "ProductionDesigner", "CastingDirector"} <= titles
+
+
+def test_character_prompt_composes_look_and_design_brief() -> None:
+    # The audition frame reads the Actor's look through the Character's design brief.
+    actor = Actor(look="weathered, grey-eyed, close-cropped silver hair")
+    nora = Character(
+        name="Nora",
+        age_band=AgeBand.MIDDLE_AGED,
+        build="lean, upright",
+        wardrobe="a worn wool coat",
+        essence="stubborn tenderness",
+    )
+    p = build_character_prompt(nora, actor)
+    assert "weathered, grey-eyed" in p
+    assert "a middle-aged adult" in p  # the age band constrains the look
+    assert "worn wool coat" in p
+    assert "character reference" in p  # asks for a consistent, lockable look
+
+
+def test_selecting_an_actor_that_did_not_audition_is_refused() -> None:
+    # Casting-as-selection: you choose from the field you auditioned (Ch. 18).
+    a1 = Actor(look="weathered")
+    a2 = Actor(look="younger")
+    nora = Character(name="Nora", candidates=[a1])
+    nora.select(a1)
+    assert nora.cast is a1
+    try:
+        nora.select(a2)  # never auditioned
+    except ValueError:
+        pass
+    else:  # pragma: no cover - the assertion is the failure signal
+        raise AssertionError("casting a non-auditioning actor should raise")
+    assert nora.cast is a1  # the refused verdict left the earlier cast intact
+
+
+def test_audition_renders_candidates_files_them_and_locks_references() -> None:
+    import tempfile
+
+    from sequitur import (
+        Director,
+        Gate,
+        GateStatus,
+        ImageStudio,
+        LocalFolderOutputStore,
+        Medium,
+        RenderResult,
+        register,
+    )
+
+    class FakeStudio:  # a still producer needing no credentials
+        medium = Medium.STILL
+
+        def render(self, decision, *, out_path=None):
+            Path(out_path).write_bytes(b"candidate-bytes")
+            return RenderResult("fake-native", Path(out_path))
+
+    register(Medium.STILL, lambda: FakeStudio())
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            store = LocalFolderOutputStore(root / "store")
+            gate = Gate(store, production="HeistNoir")
+            nora = Character(
+                name="Nora",
+                candidates=[Actor(look="weathered"), Actor(look="younger")],
+            )
+            deliverables = Director().audition(nora, gate=gate, out_dir=root / "scratch")
+
+            # One PENDING deliverable per candidate, each filed durably under the gate.
+            assert len(deliverables) == 2
+            assert all(dv.status is GateStatus.PENDING for dv in deliverables)
+            assert all(Path(dv.ref).read_bytes() == b"candidate-bytes" for dv in deliverables)
+            # Each candidate Actor's reference is locked to its durable keyframe.
+            assert [a.reference for a in nora.candidates] == [str(dv.ref) for dv in deliverables]
+            # Nothing is cast yet — selection is the Producer's separate verdict.
+            assert nora.cast is None
+
+            # The Producer's verdict binds one candidate and keeps its locked look.
+            nora.select(nora.candidates[0])
+            assert nora.cast is nora.candidates[0]
+            assert nora.cast.reference == str(deliverables[0].ref)
+    finally:
+        register(Medium.STILL, ImageStudio)
 
 
 if __name__ == "__main__":

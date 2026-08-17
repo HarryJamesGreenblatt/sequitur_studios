@@ -25,9 +25,12 @@ and coverage decisions — the *why* behind which department choices serve the s
    the Producer overriding a department's default — honor it and pass it through).
 2. **Decide which seats the shot needs.** For the **plan** phase, dispatch the
    **Screenwriter** (the story descriptor — supergenre / voice / pathway / point-of-view that
-   briefs every later seat) and the **Production Designer** (the design descriptor — the
+   briefs every later seat), the **Production Designer** (the design descriptor — the
    central visual concept + medium/era look the image backend serves; seed it with the
-   Screenwriter's descriptor, since the concept is downstream of the story). For the shoot phase, dispatch the camera
+   Screenwriter's descriptor, since the concept is downstream of the story), and the
+   **Casting Director** (the cast — the story's principals designed as `Character`s, each with
+   2–3 candidate `Actor` looks; seed it with the treatment, since the people come from the
+   story). For the shoot phase, dispatch the camera
    (**Cinematographer** — framing/lens/focus), electric (**Gaffer** — lighting), and grip
    (**Key Grip** — movement/speed) seats; the sound seat joins as it is built. For the
    **assemble** phase, dispatch the **Editor** (the cut — transitions + motivators over the
@@ -39,9 +42,17 @@ and coverage decisions — the *why* behind which department choices serve the s
    **disjoint** fields, the merge is conflict-free (mirrors `Director.reconcile` in
    [`sequitur/crew/director.py`](../../sequitur/crew/director.py)). Where a cross-department
    tension exists, resolve it from your Directing grounding and note it.
-5. **Report back to the Producer** — the assembled Shot's grammar plus your reasoning — and
+5. **Cast the principals (plan phase, the verdict loop).** For each principal `Character` the
+   Casting Director designed, run the **audition** (`Director.audition(character, gate=...)` in
+   [`sequitur/crew/director.py`](../../sequitur/crew/director.py)) — it renders each candidate
+   `Actor`'s look through the still backend, files them at the `Gate` for review, and locks
+   each candidate's `reference`. Present the candidates to the **Producer**, who **selects**
+   one (`Character.select(actor)`) — the cast Actor's reference is now the character's locked
+   look for every downstream render. The Casting Director *designs and auditions*; the
+   **Producer** selects — never you.
+6. **Report back to the Producer** — the assembled Shot's grammar plus your reasoning — and
    await greenlight.
-6. **On greenlight, execute.** Run the reconciled Shot through the **execute-hook**
+7. **On greenlight, execute.** Run the reconciled Shot through the **execute-hook**
    (`Director.execute(shot, medium=...)` in
    [`sequitur/crew/director.py`](../../sequitur/crew/director.py)) — it resolves the producer
    for the medium from the renderer registry and renders the Shot to real bytes (video =

@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING
 from .shot import Shot
 
 if TYPE_CHECKING:
+    from .cast import Actor, Character
     from .plan import Plan
 
 
@@ -135,6 +136,42 @@ def build_poster_prompt(plan: "Plan") -> str:
     parts.append(
         "Compose it as one cinematic production-design frame — a real scene in the "
         "world, not a printed poster, title text, or graphic layout."
+    )
+    return " ".join(parts)
+
+
+def build_character_prompt(character: "Character", actor: "Actor") -> str:
+    """Compose a :class:`~sequitur.cast.Character` and a candidate
+    :class:`~sequitur.cast.Actor` into a still **character-reference** prompt (storyline 0054).
+
+    The *audition* frame: the Actor's persona-authored ``look`` is the spine, the
+    Character's design brief (age band, build, wardrobe) constrains it, and ``essence``
+    colours the performance. Deliberately scene-agnostic and neutral — this renders the
+    *person*, not an action beat, so it asks for a single consistent figure on a plain
+    background: a clean reference the downstream renders (key art, shots) can lock the
+    character's look to (Phase 3). Unlike :func:`build_image_prompt` it reads the cast
+    entities, not a camera :class:`Shot`.
+    """
+    look = str(actor.look or "").strip()
+    subject = (look or character.essence or character.role or character.name).rstrip(".")
+    parts = [f"A cinematic character portrait of {subject}."]
+
+    traits = [character.age_band.phrase]
+    if character.build:
+        traits.append(character.build.rstrip("."))
+    parts.append("They are " + ", ".join(traits) + ".")
+
+    if character.wardrobe:
+        parts.append("Wardrobe: " + character.wardrobe.rstrip(".") + ".")
+    # Essence adds an inner quality only when the look already carries the appearance.
+    if character.essence and look:
+        parts.append("Essence: " + character.essence.rstrip(".") + ".")
+
+    parts.append(
+        "A clean, evenly lit character reference: a single figure, head-and-shoulders "
+        "to three-quarter length, with a consistent, clearly recognizable face and "
+        "features, against a plain neutral background — a locked look to carry "
+        "unchanged across later shots."
     )
     return " ".join(parts)
 

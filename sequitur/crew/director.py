@@ -18,6 +18,7 @@ from ..shot import Shot
 from .role import Department, Phase, Role
 
 if TYPE_CHECKING:
+    from ..cast import Character
     from ..edit import Sequence
     from ..gate import Deliverable, Gate
     from ..output import OutputStore
@@ -116,6 +117,47 @@ class Director(Role):
         poster_deliverable = gate.submit(poster.ref, phase=Phase.PLAN, name="poster.png")
 
         return [story_deliverable, poster_deliverable]
+
+    def audition(
+        self,
+        character: Character,
+        *,
+        gate: Gate,
+        out_dir: str | Path | None = None,
+    ) -> list[Deliverable]:
+        """Render a Character's candidate Actors and file each at a gate — the audition.
+
+        Casting Phase 2, the verdict loop's first instance (storyline 0054). Each
+        candidate :class:`~sequitur.cast.Actor`'s ``look`` is rendered to a still
+        keyframe through the STILL backend (:func:`~sequitur.prompt.build_character_prompt`),
+        filed durably via the :class:`~sequitur.gate.Gate`, and its durable ``ref``
+        *locked* onto the Actor as its ``reference``. Returns one PENDING
+        :class:`~sequitur.gate.Deliverable` per candidate — the abundance the Producer
+        reviews before selecting one embodiment (:meth:`sequitur.cast.Character.select`).
+
+        The seat *designs* the candidates (the persona **B** populates
+        ``character.candidates``); the Director *executes* the audition, exactly as it
+        renders a greenlit Shot in :meth:`execute` and files the plan's dailies in
+        :meth:`deliver_plan`. A Character with no candidates renders nothing.
+        """
+        from ..config import OUTPUT_DIR
+        from ..prompt import build_character_prompt
+
+        still = renderer_for(Medium.STILL)
+        base = Path(out_dir) if out_dir else OUTPUT_DIR
+        base.mkdir(parents=True, exist_ok=True)
+        slug = "".join(c if c.isalnum() else "_" for c in character.name) or "character"
+
+        deliverables: list[Deliverable] = []
+        for i, actor in enumerate(character.candidates, start=1):
+            prompt = build_character_prompt(character, actor)
+            result = still.render(prompt, out_path=base / f"audition_{slug}_{i}.png")
+            deliverable = gate.submit(
+                result.ref, phase=Phase.PLAN, name=f"{slug}-candidate-{i}.png"
+            )
+            actor.reference = str(deliverable.ref)  # lock the look to the durable keyframe
+            deliverables.append(deliverable)
+        return deliverables
 
     def execute(
         self,
