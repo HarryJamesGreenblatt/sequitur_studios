@@ -10,11 +10,18 @@ Two directions (the board-as-memory / RAG hub):
   * **report (up):** scan a production phase's deliverables in the OutputStore and file
     each onto the board via `ProductionProvider.report` (text -> Description, image ->
     attachment, gate verdict -> State). The Producer/Director review + approve there.
+  * **verdict (down):** record the Producer's approve/revise on a reported deliverable
+    via `ProductionProvider.record_verdict` — it advances the board item's State (approved
+    -> Done, revise -> Doing, with the notes as a comment) without touching its content.
   * **fetch (down):** read prior board deliverables back so a later department gets the
     approved context (the treatment, the concept) as grounding.
 
 Usage (report the plan deliverables of a production to its ADO board):
     python .github/skills/assistant_director/report_to_board.py --production TheLaunch --phase plan
+
+Record a Producer verdict (the approvals loop):
+    python .github/skills/assistant_director/report_to_board.py --production TheLaunch --phase plan --approve treatment.md
+    python .github/skills/assistant_director/report_to_board.py --production TheLaunch --phase plan --revise poster.png --notes "warmer, show the protagonist"
 
 Offline (file into a local JSON board double, no network):
     python .github/skills/assistant_director/report_to_board.py --production X --phase plan --local board.json
@@ -55,6 +62,9 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--store", default=None, help="OutputStore root (default: configured OUTPUT_STORE_ROOT)")
     p.add_argument("--local", default=None, help="report into a local JSON board double instead of ADO")
     p.add_argument("--fetch", action="store_true", help="read the board's deliverables back instead of reporting")
+    p.add_argument("--approve", default=None, help="record a Producer APPROVE verdict for this deliverable name")
+    p.add_argument("--revise", default=None, help="record a Producer REVISE verdict for this deliverable name")
+    p.add_argument("--notes", default=None, help="revise notes, recorded with --revise")
     p.add_argument("--dry-run", action="store_true", help="list what would be reported, no board write")
     return p.parse_args()
 
@@ -81,6 +91,21 @@ def main() -> None:
     if args.fetch:
         for d in provider.fetch_reports(phase=phase if not args.fetch else None):
             print(f"{d.status.value:8}  [{d.phase.value}]  {d.name}")
+        return
+
+    # Verdict (down): record the Producer's approve/revise on a reported deliverable.
+    verdict_name = args.approve or args.revise
+    if verdict_name:
+        base = Deliverable(
+            production=args.production, phase=phase, name=verdict_name, ref="",
+            status=GateStatus.PENDING,
+        )
+        verdict = base.approve() if args.approve else base.revise(args.notes)
+        if args.dry_run:
+            print(f"would record {verdict.status.value}: [{phase.value}] {verdict_name}")
+            return
+        wid = provider.record_verdict(verdict)
+        print(f"verdict {verdict.status.value}: [{phase.value}] {verdict_name}  ->  board item {wid}")
         return
 
     # Collect this phase's deliverables from the store: <root>/<production>/<phase>/*.

@@ -6,12 +6,14 @@ description: >-
   console. The AD/PA (Assistant Director / Production Assistant) is a generalist-under-
   direction seat: it owns no grounded source and no code vocabulary. It is the Mediator
   that owns the board I/O so the producing craft seats (Screenwriter, Production Designer,
-  KeyArtist, DP…) never touch ADO. Two directions: REPORT UP (collect a phase's
-  deliverables from the OutputStore and file them onto the board for review/approval) and
-  FETCH DOWN (read approved deliverables back as context for the next department — the
-  board-as-memory / RAG hub). Invoke for: "report the plan deliverables to the board",
-  "post the treatment and poster for review", "what has the board approved so far",
-  "collect the department reports", "update the board".
+  KeyArtist, DP…) never touch ADO. Three directions: REPORT UP (collect a phase's
+  deliverables from the OutputStore and file them onto the board for review/approval),
+  VERDICT DOWN (record the Producer's approve/revise back onto the board item's State —
+  the approvals loop), and FETCH DOWN (read approved deliverables back as context for the
+  next department — the board-as-memory / RAG hub). Invoke for: "report the plan
+  deliverables to the board", "post the treatment and poster for review", "record the
+  Producer's approval", "send the poster back for revision", "what has the board approved
+  so far", "collect the department reports", "update the board".
 ---
 
 # Assistant Director / Production Assistant (the board messenger)
@@ -28,7 +30,8 @@ and writes the board. This is deliberate decoupling — one place owns board I/O
 
 ## What you own (and don't)
 - **You own:** collecting deliverables, deciding what is *ready* to report, reporting them
-  onto the board with the right verdict State, and fetching approved context back down.
+  onto the board, **recording the Producer's verdict** onto the item's State (approve →
+  Done, revise → Doing), and fetching approved context back down.
 - **You do NOT own:** writing the treatment (Screenwriter), the visual concept (Production
   Designer), the one-sheet (KeyArtist), or the *approval decision* itself (that is the
   Producer's and Director's, rendered on the board or in chat). If a deliverable is
@@ -53,7 +56,17 @@ and writes the board. This is deliberate decoupling — one place owns board I/O
    Add `--dry-run` to list what would be reported first, or `--local <board.json>` to file
    into an offline board double (no network).
 
-2. **Fetch down** — read the board's deliverables back so a later department gets the
+2. **Verdict down** — record the Producer's approve/revise on a reported deliverable via
+   `ProductionProvider.record_verdict`. It advances the board item's **State** (approved →
+   Done, revise → Doing, with the notes as a discussion comment) and leaves the content
+   untouched — a verdict changes standing, not substance. This is the **approvals loop**:
+
+   ```
+   python .github/skills/assistant_director/report_to_board.py --production <NAME> --phase plan --approve treatment.md
+   python .github/skills/assistant_director/report_to_board.py --production <NAME> --phase plan --revise poster.png --notes "warmer, show the protagonist"
+   ```
+
+3. **Fetch down** — read the board's deliverables back so a later department gets the
    approved context (the Screenwriter's treatment, the PD's concept) as grounding:
 
    ```

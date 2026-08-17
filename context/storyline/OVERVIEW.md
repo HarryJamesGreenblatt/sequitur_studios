@@ -578,6 +578,18 @@ into a film-literate prompt.
   cast so references bind, and `ImageStudio` deriving references from a Shot's cast (the backend
   owns its conditioning). `test_casting`/`test_render` +2; **12-module suite green.** Open forks
   (Producer's call): conditional-depiction model, Omni consistency strategy, URL→bytes, overflow.
+- [`0058-the-approvals-loop.md`](0058-the-approvals-loop.md)
+  — **the verdict half of the dailies loop — approvals materialized.** The Producer resolved the
+  0057 forks (one **locked selected design** per Character; Omni = **stateful + budget** together;
+  Graph resolved to **share links** + fetch-then-condition; overflow decided via **ADO approvals**)
+  and named the gap: the approvals had never materialized. Built
+  **`ProductionProvider.record_verdict`** (protocol + both backends): the Producer's approve/revise
+  written back onto the board item's **State** (approved → Done, revise → Doing, note → a
+  `System.History` comment) **without touching content** — a verdict changes standing, not
+  substance; self-healing (files the item first if unreported). The AD/PA arm gains
+  `--approve`/`--revise --notes` and its skill's two directions become **three** (report up ·
+  verdict down · fetch down); the Producer decides, the AD records. `test_production` 10 → 13;
+  **12-module suite green.** The dailies loop now closes in code: file (Gate) → report (AD) → verdict.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `cast`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
@@ -650,7 +662,9 @@ into a film-literate prompt.
   **conditioning** seam (Phase 3, `0056`–`0057`) lets downstream stills render against a locked
   identity (the **Shot↔cast join** + prompt naming landed `0057`; the video/Omni multimodal path,
   typed/budgeted refs, and conditional depiction are staged forks), and the board **verdict
-  loop** (approve/revise → State) is the next behaviour.
+  loop** (approve/revise → State) **materialized** in `0058` (`ProductionProvider.record_verdict`).
+  The next behaviours: the Omni multimodal/stateful video path, a live `GraphOutputStore`, and
+  the overflow policy riding the new approvals loop.
 - **Secrets:** both backend API keys live in **Azure Key Vault**, fetched at runtime
   via `DefaultAzureCredential`; `.env` holds only non-secret pointers (vault name,
   endpoint, deployment). Never reintroduce plaintext keys.

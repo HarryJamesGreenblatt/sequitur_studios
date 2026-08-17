@@ -143,6 +143,8 @@ class ProductionProvider(Protocol):
 
     def fetch_reports(self, *, phase: "Phase | None" = None) -> list["Deliverable"]: ...
 
+    def record_verdict(self, deliverable: "Deliverable") -> str: ...
+
 
 class LocalFolderProduction:
     """A file-backed provider — the test double for the board (no network).
@@ -233,6 +235,25 @@ class LocalFolderProduction:
                 )
             )
         return out
+
+    def record_verdict(self, deliverable: "Deliverable") -> str:
+        """Persist a Producer's gate verdict onto the board — the approvals loop (0058).
+
+        Updates the reported deliverable's status (and any revise notes) *in place*,
+        leaving its content (``body`` / ``ref``) intact — a verdict changes a
+        deliverable's standing, not its substance. Files it first if it was never
+        reported, so a verdict is always recorded.
+        """
+        data = self._load()
+        reports = data.setdefault("deliverables", [])
+        key = (deliverable.phase.value, deliverable.name)
+        for record in reports:
+            if (record["phase"], record["name"]) == key:
+                record["status"] = deliverable.status.value
+                record["notes"] = deliverable.notes
+                self.path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                return f"{deliverable.phase.value}/{deliverable.name}"
+        return self.report(deliverable)
 
 
 class AzureDevOpsProduction:
@@ -572,6 +593,35 @@ class AzureDevOpsProduction:
             except Exception:  # noqa: BLE001 - re-report may already have the link
                 pass
         return str(wid)
+
+    def record_verdict(self, deliverable: "Deliverable") -> str:
+        """Write a Producer's gate verdict to the board — move the item's State (0058).
+
+        The approvals loop's write side: an approved deliverable advances to *Done*, a
+        revise returns to *Doing* with the notes as a discussion comment. Idempotent by
+        title; files the deliverable first if it is not yet on the board. Touches only
+        the workflow State and history — the content the report wrote (Description,
+        attachment, link) is left untouched, since a verdict changes standing not substance.
+        """
+        title = f"[{deliverable.phase.value}] {deliverable.name}"
+        wit = self._wit_for(deliverable)
+        existing = self._deliverable_id(title, wit)
+        if existing is None:
+            return self.report(deliverable)
+        state = _STATUS_STATE.get(deliverable.status.value, "To do")
+        ops = [{"op": "add", "path": "/fields/System.State", "value": state}]
+        if deliverable.notes:
+            # System.History appends a discussion comment — the revise note, on the record.
+            ops.append(
+                {"op": "add", "path": "/fields/System.History", "value": deliverable.notes}
+            )
+        self._request(
+            "PATCH",
+            self._project_url(f"wit/workitems/{existing}?api-version=7.1"),
+            ops,
+            patch=True,
+        )
+        return str(existing)
 
     def fetch_reports(self, *, phase: "Phase | None" = None) -> list["Deliverable"]:
         """Read the board's reported artifacts back — the production's working memory."""

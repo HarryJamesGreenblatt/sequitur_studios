@@ -46,6 +46,7 @@ def test_providers_satisfy_the_protocol() -> None:
         assert isinstance(LocalFolderProduction(Path(d) / "p.json"), ProductionProvider)
     assert hasattr(AzureDevOpsProduction, "read_brief")
     assert hasattr(AzureDevOpsProduction, "write_sequence")
+    assert hasattr(AzureDevOpsProduction, "record_verdict")
 
 
 def test_read_brief_reads_the_board_tree() -> None:
@@ -163,6 +164,65 @@ def test_report_is_idempotent_and_tracks_the_verdict() -> None:
 
         reports = provider.fetch_reports()
     assert len(reports) == 1  # re-reporting updates in place, not appends
+    assert reports[0].status is GateStatus.APPROVED
+
+
+def test_record_verdict_writes_the_approval_and_preserves_content() -> None:
+    from sequitur import Deliverable, GateStatus, Phase
+
+    with tempfile.TemporaryDirectory() as d:
+        path = Path(d) / "p.json"
+        path.write_text(json.dumps({"scene": "s", "shots": []}), encoding="utf-8")
+        provider = LocalFolderProduction(path)
+
+        pending = Deliverable(
+            production="X", phase=Phase.PLAN, name="treatment.md", ref="r",
+            status=GateStatus.PENDING, author="Screenwriter", department="Story",
+        )
+        provider.report(pending, body="the treatment")
+        # The Producer approves — the verdict lands without re-supplying the content.
+        provider.record_verdict(pending.approve())
+
+        reports = provider.fetch_reports()
+        assert len(reports) == 1 and reports[0].status is GateStatus.APPROVED
+        # A verdict changes standing, not substance — the body survives.
+        written = json.loads(path.read_text(encoding="utf-8"))
+        assert written["deliverables"][0]["body"] == "the treatment"
+
+
+def test_record_verdict_carries_revise_notes() -> None:
+    from sequitur import Deliverable, GateStatus, Phase
+
+    with tempfile.TemporaryDirectory() as d:
+        path = Path(d) / "p.json"
+        path.write_text(json.dumps({"scene": "s", "shots": []}), encoding="utf-8")
+        provider = LocalFolderProduction(path)
+
+        pending = Deliverable(production="X", phase=Phase.PLAN, name="poster.png", ref="r")
+        provider.report(pending)
+        provider.record_verdict(pending.revise("warmer, and show the protagonist"))
+
+        reports = provider.fetch_reports()
+    assert reports[0].status is GateStatus.REVISE
+    assert reports[0].notes == "warmer, and show the protagonist"
+
+
+def test_record_verdict_files_an_unreported_deliverable() -> None:
+    from sequitur import Deliverable, GateStatus, Phase
+
+    with tempfile.TemporaryDirectory() as d:
+        path = Path(d) / "p.json"
+        path.write_text(json.dumps({"scene": "s", "shots": []}), encoding="utf-8")
+        provider = LocalFolderProduction(path)
+
+        # A verdict on a never-reported deliverable still lands, filed with its verdict.
+        verdict = Deliverable(
+            production="X", phase=Phase.PLAN, name="new.md", ref="r", status=GateStatus.APPROVED
+        )
+        provider.record_verdict(verdict)
+
+        reports = provider.fetch_reports()
+    assert [r.name for r in reports] == ["new.md"]
     assert reports[0].status is GateStatus.APPROVED
 
 
