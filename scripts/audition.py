@@ -56,6 +56,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--cast", metavar="PATH", help="Cast spec JSON (characters + candidate looks). Required to audition.")
     p.add_argument("--store", metavar="PATH", help="Output-store root (local). Default: the configured store (OUTPUT_STORE_BACKEND).")
     p.add_argument("--state", metavar="PATH", help="Audition state JSON to write/read. Default: <production>_cast.json.")
+    p.add_argument("--report", action="store_true", help="Stream each candidate to the board as it lands (report-after-each; board writes are non-fatal).")
+    p.add_argument("--board", metavar="PATH", help="Report into a local JSON board double instead of ADO (implies --report).")
     p.add_argument(
         "--select", action="append", default=[], metavar="NAME=IDX",
         help="Bind the Producer's chosen candidate (1-based) for a character. Repeatable.",
@@ -129,6 +131,33 @@ def _store(args: argparse.Namespace):
     return get_output_store()
 
 
+def _provider(args: argparse.Namespace):
+    """The board to stream candidates to, or None when reporting is off."""
+    if not (args.report or args.board):
+        return None
+    if args.board:
+        from sequitur import LocalFolderProduction
+
+        return LocalFolderProduction(args.board)
+    from sequitur import AzureDevOpsProduction
+
+    return AzureDevOpsProduction(project=args.production)
+
+
+def _report(provider, deliverable, *, author: str, department: str) -> None:
+    """Stream one candidate to the board — non-fatal; the store stays the source of truth."""
+    if provider is None:
+        return
+    from dataclasses import replace
+
+    routed = replace(deliverable, author=author, department=department)
+    try:
+        wid = provider.report(routed)
+        print(f"    -> board {wid}")
+    except Exception as exc:  # noqa: BLE001 - board write is non-fatal by policy
+        print(f"    ! board write failed ({type(exc).__name__}): left in store to reconcile")
+
+
 def _run_audition(args: argparse.Namespace) -> int:
     from sequitur import Director, Gate, build_character_prompt
 
@@ -147,6 +176,7 @@ def _run_audition(args: argparse.Namespace) -> int:
         return 0
 
     gate = Gate(_store(args), production=args.production)
+    provider = _provider(args)
     director = Director()
     with tempfile.TemporaryDirectory() as scratch:
         for ch in characters:
@@ -154,6 +184,9 @@ def _run_audition(args: argparse.Namespace) -> int:
             print(f"{ch.name}: {len(deliverables)} candidate(s) auditioned")
             for i, d in enumerate(deliverables, 1):
                 print(f"  candidate {i}: {d.ref}")
+                # Report-after-each: stream the candidate to the board the instant it lands.
+                # Non-fatal — the store holds the keyframe; a later report reconciles the board.
+                _report(provider, d, author="Casting Director", department="Casting")
 
     state = args.state or f"{args.production}_cast.json"
     Path(state).write_text(json.dumps(_spec_from_characters(characters), indent=2), encoding="utf-8")

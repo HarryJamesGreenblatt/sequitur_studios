@@ -38,8 +38,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--mood", help="Mood for the plan (carries into the poster).")
     p.add_argument("--supergenre", help="A story supergenre hint (e.g. CRIME, HORROR, LIFE).")
     p.add_argument("--concept", help="A visual-concept hint — the poster's central image.")
+    p.add_argument("--treatment", metavar="PATH", help="A persona-authored treatment file (the Screenwriter B agent's narration); overrides the tier-A skeleton.")
     p.add_argument("--production", default="Untitled", help="The production name (the output-store key). Default: Untitled.")
     p.add_argument("--store", metavar="PATH", help="Output-store root; defaults to OUTPUT_STORE_ROOT in .env.")
+    p.add_argument("--report", action="store_true", help="Stream each deliverable to the board as it lands (report-after-each; board writes are non-fatal).")
+    p.add_argument("--board", metavar="PATH", help="Report into a local JSON board double instead of ADO (implies --report).")
     p.add_argument("--dry-run", action="store_true", help="Compose and print the treatment + poster prompt only — no render, no store.")
     return p.parse_args(argv)
 
@@ -59,8 +62,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     plan = Engine().plan(_brief(args))
 
+    # The Screenwriter persona (B) narrates the real treatment; the tier-A skeleton is the offline fallback.
+    treatment_text = Path(args.treatment).read_text(encoding="utf-8") if args.treatment else None
+
     if args.dry_run:
-        print(Screenwriter().treatment(plan))
+        print(treatment_text if treatment_text is not None else Screenwriter().treatment(plan))
         print("\n--- poster prompt ---")
         print(build_poster_prompt(plan))
         return 0
@@ -76,12 +82,59 @@ def main(argv: list[str] | None = None) -> int:
 
         store = get_output_store()  # configured backend (Graph share links when selected)
     gate = Gate(store, production=args.production)
-    treatment, poster = Director().deliver_plan(plan, gate=gate)
+    treatment, poster = Director().deliver_plan(plan, gate=gate, treatment=treatment_text)
+
+    # Report-after-each policy: the store is the durable log; a board write streams the
+    # deliverable the instant it lands and is NON-FATAL — if it fails, the artifact is
+    # already in the store and a later `report_to_board.py --phase plan` reconciles it.
+    provider = _provider(args)
+    routed = (
+        _route(treatment, "Screenwriter", "Story"),
+        _route(poster, "Production Designer", "Art"),
+    )
 
     print(f"Filed plan deliverables for '{args.production}':")
-    for deliverable in (treatment, poster):
+    for deliverable in routed:
         print(f"  [{deliverable.status.value:>8}] {deliverable.name:<14} -> {deliverable.ref}")
+        _report(provider, deliverable)
     return 0
+
+
+def _provider(args: argparse.Namespace):
+    """The board to stream to, or None when reporting is off."""
+    if not (args.report or args.board):
+        return None
+    if args.board:
+        from sequitur import LocalFolderProduction
+
+        return LocalFolderProduction(args.board)
+    from sequitur import AzureDevOpsProduction
+
+    return AzureDevOpsProduction(project=args.production)
+
+
+def _route(deliverable, author: str, department: str):
+    """Attach the authoring seat + department so the board files it in the right place."""
+    from dataclasses import replace
+
+    return replace(deliverable, author=author, department=department)
+
+
+def _report(provider, deliverable) -> None:
+    """Stream one deliverable to the board — non-fatal; the store remains the source of truth."""
+    if provider is None:
+        return
+    body = None
+    if str(deliverable.name).lower().endswith((".md", ".txt")):
+        try:
+            body = Path(str(deliverable.ref)).read_text(encoding="utf-8")
+        except OSError:
+            body = None
+    try:
+        wid = provider.report(deliverable, body=body)
+        print(f"    -> board {wid}")
+    except Exception as exc:  # noqa: BLE001 - board write is non-fatal by policy
+        print(f"    ! board write failed ({type(exc).__name__}): left in store to reconcile")
 
 
 if __name__ == "__main__":

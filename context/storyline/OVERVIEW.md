@@ -612,6 +612,20 @@ into a film-literate prompt.
   (fork 3) so Graph share links flow (with a `--store` local override). Verified offline (audition
   dry-run + select binding persist; `deliver_plan --dry-run` intact); no `sequitur/` change.
   The *mysterious audition* end-to-end is unblocked — pending the Producer's go for the live parts.
+- [`0061-documentation-as-policy.md`](0061-documentation-as-policy.md)
+  — **documentation as policy, not a queue.** The board sat empty for minutes while the plan phase ran in
+  the agent layer, then got batch-dumped — the 0036 ramrod / 0051 vacuum returning. Considered Nystrom's
+  **Event Queue**, but rejected the naïve version: standing up infra (Service Bus/Storage Queue) for
+  *documentation* is tail-wags-dog, and an in-process queue buys ~nothing for short-lived CLIs (the worker
+  must flush at exit). Resolution — **no queue, no infra**: the OutputStore is already a durable log and the
+  board write is idempotent, so **reporting is an idempotent, replayable projection** of the store (Event
+  *Sourcing* in spirit). Policy: **provision-first · report-after-each · board-writes-non-fatal ·
+  reconcile-from-store**. Built `--report` (+ `--board` local double) on
+  [`deliver_plan.py`](../../scripts/deliver_plan.py) + [`audition.py`](../../scripts/audition.py) — stream
+  each deliverable the instant it lands, non-fatal on failure. **Proven offline** (fake renderer + local
+  board double, real orchestration): provision → stream plan (Story/Art) → stream audition (Casting) →
+  simulated board outage (non-fatal, store intact) → AD reconcile replays store→board idempotently. No
+  `sequitur/` change. The live run is the *same commands* with an ADO board + real renders.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `cast`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs
