@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "organization": "<organization>",
+  "projectName": "<production-project-name>",
+  "projectId": "<ADO-project-GUID>",
+  "process": "<production-process-name>",
+  "artifactNamespace": "<existing-output-store-production-key>"
+}

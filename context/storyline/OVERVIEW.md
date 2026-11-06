@@ -1,5 +1,11 @@
 # Storyline — Sequitur Studios devlog
 
+**Latest session handoff:** read
+[`0064-session-handoff-and-canonical-checkout.md`](0064-session-handoff-and-canonical-checkout.md)
+first for the Sequitur alignment, delivery trail, excluded legacy experiments,
+canonical-checkout plan and next-agent continuation checklist. Query ADO and the
+private governing cutover record for final merge/checkout status.
+
 This directory is the project's **running history**, written *for the next agent*
 (human or AI) picking up the work. Session-scoped memory is lost between
 conversations and the original session's notes were never captured, so this
@@ -626,6 +632,18 @@ into a film-literate prompt.
   board double, real orchestration): provision → stream plan (Story/Art) → stream audition (Casting) →
   simulated board outage (non-fatal, store intact) → AD reconcile replays store→board idempotently. No
   `sequitur/` change. The live run is the *same commands* with an ADO board + real renders.
+
+- [`0063-project-boundaries-and-engine-governance.md`](0063-project-boundaries-and-engine-governance.md)
+  — shared studio behavior versus private production homes; explicit project GUID/
+  artifact/state binding; the engine's ADO/GitHub delivery model and typed MCP
+  administration. Existing production processes, media and pending engine work
+  are preserved. The 0062 slot remains reserved for its pre-existing pending-work
+  references. See `context/production-workspaces.md` and `context/git-workflow.md`.
+
+- [`0064-session-handoff-and-canonical-checkout.md`](0064-session-handoff-and-canonical-checkout.md)
+  — complete session handoff: governing/organization/project ownership, engine
+  delivery and Task commits, project binding, preservation evidence, excluded
+  legacy experiments, Graph/approval caveats and the approved clean-checkout plan.
 
 - **Code:** `sequitur/` package (`crew/` · `shot`, `plan`, `cast`, `prompt`, `studio`, `image`,
   `speech`, `edit`, `cutter`, `grade`, `grader`, `lut`, `render`, `production`, `output`, `gate`, `config`) + CLIs

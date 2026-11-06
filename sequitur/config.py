@@ -18,7 +18,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parent.parent
-OUTPUT_DIR = ROOT / "output"
+OUTPUT_DIR = Path(os.environ["SEQUITUR_OUTPUT_DIR"]) if os.environ.get("SEQUITUR_OUTPUT_DIR") else ROOT / "output"
 
 # Load .env from the project root if present. Only non-secret pointers live here.
 load_dotenv(ROOT / ".env")
@@ -177,6 +177,8 @@ class AzureDevOpsConfig:
     org_url: str
     project: str
     resource_id: str = ADO_RESOURCE_ID
+    project_id: str | None = None
+    production_key: str | None = None
 
 
 def get_ado_config(project: str | None = None) -> AzureDevOpsConfig:
@@ -188,7 +190,12 @@ def get_ado_config(project: str | None = None) -> AzureDevOpsConfig:
     is a studio-wide constant, not per-production, and always comes from ``.env``.
     """
     org_url = os.environ.get("ADO_ORG_URL")
-    project = project or os.environ.get("ADO_PROJECT")
+    bound_id = os.environ.get("SEQUITUR_PROJECT_ID")
+    bound_name = os.environ.get("ADO_PROJECT")
+    production_key = os.environ.get("SEQUITUR_ARTIFACT_NAMESPACE") if bound_id else None
+    if bound_id and project not in (None, bound_name, production_key):
+        raise ValueError("The selected production differs from the active workspace.")
+    project = bound_name if bound_id else project or bound_name
     if not org_url or not project:
         raise RuntimeError(
             "No production board configured. Set ADO_ORG_URL "
@@ -199,6 +206,8 @@ def get_ado_config(project: str | None = None) -> AzureDevOpsConfig:
         org_url=org_url.rstrip("/"),
         project=project,
         resource_id=os.environ.get("ADO_RESOURCE_ID", ADO_RESOURCE_ID),
+        project_id=bound_id,
+        production_key=production_key,
     )
 
 

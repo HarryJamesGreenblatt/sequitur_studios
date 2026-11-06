@@ -293,7 +293,7 @@ class AzureDevOpsProduction:
 
     @classmethod
     def list_productions(cls, *, org_url=None, credential=None) -> list[str]:
-        """List the org's **productions** — one ADO project is one Production.
+        """List projects with the production Shot type, excluding engineering projects.
 
         The enumerate step for the multi-production world: it needs *no* project
         selected (that is what it is for). Reads ``ADO_ORG_URL`` from ``.env`` unless
@@ -319,9 +319,27 @@ class AzureDevOpsProduction:
             f"{org_url}/_apis/projects?api-version=7.1",
             headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
         )
-        with urllib.request.urlopen(req) as resp:
-            result = json.loads(resp.read().decode("utf-8"))
-        return sorted(p["name"] for p in result.get("value", []))
+        productions = []
+        while True:
+            with urllib.request.urlopen(req) as resp:
+                result = json.loads(resp.read().decode("utf-8"))
+                continuation = resp.headers.get("x-ms-continuationtoken")
+            for project in result["value"]:
+                project_id = urllib.parse.quote(project["id"], safe="")
+                types_request = urllib.request.Request(
+                    f"{org_url}/{project_id}/_apis/wit/workitemtypes?api-version=7.1",
+                    headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
+                )
+                with urllib.request.urlopen(types_request) as resp:
+                    types = json.loads(resp.read().decode("utf-8"))
+                if any(item["name"] == "Shot" for item in types["value"]):
+                    productions.append(project["name"])
+            if not continuation:
+                return sorted(productions)
+            req = urllib.request.Request(
+                f"{org_url}/_apis/projects?api-version=7.1&continuationToken={urllib.parse.quote(continuation, safe='')}",
+                headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
+            )
 
     # -- transport ---------------------------------------------------------
 
@@ -347,10 +365,17 @@ class AzureDevOpsProduction:
             return json.loads(resp.read().decode("utf-8"))
 
     def _project_url(self, path: str) -> str:
-        return f"{self.config.org_url}/{self.config.project}/_apis/{path}"
+        project = getattr(self.config, "project_id", None) or self.config.project
+        return f"{self.config.org_url}/{urllib.parse.quote(project, safe='')}/_apis/{path}"
 
     def _org_url(self, path: str) -> str:
         return f"{self.config.org_url}/_apis/{path}"
+
+    def _assert_production(self, deliverable: "Deliverable") -> None:
+        """Reject a foreign artifact before a project-bound board operation."""
+        key = getattr(self.config, "production_key", None)
+        if key is not None and deliverable.production != key:
+            raise ValueError("The deliverable belongs to another production workspace.")
 
     # -- board queries -----------------------------------------------------
 
@@ -510,6 +535,7 @@ class AzureDevOpsProduction:
         *type* follows the plane — market-facing artifacts (Marketing department) become
         Marketing Assets; everything else a production Deliverable (storyline 0052).
         """
+        self._assert_production(deliverable)
         title = f"[{deliverable.phase.value}] {deliverable.name}"
         state = _STATUS_STATE.get(deliverable.status.value, "To do")
         wit = self._wit_for(deliverable)
@@ -603,6 +629,7 @@ class AzureDevOpsProduction:
         the workflow State and history — the content the report wrote (Description,
         attachment, link) is left untouched, since a verdict changes standing not substance.
         """
+        self._assert_production(deliverable)
         title = f"[{deliverable.phase.value}] {deliverable.name}"
         wit = self._wit_for(deliverable)
         existing = self._deliverable_id(title, wit)
@@ -658,7 +685,7 @@ class AzureDevOpsProduction:
             status = _STATE_STATUS.get(fields.get("System.State", ""), "pending")
             out.append(
                 Deliverable(
-                    production=self.config.project,
+                    production=getattr(self.config, "production_key", None) or self.config.project,
                     phase=phase_val,
                     name=name or fields.get("System.Title", ""),
                     ref="",
